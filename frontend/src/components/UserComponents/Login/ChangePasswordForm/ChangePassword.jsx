@@ -3,7 +3,7 @@ import { useState } from "react";
 //font awesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { validatePassword } from "../../../../helpers/ValidationHelpers/ValidationHelper";
+import { validatePassword } from "../../../../../helpers/ValidationHelpers/ValidationHelper";
 
 export default function ChangePassword() {
   const [password, setPassword] = useState({});

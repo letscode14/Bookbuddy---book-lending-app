@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { validateEmail } from "../../../../helpers/ValidationHelpers/ValidationHelper";
+import { validateEmail } from "../../../../../helpers/ValidationHelpers/ValidationHelper";
 export default function LoginOtpForm() {
   const [user, setEmail] = useState({});
   const [error, setError] = useState(0);

@@ -7,7 +7,7 @@ import LoginForm from "./LoginForm/LoginForm";
 import "./Login.css";
 import Logo from "/images/Logo.png";
 import bookImage from "/images/transparent-hygge-life-reading-armchair-fireplace-book-man-reading-by-fireplace-in-cozy-room659efcbbbe9d95.2777358317049182037808.png";
-import SignupForm from "../Signup/SignupForm/SignupForm";
+import SignupForm from "../../Signup/SignupForm/SignupForm";
 import ForgotPassform from "./ForgotPassform/ForgotPassform";
 import LoginOtpForm from "./LoginOtpForm/LoginOtpForm";
 import ChangePassword from "./ChangePasswordForm/ChangePassword";

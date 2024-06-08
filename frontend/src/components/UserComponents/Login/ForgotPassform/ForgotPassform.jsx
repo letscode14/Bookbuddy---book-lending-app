@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { validateEmail } from "../../../../helpers/ValidationHelpers/ValidationHelper";
+import { validateEmail } from "../../../../../helpers/ValidationHelpers/ValidationHelper";
 
 export default function ForgotPassform() {
   const [user, setEmail] = useState({});
