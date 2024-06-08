@@ -9,7 +9,7 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import {
   validateEmail,
   validatePassword,
-} from "../../../../helpers/ValidationHelpers/ValidationHelper";
+} from "../../../../../helpers/ValidationHelpers/ValidationHelper";
 
 export default function SignupForm() {
   const [error, setError] = useState(0);
