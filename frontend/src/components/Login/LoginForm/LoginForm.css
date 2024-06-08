@@ -1,0 +1,11 @@
+.google-auth-button {
+  background-color: #ffffff;
+  border: solid 0.5px #e0e0e0;
+  padding: 9px;
+  width: fit-content;
+  border-radius: 10px;
+  color: #828282;
+}
+.google-auth-icon {
+  height: 20px;
+}
