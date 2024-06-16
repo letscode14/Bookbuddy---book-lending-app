@@ -1,0 +1,9 @@
+.navbar-menu div {
+  margin-bottom: 20px;
+}
+.menu-highlight {
+  border-top-left-radius: 15px;
+  border-bottom-left-radius: 15px;
+
+  transition: top 0.3s ease;
+}

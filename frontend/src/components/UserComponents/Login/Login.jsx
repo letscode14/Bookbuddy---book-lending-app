@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
-import { useNavigate, Route, Routes, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 import LoginForm from "./LoginForm/LoginForm";
 
 import "./Login.css";
-import Logo from "/images/Logo.png";
+import Logo from "/images/Logo2.png";
 import bookImage from "/images/transparent-hygge-life-reading-armchair-fireplace-book-man-reading-by-fireplace-in-cozy-room659efcbbbe9d95.2777358317049182037808.png";
 import SignupForm from "../Signup/SignupForm/SignupForm";
 import ForgotPassform from "./ForgotPassform/ForgotPassform";
@@ -15,26 +15,39 @@ import Submitotp from "../submitOtp/Submitotp";
 
 export default function Login() {
   const [isActive, setActive] = useState(false);
+  const [form, setForm] = useState("");
   const { pathname } = useLocation();
+  const { id } = useParams();
+
   useEffect(() => {
     switch (pathname) {
+      case "/":
+        navigate("/login");
+        break;
       case "/verify-email":
         setActive(true);
+        setForm("verifyemail");
         break;
       case "/login":
         setActive(false);
+        setForm("login");
         break;
       case "/register-email":
         setActive(true);
+        setForm("loginotp");
         break;
-      case "/change-password":
+      case `/change-password/${id}`:
         setActive(false);
+        setForm("changepass");
         break;
       case "/submit-otp":
         setActive(false);
+        setForm("submit-otp");
         break;
       case "/signup":
         setActive(true);
+        setForm("signup");
+
         break;
     }
   }, [pathname]);
@@ -49,11 +62,9 @@ export default function Login() {
         id="container"
       >
         <div className="form-container   flex items-center sign-up">
-          <Routes>
-            <Route path="/signup" element={<SignupForm />}></Route>
-            <Route path="/verify-email" element={<ForgotPassform />}></Route>
-            <Route path="/register-email" element={<LoginOtpForm />}></Route>
-          </Routes>
+          {form == "signup" ? <SignupForm /> : ""}
+          {form === "verifyemail" ? <ForgotPassform /> : ""}
+          {form == "loginotp" ? <LoginOtpForm /> : ""}
         </div>
 
         <div
@@ -61,11 +72,9 @@ export default function Login() {
             isActive ? "hidden" : ""
           }  flex items-center sign-in`}
         >
-          <Routes>
-            <Route path="/login" element={<LoginForm />}></Route>
-            <Route path="/submit-otp" element={<Submitotp />}></Route>
-            <Route path="/change-password" element={<ChangePassword />}></Route>
-          </Routes>
+          {form == "login" ? <LoginForm /> : ""}
+          {form == "changepass" ? <ChangePassword /> : ""}
+          {form == "submit-otp" ? <Submitotp /> : ""}
         </div>
 
         <div className="toggle-container">

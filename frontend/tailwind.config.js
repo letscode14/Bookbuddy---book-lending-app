@@ -9,6 +9,7 @@ export default {
       colors: {
         white: "#ffffffb",
         access: "#828282",
+        alltheme: "#512da8",
       },
     },
   },

@@ -1,6 +1,9 @@
 import googleLogo from "/images/google-logo-9808.png";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
+//reduc state management
+import { otpAuthIn } from "../../../../store/slice/authSlice";
 //font awesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
@@ -10,20 +13,33 @@ import {
   validateEmail,
   validatePassword,
 } from "../../../../../helpers/ValidationHelpers/ValidationHelper";
+import axiosInstance from "../../../../api/axios";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectLoading,
+  startLoading,
+  stopLoading,
+} from "../../../../store/slice/loadinSlice";
 
 export default function SignupForm() {
+  const dispatch = useDispatch();
+  const { isLoading } = useSelector(selectLoading);
+  const navigate = useNavigate();
   const [error, setError] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
   const [passError, setPassError] = useState(" ");
   const [userDetails, setUserDetails] = useState({});
   const [passView, setPassView] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (
       Object.entries(userDetails).length !== 5 ||
       Object.values(userDetails).some((value) => value == "")
     ) {
       setError(3);
+      setErrorMsg("Fill all the fields");
       setTimeout(() => {
         setError(0);
       }, 1500);
@@ -55,6 +71,25 @@ export default function SignupForm() {
       }, 1500);
       return;
     }
+    dispatch(startLoading());
+    const response = await axiosInstance.post(
+      "/user/registration",
+      userDetails
+    );
+    if (response.status == 200) {
+      console.log(response);
+      dispatch(otpAuthIn(response.data.user.activationToken));
+      dispatch(stopLoading());
+      navigate("/submit-otp");
+    } else {
+      dispatch(stopLoading());
+      setErrorMsg(response.message);
+      setError(3);
+      setTimeout(() => {
+        setErrorMsg("");
+        setError(0);
+      }, 1500);
+    }
   };
 
   return (
@@ -66,7 +101,7 @@ export default function SignupForm() {
             error == 3 ? "" : "opacity-0"
           }`}
         >
-          Fill all the fields
+          {errorMsg ? errorMsg : "Fill all the fields"}
         </div>
         <input
           onChange={(e) =>
@@ -84,7 +119,7 @@ export default function SignupForm() {
         </div>
         <input
           onChange={(e) =>
-            setUserDetails({ ...userDetails, username: e.target.value.trim() })
+            setUserDetails({ ...userDetails, userName: e.target.value.trim() })
           }
           type="text"
           placeholder="Username"
@@ -167,9 +202,18 @@ export default function SignupForm() {
           Password doesnt match
         </div>
       </div>
+      <div className="flex justify-center items-center"></div>
 
-      <button onClick={handleSubmit} className="signup-button">
-        SIGN UP
+      <button
+        disabled={isLoading}
+        onClick={handleSubmit}
+        className="signup-button flex justify-center items-center"
+      >
+        {isLoading ? (
+          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
+        ) : (
+          "SIGN UP"
+        )}
       </button>
       <div className="w-full text-center py-1">
         <span>--------- OR ---------</span>
