@@ -82,7 +82,44 @@ class UserController {
       const user = req.body;
       const result = await this.userCase.loginUser(user);
 
-      console.log(result);
+      if (result.refreshToken) {
+        res.cookie("refreshToken", result.refreshToken, {
+          httpOnly: true,
+          maxAge: 30 * 24 * 60 * 60 * 10000,
+        });
+      }
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async refreshToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.refreshToken(req);
+      if (result.accessToken) {
+        res.cookie("accessToken", result.accessToken, { maxAge: 10000 });
+      }
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async protected(req: Request, res: Response, next: NextFunction) {
+    try {
+      console.log("again called");
+      res.status(200).json({ message: "" });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async logoutUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      console.log("logout");
+
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+      res.status(200).json({ message: "User LogOut success fully" });
     } catch (error) {
       console.log(error);
     }

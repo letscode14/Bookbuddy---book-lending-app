@@ -12,7 +12,6 @@ import {
   validateEmail,
   validatePassword,
 } from "../../../../../helpers/ValidationHelpers/ValidationHelper";
-import axiosInstance from "../../../../api/axios";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectLoading,
@@ -21,7 +20,7 @@ import {
 } from "../../../../store/slice/loadinSlice";
 import OAuth from "../../../Oauth/OAuth";
 import { selectError } from "../../../../store/slice/errorSlice";
-
+import axiosInstance from "../../../../Service/api";
 export default function SignupForm() {
   const dispatch = useDispatch();
 

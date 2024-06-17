@@ -27,5 +27,9 @@ export const validatePassword = (password) => {
   if (!hasAlphabet) {
     return "Alphabets is missing";
   }
+
+  if (password.length < 8) {
+    return "Password must hav 8 character";
+  }
   return true;
 };

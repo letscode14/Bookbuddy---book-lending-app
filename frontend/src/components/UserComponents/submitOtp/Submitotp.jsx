@@ -4,13 +4,13 @@ import {
   decrementOtpCounter,
   resetOtpCounter,
 } from "../../../store/slice/authSlice";
-import axiosInstance from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
 import {
   selectLoading,
   startLoading,
   stopLoading,
 } from "../../../store/slice/loadinSlice";
+import axiosInstance, { updateAuthorizationHeader } from "../../../Service/api";
 export default function Submitotp() {
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -50,7 +50,10 @@ export default function Submitotp() {
         if (response.status == 200) {
           dispatch(stopLoading());
           setErrorMessages(response.data.message, 2);
-          navigate("/login");
+          navigate("/users/home");
+          localStorage.setItem("accessToken", response.data.accessToken);
+          localStorage.setItem("refreshToken", response.data.refreshToken);
+          updateAuthorizationHeader();
         }
       })
       .catch((error) => {

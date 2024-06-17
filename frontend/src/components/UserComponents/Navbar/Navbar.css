@@ -5,5 +5,5 @@
   border-top-left-radius: 15px;
   border-bottom-left-radius: 15px;
 
-  transition: top 0.3s ease;
+  transition: top 0.5s ease-in-out;
 }

@@ -1,6 +1,18 @@
-import jwt, { JwtPayload, Secret } from "jsonwebtoken";
+import jwt, { JwtPayload, Secret, TokenExpiredError } from "jsonwebtoken";
 import IJwtToken from "../../usecases/interface/IJwtToken";
 import User from "../../entity/userEntity";
+import { Request } from "express";
+
+interface Response {
+  statusCode: number;
+  message: string;
+  id?: string | JwtPayload;
+}
+interface DecodedToken {
+  user: string;
+  iat: number;
+  exp: number;
+}
 
 class JwtTokenService implements IJwtToken {
   async SignInAccessToken(user: string): Promise<string> {
@@ -8,7 +20,7 @@ class JwtTokenService implements IJwtToken {
       { user },
       process.env.ACCESS_TOKEN_SECRET as Secret,
       {
-        expiresIn: "1d",
+        expiresIn: "1m",
       }
     );
     if (token) return token;
@@ -33,6 +45,37 @@ class JwtTokenService implements IJwtToken {
       }
     );
     return token;
+  }
+
+  async verifyRreshToken(req: Request): Promise<Response> {
+    try {
+      console.log("hi");
+
+      const refreshToken = req.body.refreshToken;
+      if (!refreshToken) {
+        return {
+          statusCode: 401,
+          message: "Token missing",
+        };
+      }
+
+      const user = jwt.verify(
+        refreshToken,
+        process.env.REFRESH_TOKEN_SECRET as Secret
+      ) as DecodedToken;
+
+      return {
+        statusCode: 200,
+        message: "ok",
+        id: user.user,
+      };
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        return { statusCode: 401, message: "Token Expired " };
+      } else {
+        return { statusCode: 401, message: "Token Invalid" };
+      }
+    }
   }
 
   async verifyOtpToken(

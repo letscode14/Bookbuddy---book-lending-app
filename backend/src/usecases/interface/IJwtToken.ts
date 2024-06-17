@@ -10,6 +10,7 @@ interface IJwtToken {
   ): Promise<
     { user: User; code: string } | { status: boolean; message: string }
   >;
+  
 }
 
 export default IJwtToken;

@@ -2,9 +2,9 @@ import googleLogo from "/images/google-logo-9808.png";
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import app from "../../firebase/Firebase";
 import { useDispatch } from "react-redux";
-import axiosInstance from "../../api/axios";
 import { saveUser } from "../../store/slice/userAuth";
 import { useNavigate } from "react-router-dom";
+import axiosInstance, { updateAuthorizationHeader } from "../../Service/api";
 import {
   startPageLoading,
   stopPageLoading,
@@ -33,11 +33,14 @@ export default function OAuth() {
             dispatch(startPageLoading());
             setTimeout(() => {
               const obj = {
-                accessToken: response.data.authToken,
+                accessToken: response.data.accessToken,
                 user: { ...response.data.result },
               };
               dispatch(saveUser(obj));
               dispatch(stopPageLoading());
+              localStorage.setItem("accessToken", response.data.accessToken);
+              localStorage.setItem("refreshToken", response.data.refreshToken);
+              updateAuthorizationHeader();
               navigate("/user/home");
             }, 3000);
           }

@@ -78,7 +78,10 @@ class UserUseCase {
     try {
       const data = await this.JwtToken.verifyOtpToken(token, otp);
       if ("user" in data) {
-        const result = await this.iUserRepository.createUser(data.user);
+        const result = (await this.iUserRepository.createUser(data.user)) as {
+          email: string;
+          _id: string;
+        };
 
         if (!result) {
           return {
@@ -86,10 +89,16 @@ class UserUseCase {
             message: "error in creating the user",
           };
         } else {
+          const { _id } = result;
+          const accessToken = await this.JwtToken.SignInAccessToken(_id);
+          const refreshToken = await this.JwtToken.SignInRefreshToken(_id);
+
           return {
             statusCode: 200,
             message: "User registered SuccessFully",
             ...result,
+            accessToken,
+            refreshToken,
           };
         }
       } else {
@@ -162,9 +171,13 @@ class UserUseCase {
             message: "User Blocked contect admin",
           };
         }
-        const token = await this.JwtToken.SignInAccessToken(
+        const accessToken = await this.JwtToken.SignInAccessToken(
           emailExists._id as string
         );
+        const refreshToken = await this.JwtToken.SignInRefreshToken(
+          emailExists._id as string
+        );
+
         const { _id, name, userName, email } = emailExists as User;
         return {
           statusCode: 200,
@@ -175,7 +188,8 @@ class UserUseCase {
             userName,
             email,
           },
-          authToken: token,
+          accessToken,
+          refreshToken,
         };
       } else {
         const savedUser = await this.iUserRepository.googleSignup(user);
@@ -190,11 +204,15 @@ class UserUseCase {
         const token = await this.JwtToken.SignInAccessToken(
           savedUser._id as string
         );
+        const refreshToken = await this.JwtToken.SignInRefreshToken(
+          savedUser._id as string
+        );
         return {
           statusCode: 201,
           status: true,
           message: "User registered Successfully",
-          authToken: token,
+          accessToken: token,
+          refreshToken,
           result: {
             _id,
             email,
@@ -210,7 +228,7 @@ class UserUseCase {
       };
     }
   }
-  async loginUser(user: User): Promise<User | ResponseType> {
+  async loginUser(user: User): Promise<ResponseType> {
     try {
       const { password, email } = user;
       const emailExists = await this.iUserRepository.findByEmail(user.email);
@@ -259,6 +277,30 @@ class UserUseCase {
         statusCode: 500,
         status: false,
         message: "Internal sever error",
+      };
+    }
+  }
+
+  async refreshToken(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.JwtToken.verifyRreshToken(req);
+      if (result.message == "ok") {
+        const id = result.id;
+        const token = await this.JwtToken.SignInAccessToken(id as string);
+        return {
+          statusCode: 200,
+          accessToken: token,
+          message: "New refesh token created",
+        };
+      }
+
+      return result;
+    } catch (error) {
+      console.log(error);
+
+      return {
+        statusCode: 500,
+        message: "Internal Server error",
       };
     }
   }

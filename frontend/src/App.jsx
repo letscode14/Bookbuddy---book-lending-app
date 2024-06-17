@@ -14,45 +14,49 @@ import LoadingPage from "./components/loadingpage/LoadingPage.jsx";
 import Page500 from "./components/errorPages/Page500.jsx";
 import ErrorPrivate from "./PrivateRoute/ErrorPrivate.jsx";
 import AdminLogin from "./components/AdminComponents/AdminLogin/AdminLogin.jsx";
+import AdminPages from "./components/AdminComponents/AdminPages/AdminPages.jsx";
+import "./App.css";
 
 function App() {
   const { pageLoading } = useSelector(selectPageLoading);
-  return pageLoading ? (
-    <LoadingPage />
-  ) : (
-    <BrowserRouter>
-      <Routes>
-        {/*user routes*/}
-        <Route element={<UserAccessRoutes />}>
-          <Route path="/user/*" element={<Homepage />}></Route>
-        </Route>
-        <Route element={<UserNotAccessRoutes />}>
-          <Route path="/" element={<ResetAuthState />} />
-          <Route path="/login" element={<ResetAuthState />}></Route>
-          <Route path="/signup" element={<ResetAuthState />}></Route>
-          <Route path="/verify-email" element={<ResetAuthState />}></Route>
-          <Route path="/register-email" element={<ResetAuthState />}></Route>
-        </Route>
+  return (
+    <div className="app-container ">
+      {pageLoading ? (
+        <LoadingPage />
+      ) : (
+        <BrowserRouter>
+          <div className="content-container">
+            <Routes>
+              {/* User routes */}
+              <Route element={<UserAccessRoutes />}>
+                <Route path="/user/*" element={<Homepage />} />
+              </Route>
+              <Route element={<UserNotAccessRoutes />}>
+                <Route path="/" element={<ResetAuthState />} />
+                <Route path="/login" element={<ResetAuthState />} />
+                <Route path="/signup" element={<ResetAuthState />} />
+                <Route path="/verify-email" element={<ResetAuthState />} />
+                <Route path="/register-email" element={<ResetAuthState />} />
+              </Route>
+              <Route path="/change-password/:id" element={<Login />} />
+              <Route element={<SubmitOtpPrivateRoute />}>
+                <Route path="/submit-otp" element={<Login />} />
+              </Route>
 
-        <Route path="/change-password/:id" element={<Login />}></Route>
-        <Route element={<SubmitOtpPrivateRoute />}>
-          <Route path="/submit-otp" element={<Login />}></Route>
-        </Route>
+              {/* Error routes */}
+              <Route element={<ErrorPrivate />}>
+                <Route path="/error" element={<Page500 />} />
+              </Route>
+              <Route path="*" element={<Page404 />} />
 
-        {/************************* */}
-        {/*Error routes*/}
-        <Route element={<ErrorPrivate />}>
-          <Route path="/error" element={<Page500 />}></Route>
-        </Route>
-
-        <Route path="*" element={<Page404 />} />
-        {/* ***************************/}
-
-        {/*Admin routes */}
-        <Route path="/admin/login" element={<AdminLogin />}></Route>
-        {/*************************** */}
-      </Routes>
-    </BrowserRouter>
+              {/* Admin routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin/*" element={<AdminPages />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      )}
+    </div>
   );
 }
 

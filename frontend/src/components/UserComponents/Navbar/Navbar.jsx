@@ -13,10 +13,13 @@ import {
   faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import ProfileAlt from "/images/Profile-alt.png";
+import { useParams } from "react-router-dom";
 
 import "./Navbar.css";
 
 export default function Navbar() {
+  const { param } = useParams();
+  console.log(param);
   const profile = false;
   const { pathname } = useLocation();
   const [menu, setMenu] = useState(0);
@@ -35,6 +38,10 @@ export default function Navbar() {
       case "/user/search":
         element.style.top = `${52.5}px`;
         setMenu(1);
+        break;
+      case "/user/profile":
+        element.style.top = `${372.5}px`;
+        setMenu(7);
         break;
     }
   }, [pathname]);
@@ -129,7 +136,7 @@ export default function Navbar() {
           </div>
           <div
             onClick={() => {
-              setMenu(7), navigate("/home");
+              setMenu(7), navigate("/user/profile");
             }}
             className={`flex items-baseline  ${
               menu == 7 ? "text-[#000000]" : "text-[#ffffff]"

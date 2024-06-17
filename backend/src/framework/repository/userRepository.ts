@@ -8,7 +8,9 @@ class UserRepository implements IUserRepository {
     return await userModel.findOne({ email }).select("+password");
   }
 
-  async createUser(user: User): Promise<User | null | unknown> {
+  async createUser(
+    user: User
+  ): Promise<{ email: string; _id: unknown } | null> {
     try {
       const { name, userName, password, email } = user;
 
@@ -22,6 +24,7 @@ class UserRepository implements IUserRepository {
         const { email, _id } = savedUser;
         return { email, _id };
       }
+      return null;
     } catch (error) {
       console.log(error);
       return null;

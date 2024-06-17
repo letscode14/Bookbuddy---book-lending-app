@@ -4,6 +4,7 @@ import UserUseCase from "../../usecases/userUsecase";
 import UserRepository from "../repository/userRepository";
 import SendEmail from "../services/SendEmail";
 import JwtTokenService from "../services/JwtToken";
+import { authMiddleware } from "../middleware/authMiddleware";
 
 const userRouter = express.Router();
 const repository = new UserRepository();
@@ -35,6 +36,22 @@ userRouter.post("/google/auth", (req, res, next) => {
 
 userRouter.post("/login", (req, res, next) => {
   controller.loginUser(req, res, next);
+});
+
+//refresh token
+
+userRouter.post("/refresh-token", (req, res, next) => {
+  controller.refreshToken(req, res, next);
+});
+
+//test Route
+
+userRouter.get("/protected", authMiddleware, (req, res, next) => {
+  controller.protected(req, res, next);
+});
+
+userRouter.post("/logout", authMiddleware, (req, res, next) => {
+  controller.logoutUser(req, res, next);
 });
 
 export default userRouter;

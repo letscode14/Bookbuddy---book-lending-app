@@ -14,14 +14,30 @@ import {
 } from "../../../../../helpers/ValidationHelpers/ValidationHelper";
 import OAuth from "../../../Oauth/OAuth";
 //
+
+//store
+import { useSelector, useDispatch } from "react-redux";
+import { selectError } from "../../../../store/slice/errorSlice";
+import {
+  selectLoading,
+  startLoading,
+  stopLoading,
+} from "../../../../store/slice/loadinSlice";
+import { saveUser } from "../../../../store/slice/userAuth";
+import axiosInstance, {
+  updateAuthorizationHeader,
+} from "../../../../Service/api";
 export default function LoginForm() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [userDetails, setUserDetails] = useState({});
   const [error, setError] = useState(0);
   const [passwordError, setPassError] = useState("");
   const [passView, setPassView] = useState(false);
+  const { customError } = useSelector(selectError);
+  const { isLoading } = useSelector(selectLoading);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (
       Object.entries(userDetails).length !== 2 ||
@@ -52,18 +68,44 @@ export default function LoginForm() {
       }, 1500);
       return;
     }
+    dispatch(startLoading());
+    const response = await axiosInstance.post("/user/login", userDetails);
+    if (response) {
+      dispatch(stopLoading());
+    }
+    if (response.status == 200) {
+      dispatch(
+        saveUser({
+          user: response.data._id,
+          accessToken: response.data.accessToken,
+        })
+      );
+
+      localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
+      updateAuthorizationHeader();
+      navigate("/user/home");
+    }
   };
+
   return (
     <form className="w-full ">
       <h1 className="text-3xl font-bold mb-2">Sign In</h1>
 
-      <div className="w-full">
-        <div
-          className={` pt-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error == 3 ? "" : "opacity-0"
-          }`}
-        >
-          Fill all the fields
+      <div className="w-full ">
+        <div className="flex justify-between">
+          <div
+            className={` pt-1 text-xs text-red-500 transition-opacity duration-200 ${
+              error == 3 ? "" : "opacity-0"
+            }`}
+          >
+            Fill all the fields
+          </div>
+          <div
+            className={` pt-1 text-xs text-red-500 transition-opacity duration-200 `}
+          >
+            {customError}
+          </div>
         </div>
 
         <input
@@ -121,8 +163,16 @@ export default function LoginForm() {
           Forget your password?
         </div>
       </div>
-      <button onClick={handleSubmit} className="sign-in-button">
-        Sign In
+      <button
+        disabled={isLoading}
+        onClick={handleSubmit}
+        className="signup-button flex justify-center items-center"
+      >
+        {isLoading ? (
+          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
+        ) : (
+          "SIGN in"
+        )}
       </button>
       <div className="w-full text-center py-1">
         <span>--------- OR ---------</span>
