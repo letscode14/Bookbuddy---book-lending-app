@@ -1,0 +1,13 @@
+.admin-login-container {
+  height: 100vh;
+  width: 100vw;
+  background-color: #51557e;
+}
+.admin-login-container input {
+  background-color: #ffffff;
+  border: solid 0.5px #e0e0e0;
+  padding: 10px 15px;
+  font-size: 13px;
+  border-radius: 8px;
+  width: 100%;
+}

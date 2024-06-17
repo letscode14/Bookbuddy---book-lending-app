@@ -3,15 +3,25 @@ import IJwtToken from "../../usecases/interface/IJwtToken";
 import User from "../../entity/userEntity";
 
 class JwtTokenService implements IJwtToken {
-  async SignInJwt(user: User): Promise<String> {
+  async SignInAccessToken(user: string): Promise<string> {
     const token = jwt.sign(
       { user },
       process.env.ACCESS_TOKEN_SECRET as Secret,
       {
-        expiresIn: "5m",
+        expiresIn: "1d",
       }
     );
-    return token;
+    if (token) return token;
+    return "";
+  }
+  async SignInRefreshToken(user: string): Promise<string> {
+    const token = jwt.sign(
+      { user },
+      process.env.REFRESH_TOKEN_SECRET as Secret,
+      { expiresIn: "30d" }
+    );
+    if (token) return token;
+    return "";
   }
 
   async SignUpActivationToken(user: User, code: string): Promise<string> {

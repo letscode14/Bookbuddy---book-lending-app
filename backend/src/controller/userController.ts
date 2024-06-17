@@ -57,6 +57,36 @@ class UserController {
       next(error);
     }
   }
+
+  async googleAuth(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.body;
+      console.log(user);
+
+      const result = await this.userCase.googleAuth(user);
+      if (result.authToken) {
+        res.cookie("authToken", result.authToken, { httpOnly: true });
+      }
+
+      res
+        .status(result.statusCode)
+        .json({ message: result.message, ...result });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async loginUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.body;
+      const result = await this.userCase.loginUser(user);
+
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 export default UserController;

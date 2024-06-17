@@ -6,6 +6,10 @@ import otpAuthReducer from "./slice/authSlice";
 import loadinSlice from "./slice/loadinSlice";
 import { encryptTransform } from "redux-persist-transform-encrypt";
 import storage from "redux-persist/lib/storage";
+import pageLoadingSlice from "./slice/pageLoadingSlice";
+import errorSlice from "./slice/errorSlice";
+import userAuth from "./slice/userAuth";
+import adminAuth from "./slice/adminAuth";
 
 const persistConfig = {
   key: "root",
@@ -24,6 +28,10 @@ const persistConfig = {
 const rootReducer = combineReducers({
   otpAuth: otpAuthReducer,
   loading: loadinSlice,
+  pageLoading: pageLoadingSlice,
+  customError: errorSlice,
+  user: userAuth,
+  admin: adminAuth,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

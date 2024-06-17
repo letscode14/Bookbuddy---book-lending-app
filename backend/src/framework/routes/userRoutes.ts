@@ -26,4 +26,15 @@ userRouter.get("/resendotp", (req, res, next) => {
   controller.resendOtp(req, res, next);
 });
 
+//googleAuth
+userRouter.post("/google/auth", (req, res, next) => {
+  controller.googleAuth(req, res, next);
+});
+
+//login user
+
+userRouter.post("/login", (req, res, next) => {
+  controller.loginUser(req, res, next);
+});
+
 export default userRouter;

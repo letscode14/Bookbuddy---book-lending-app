@@ -1,4 +1,3 @@
-import googleLogo from "/images/google-logo-9808.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,10 +19,15 @@ import {
   startLoading,
   stopLoading,
 } from "../../../../store/slice/loadinSlice";
+import OAuth from "../../../Oauth/OAuth";
+import { selectError } from "../../../../store/slice/errorSlice";
 
 export default function SignupForm() {
   const dispatch = useDispatch();
+
   const { isLoading } = useSelector(selectLoading);
+  const { customError } = useSelector(selectError);
+
   const navigate = useNavigate();
   const [error, setError] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -77,18 +81,9 @@ export default function SignupForm() {
       userDetails
     );
     if (response.status == 200) {
-      console.log(response);
       dispatch(otpAuthIn(response.data.user.activationToken));
       dispatch(stopLoading());
       navigate("/submit-otp");
-    } else {
-      dispatch(stopLoading());
-      setErrorMsg(response.message);
-      setError(3);
-      setTimeout(() => {
-        setErrorMsg("");
-        setError(0);
-      }, 1500);
     }
   };
 
@@ -98,10 +93,14 @@ export default function SignupForm() {
       <div className="w-full">
         <div
           className={`  text-xs text-red-500 transition-opacity duration-500 ${
-            error == 3 ? "" : "opacity-0"
+            customError ? " " : error == 3 ? "" : "opacity-0"
           }`}
         >
-          {errorMsg ? errorMsg : "Fill all the fields"}
+          {customError
+            ? customError
+            : errorMsg
+            ? errorMsg
+            : "Fill all the fields"}
         </div>
         <input
           onChange={(e) =>
@@ -218,9 +217,7 @@ export default function SignupForm() {
       <div className="w-full text-center py-1">
         <span>--------- OR ---------</span>
       </div>
-      <div className="cursor-pointer hover:scale-110 duration-300 google-auth-button me-2 flex items-center justify-center">
-        <img className="google-auth-icon " src={googleLogo} alt="" />
-      </div>
+      <OAuth />
     </form>
   );
 }

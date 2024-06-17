@@ -1,8 +1,9 @@
 import User from "../../entity/userEntity";
 
 interface IJwtToken {
-  SignInJwt(user: User): Promise<String>;
-  SignUpActivationToken(user: User, code: string): Promise<String>;
+  SignInAccessToken(user: string): Promise<string>;
+  SignInRefreshToken(user: string): Promise<string>;
+  SignUpActivationToken(user: User, code: string): Promise<string>;
   verifyOtpToken(
     accessToken: string,
     otp: string

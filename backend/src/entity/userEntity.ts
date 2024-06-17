@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Document } from "mongoose";
 
 interface User {
   _id?: string;
@@ -21,8 +22,6 @@ interface User {
   badge: string;
   isBlocked: boolean;
   isDeleted: boolean;
-
-  /*comparePassword?: (password: string) => Promise<boolean>;*/
 }
 
 export default User;

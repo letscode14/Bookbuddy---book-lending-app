@@ -2,7 +2,7 @@ import Navbar from "../Navbar/Navbar";
 import { Routes, Route } from "react-router-dom";
 import Home from "../Home/Home";
 import Search from "../Search/Search";
-import Page from "../../page404/Page404";
+import Page from "../../errorPages/Page404";
 
 export default function Homepage() {
   return (

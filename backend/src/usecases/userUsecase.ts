@@ -13,6 +13,7 @@ interface ResponseType {
   activationToken?: string;
   accessToken?: string;
   refreshToken?: string;
+  authToken?: string;
 }
 
 class UserUseCase {
@@ -142,6 +143,122 @@ class UserUseCase {
         status: false,
         statusCode: 500,
         message: "Internal server Error",
+      };
+    }
+  }
+  async googleAuth(user: User): Promise<ResponseType> {
+    try {
+      const email = user.email;
+      console.log(email);
+
+      const emailExists = await this.iUserRepository.findByEmail(email);
+      console.log(emailExists);
+
+      if (emailExists) {
+        if (emailExists.isBlocked) {
+          return {
+            statusCode: 401,
+            status: false,
+            message: "User Blocked contect admin",
+          };
+        }
+        const token = await this.JwtToken.SignInAccessToken(
+          emailExists._id as string
+        );
+        const { _id, name, userName, email } = emailExists as User;
+        return {
+          statusCode: 200,
+          message: "User logged In",
+          result: {
+            _id,
+            name,
+            userName,
+            email,
+          },
+          authToken: token,
+        };
+      } else {
+        const savedUser = await this.iUserRepository.googleSignup(user);
+        if (!savedUser) {
+          return {
+            statusCode: 500,
+            status: false,
+            message: "Error in creating user",
+          };
+        }
+        const { _id, email } = savedUser;
+        const token = await this.JwtToken.SignInAccessToken(
+          savedUser._id as string
+        );
+        return {
+          statusCode: 201,
+          status: true,
+          message: "User registered Successfully",
+          authToken: token,
+          result: {
+            _id,
+            email,
+          },
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      return {
+        status: false,
+        statusCode: 500,
+        message: "Internal server Error",
+      };
+    }
+  }
+  async loginUser(user: User): Promise<User | ResponseType> {
+    try {
+      const { password, email } = user;
+      const emailExists = await this.iUserRepository.findByEmail(user.email);
+      if (emailExists) {
+        if (emailExists.isBlocked) {
+          return {
+            statusCode: 401,
+            status: false,
+            message: "User Blocked contect admin",
+          };
+        }
+        const isValid = await this.iUserRepository.loginUser(
+          emailExists.password,
+          password
+        );
+        if (isValid) {
+          const accessToken = await this.JwtToken.SignInAccessToken(
+            emailExists._id as string
+          );
+
+          const refreshToken = await this.JwtToken.SignInRefreshToken(
+            emailExists._id as string
+          );
+          return {
+            statusCode: 200,
+            accessToken,
+            refreshToken,
+            message: "User logged success fully",
+            _id: emailExists._id,
+          };
+        } else {
+          return {
+            statusCode: 401,
+            message: "Invalid Credentials",
+          };
+        }
+      }
+      return {
+        statusCode: 401,
+        message: "User dont exist",
+      };
+    } catch (error) {
+      console.log(error);
+
+      return {
+        statusCode: 500,
+        status: false,
+        message: "Internal sever error",
       };
     }
   }

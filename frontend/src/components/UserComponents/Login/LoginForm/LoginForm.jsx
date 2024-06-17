@@ -1,4 +1,3 @@
-import googleLogo from "/images/google-logo-9808.png";
 import otpLogo from "/images/email.png";
 import "./LoginForm.css";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +12,7 @@ import {
   validateEmail,
   validatePassword,
 } from "../../../../../helpers/ValidationHelpers/ValidationHelper";
+import OAuth from "../../../Oauth/OAuth";
 //
 export default function LoginForm() {
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ export default function LoginForm() {
     }
   };
   return (
-    <form className="w-full">
+    <form className="w-full ">
       <h1 className="text-3xl font-bold mb-2">Sign In</h1>
 
       <div className="w-full">
@@ -128,9 +128,7 @@ export default function LoginForm() {
         <span>--------- OR ---------</span>
       </div>
       <div className="flex">
-        <div className="cursor-pointer hover:scale-110 duration-300 google-auth-button me-2 flex items-center justify-center">
-          <img className="google-auth-icon " src={googleLogo} alt="" />
-        </div>
+        <OAuth />
         <div
           onClick={() => navigate("/register-email")}
           className="cursor-pointer hover:scale-110 google-auth-button  flex items-center justify-center duration-300"

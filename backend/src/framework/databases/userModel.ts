@@ -29,8 +29,6 @@ interface IUser extends Document {
   isBlocked: boolean;
   isDeleted: boolean;
   isSubscribed: boolean;
-
-  comparePassword: (password: string) => Promise<Boolean>;
 }
 
 const userSchema: Schema<IUser> = new mongoose.Schema({
