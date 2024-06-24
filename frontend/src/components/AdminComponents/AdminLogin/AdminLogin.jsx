@@ -7,18 +7,31 @@ import {
   validateEmail,
   validatePassword,
 } from "../../../../helpers/ValidationHelpers/ValidationHelper";
+import { startLoading, stopLoading } from "../../../store/slice/loadinSlice";
+import { selectLoading } from "../../../store/slice/loadinSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { selectError } from "../../../store/slice/errorSlice";
+
+import { useNavigate } from "react-router-dom";
+import { saveAdmin } from "../../../store/slice/adminAuth";
+import { adminLogin } from "../../../Service/Apiservice/AdminApi";
 
 export default function AdminLogin() {
+  const { isLoading } = useSelector(selectLoading);
+  const { customError } = useSelector(selectError);
   const [error, setError] = useState(0);
-  const [userDetails, setUserDetails] = useState({});
+  const [adminDetails, setUserDetails] = useState({});
   const [passView, setPassView] = useState(true);
   const [passwordError, setPassError] = useState("");
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    dispatch;
     if (
-      Object.entries(userDetails).length !== 2 ||
-      Object.values(userDetails).some((value) => value == "")
+      Object.entries(adminDetails).length !== 2 ||
+      Object.values(adminDetails).some((value) => value == "")
     ) {
       setError(3);
       setTimeout(() => {
@@ -27,7 +40,7 @@ export default function AdminLogin() {
 
       return;
     }
-    if (!validateEmail(userDetails.email)) {
+    if (!validateEmail(adminDetails.email)) {
       setError(1);
       setTimeout(() => {
         setError(0);
@@ -35,7 +48,7 @@ export default function AdminLogin() {
       return;
     }
 
-    const pass = validatePassword(userDetails.password);
+    const pass = validatePassword(adminDetails.password);
     if (pass !== true) {
       setPassError(pass);
       setError(2);
@@ -45,7 +58,22 @@ export default function AdminLogin() {
       }, 1500);
       return;
     }
+    dispatch(startLoading());
+
+    const response = await adminLogin(adminDetails);
+
+    if (response.status == 200) {
+      dispatch(stopLoading());
+      dispatch(
+        saveAdmin({
+          admin: response.data._id,
+          adminAccessToken: response.data.accessToken,
+        })
+      );
+      navigate("/admin/dashboard");
+    }
   };
+
   return (
     <div className="flex justify-center items-center relative admin-login-container">
       <div className="absolute top-5 left-5 w-44 ">
@@ -90,18 +118,23 @@ export default function AdminLogin() {
             <h1 className="text-3xl text-center font-bold mb-2">Admin Login</h1>
 
             <div className="w-full">
-              <div
-                className={` pt-1 text-xs text-red-500 transition-opacity duration-500 ${
-                  error == 3 ? "" : "opacity-0"
-                }`}
-              >
-                Fill all the fields
+              <div className="flex justify-between">
+                <div
+                  className={` pt-1 text-xs text-red-500 transition-opacity duration-500 ${
+                    error == 3 ? "" : "opacity-0"
+                  }`}
+                >
+                  Fill all the fields
+                </div>
+                <div className="pt-1 text-xs text-red-500 transition-opacity duration-500 ">
+                  {customError}
+                </div>
               </div>
 
               <input
                 onChange={(e) =>
                   setUserDetails({
-                    ...userDetails,
+                    ...adminDetails,
                     email: e.target.value.trim(),
                   })
                 }
@@ -121,7 +154,7 @@ export default function AdminLogin() {
                 type={passView ? "text" : "password"}
                 onChange={(e) =>
                   setUserDetails({
-                    ...userDetails,
+                    ...adminDetails,
                     password: e.target.value.trim(),
                   })
                 }
@@ -152,9 +185,17 @@ export default function AdminLogin() {
               </div>
               <div className="opacity-0">sdv</div>
             </div>
-            <div className="text-center">
-              <button onClick={handleSubmit} className="sign-in-button">
-                Sign In
+            <div className="flex justify-center">
+              <button
+                disabled={isLoading}
+                onClick={handleSubmit}
+                className="signup-button flex justify-center items-center"
+              >
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
+                ) : (
+                  "SIGN in"
+                )}
               </button>
             </div>
           </form>

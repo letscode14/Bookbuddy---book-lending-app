@@ -2,6 +2,7 @@ import jwt, { JwtPayload, Secret, TokenExpiredError } from "jsonwebtoken";
 import IJwtToken from "../../usecases/interface/IJwtToken";
 import User from "../../entity/userEntity";
 import { Request } from "express";
+import Admin from "../../entity/adminEntity";
 
 interface Response {
   statusCode: number;
@@ -15,22 +16,32 @@ interface DecodedToken {
 }
 
 class JwtTokenService implements IJwtToken {
-  async SignInAccessToken(user: string): Promise<string> {
-    const token = jwt.sign(
-      { user },
-      process.env.ACCESS_TOKEN_SECRET as Secret,
-      {
-        expiresIn: "1m",
-      }
-    );
-    if (token) return token;
-    return "";
+  async SignInAccessToken(user: {}): Promise<string> {
+    try {
+      const token = jwt.sign(
+        { ...user },
+        process.env.ACCESS_TOKEN_SECRET as Secret,
+        {
+          expiresIn: "5s",
+        }
+      );
+
+      if (token) return token;
+      return "";
+    } catch (error) {
+      console.log(error);
+
+      return "";
+    }
   }
-  async SignInRefreshToken(user: string): Promise<string> {
+
+  async SignInRefreshToken(user: {}): Promise<string> {
     const token = jwt.sign(
-      { user },
+      { ...user },
       process.env.REFRESH_TOKEN_SECRET as Secret,
-      { expiresIn: "30d" }
+      {
+        expiresIn: "30d",
+      }
     );
     if (token) return token;
     return "";
@@ -47,37 +58,6 @@ class JwtTokenService implements IJwtToken {
     return token;
   }
 
-  async verifyRreshToken(req: Request): Promise<Response> {
-    try {
-      console.log("hi");
-
-      const refreshToken = req.body.refreshToken;
-      if (!refreshToken) {
-        return {
-          statusCode: 401,
-          message: "Token missing",
-        };
-      }
-
-      const user = jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET as Secret
-      ) as DecodedToken;
-
-      return {
-        statusCode: 200,
-        message: "ok",
-        id: user.user,
-      };
-    } catch (error) {
-      if (error instanceof TokenExpiredError) {
-        return { statusCode: 401, message: "Token Expired " };
-      } else {
-        return { statusCode: 401, message: "Token Invalid" };
-      }
-    }
-  }
-
   async verifyOtpToken(
     activationToken: string,
     otp: string
@@ -89,6 +69,7 @@ class JwtTokenService implements IJwtToken {
         activationToken,
         process.env.ACTIVATION_TOKEN_SECRET as Secret
       ) as { user: User; code: string };
+      console.log("otp totken payload", payload);
 
       if (otp == "resend") {
         return payload;
@@ -100,8 +81,40 @@ class JwtTokenService implements IJwtToken {
         return { status: false, message: "Otp Does not match" };
       }
     } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        return { status: false, message: "Token expired try to register" };
+      }
+      return { status: false, message: "Jwt error" };
+    }
+  }
+  async SignInAdminAccessToken(admin: string): Promise<string> {
+    try {
+      const token = jwt.sign(
+        { admin },
+        process.env.ADMIN_ACCESS_SECRET as Secret,
+        {
+          expiresIn: "30s",
+        }
+      );
+      return token;
+    } catch (error) {
       console.log(error);
-      return { status: false, message: "Token expired try to register" };
+
+      return "";
+    }
+  }
+  async SignInAdminRefreshToken(admin: string): Promise<string> {
+    try {
+      const token = jwt.sign(
+        { admin },
+        process.env.ADMIN_REFRESH_SECRET as Secret,
+        { expiresIn: "30d" }
+      );
+      return token;
+    } catch (error) {
+      console.log(error);
+
+      return "";
     }
   }
 }

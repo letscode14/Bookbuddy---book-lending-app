@@ -12,6 +12,9 @@ const errorSlice = createSlice({
     setError: (state, action) => {
       state.customError = action.payload;
     },
+    setCustomError: (state, action) => {
+      state.customError = action.payload;
+    },
     removeError: (state) => {
       state.customError = null;
     },
@@ -24,8 +27,13 @@ const errorSlice = createSlice({
   },
 });
 
-export const { set500Error, remove500Error, setError, removeError } =
-  errorSlice.actions;
+export const {
+  set500Error,
+  setCustomError,
+  remove500Error,
+  setError,
+  removeError,
+} = errorSlice.actions;
 
 export const selectError = (state) => state.customError;
 

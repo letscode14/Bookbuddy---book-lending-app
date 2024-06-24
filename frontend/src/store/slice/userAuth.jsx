@@ -3,11 +3,15 @@ const initialState = {
   accessToken: null,
 
   user: null,
+  userDetails: {},
 };
 const userAuthSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
+    saveToken: (state, action) => {
+      state.accessToken = action.payload.accessToken;
+    },
     saveUser: (state, action) => {
       state.accessToken = action.payload.accessToken;
       state.user = action.payload.user;
@@ -16,12 +20,18 @@ const userAuthSlice = createSlice({
       state.accessToken = null;
       state.user = null;
     },
+
+    saveUserDetails: (state, action) => {
+      state.userDetails = action.payload;
+    },
   },
 });
 
-export const { saveUser, removeUser } = userAuthSlice.actions;
+export const { saveUserDetails, saveUser, removeUser, saveToken } =
+  userAuthSlice.actions;
 
 export const selectToken = (state) => state.user;
 export const selecUser = (state) => state.user;
+export const selectUserDetails = (state) => state.user;
 
 export default userAuthSlice.reducer;

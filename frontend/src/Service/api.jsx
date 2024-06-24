@@ -3,18 +3,15 @@ import {
   remove500Error,
   removeError,
   set500Error,
-  setError,
+  setCustomError,
 } from "../store/slice/errorSlice";
+import { stopLoading } from "../store/slice/loadinSlice";
 
 let store;
-let accessToken = localStorage.getItem("accessToken");
-let refreshPromise = null;
-let refreshToken = localStorage.getItem("refreshToken");
+
 export const injectStore = (_store) => {
   store = _store;
 };
-
-const getStore = () => store;
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -24,41 +21,28 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-export const updateAuthorizationHeader = () => {
-  accessToken = localStorage.getItem("accessToken");
-  refreshToken = localStorage.getItem("refreshToken");
+export const updateAuthorizationHeader = (tokenType) => {
+  let accessToken;
+  if (tokenType === "admin") {
+    accessToken = localStorage.getItem("adminAccessToken");
+  } else {
+    accessToken = localStorage.getItem("accessToken");
+  }
   axiosInstance.defaults.headers.common["Authorization"] = accessToken
     ? `Bearer ${accessToken}`
     : undefined;
 };
-updateAuthorizationHeader();
-function retryRequests(error) {
-  const { config } = error;
-  console.log(refreshToken);
 
-  if (!refreshPromise) {
-    refreshPromise = new Promise((resolve, reject) => {
-      axiosInstance
-        .post("/user/refresh-token", { refreshToken })
-        .then((response) => {
-          const { accessToken } = response.data;
-          localStorage.setItem("accessToken", accessToken);
-          axiosInstance.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${accessToken}`;
-          config.headers.Authorization = `Bearer ${accessToken}`;
-          resolve(axiosInstance(config));
-        })
-        .catch((err) => {
-          reject(err);
-        })
-        .finally(() => {
-          refreshPromise = null;
-        });
-    });
-  }
-  return refreshPromise;
-}
+updateAuthorizationHeader("user");
+
+const setResponseError = (message) => {
+  store.dispatch(setCustomError(message));
+
+  setTimeout(() => {
+    store.dispatch(removeError());
+  }, 1500);
+  store.dispatch(stopLoading());
+};
 
 axiosInstance.interceptors.response.use(
   (response) => {
@@ -66,42 +50,87 @@ axiosInstance.interceptors.response.use(
   },
 
   (error) => {
-    const { response } = error;
-    const store = getStore();
+    const { response, config } = error;
+
     if (response) {
       if (
         response.status === 401 &&
-        response.data?.message === "User Blocked contect admin"
-      ) {
-        store.dispatch(setError(response.data?.message));
-        setTimeout(() => {
-          store.dispatch(removeError());
-        }, 2000);
-      } else if (
-        (response.status == 401 && response.data.message == "Token Expired") ||
-        response.data.message == "Token Invalid" ||
-        response.data.message == "Token missing"
-      ) {
-        alert("Token Missing please try to login");
-      } else if (
-        response.status == 401 &&
         response.data.message == "AccessToken Expired"
       ) {
-        return retryRequests(error);
-      } else if (response.status === 404) {
-        alert(404);
+        if (response.data?.token === "admin") {
+          console.log("admin hear");
+          localStorage.setItem("adminAccessToken", response.data.accessToken);
+        } else {
+          console.log("userhaer");
+          localStorage.setItem("accessToken", response.data.accessToken);
+        }
+        config.headers["Authorization"] = `Bearer ${response.data.accessToken}`;
+        return axiosInstance(config);
+      } else if (response.status == 401) {
+        setResponseError(response.data.message);
+      } else if (response.status == 409) {
+        setResponseError(response.data.message);
       } else if (response.status === 500) {
         store.dispatch(set500Error(response.data.message));
         setTimeout(() => {
           store.dispatch(remove500Error());
         }, 5000);
+        store.dispatch(stopLoading());
+
         window.location.href = "/error";
-      } else if (response.status === 401) {
-        store.dispatch(setError(response.data.message));
-        setTimeout(() => {
-          store.dispatch(removeError());
-        }, 2000);
       }
+
+      // } else if (
+      //   response.status == 409 &&
+      //   response.data.message == "Account already exists"
+      // ){
+      //   setResponseError(response.data.message)
+      // }
+      // else if (
+      //
+      // ) {
+      //   localStorage.setItem("accessToken", response.data.accessToken);
+      //   console.log("response camed");
+      //   config.headers["Authorization"] = `Bearer ${response.data.accessToken}`;
+      //   return axiosInstance(config);
+      // }
+      //  else if (
+      //   response.status == 401 &&
+      //   response.data.message == "Otp Does not match"
+      // ) {
+      //   store.dispatch(setCustomError(response.data.message));
+
+      //   setTimeout(() => {
+      //     store.dispatch(removeError());
+      //   }, 2000);
+      //   store.dispatch(stopLoading());
+      // } else if (
+      //   (response.status == 401 && response.data.message == "Token Expired") ||
+      //   response.data.message == "Token Invalid" ||
+      //   response.data.message == "Token missing"
+      // ) {
+      //   alert("Token Missing please try to login");
+      //   store.dispatch(stopLoading());
+      // } else if (response.status === 500) {
+      //   store.dispatch(set500Error(response.data.message));
+      //   setTimeout(() => {
+      //     store.dispatch(remove500Error());
+      //   }, 5000);
+      //   store.dispatch(stopLoading());
+
+      //   window.location.href = "/error";
+      // } else if (response.status === 401) {
+      //   store.dispatch(setCustomError(response.data.message));
+      //   setTimeout(() => {
+      //     store.dispatch(removeError());
+      //   }, 2000);
+      //   store.dispatch(stopLoading());
+      // } else if (response.status === 409) {
+      //   store.dispatch(setCustomError(response.data.message));
+      //   setTimeout(() => {
+      //     store.dispatch(removeError());
+      //   }, 2000);
+      //   store.dispatch(stopLoading());
     } else {
       alert("Network error. Please check your internet connection.");
     }

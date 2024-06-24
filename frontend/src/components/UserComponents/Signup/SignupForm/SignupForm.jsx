@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 //reduc state management
@@ -20,7 +20,10 @@ import {
 } from "../../../../store/slice/loadinSlice";
 import OAuth from "../../../Oauth/OAuth";
 import { selectError } from "../../../../store/slice/errorSlice";
-import axiosInstance from "../../../../Service/api";
+import {
+  checkUserName,
+  registerUser,
+} from "../../../../Service/Apiservice/UserApi";
 export default function SignupForm() {
   const dispatch = useDispatch();
 
@@ -29,60 +32,118 @@ export default function SignupForm() {
 
   const navigate = useNavigate();
   const [error, setError] = useState(0);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [passError, setPassError] = useState(" ");
-  const [userDetails, setUserDetails] = useState({});
+  const [usernameError, setUserNameError] = useState(false);
+  const [userDetails, setUserDetails] = useState({
+    name: "",
+    userName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [passView, setPassView] = useState(false);
+  const [errorMsg, setErrorMsg] = useState({
+    emailError: "",
+    passwordError: "",
+    usernameMsg: "",
+    confirmPassError: "",
+  });
+  useEffect(() => {
+    document.title = "Signup";
+  }, []);
+  const resetError = () => {
+    setTimeout(() => {
+      setError(0);
+      setErrorMsg({
+        emailError: "",
+        passwordError: "",
+        confirmPassError: "",
+      });
+    }, 1500);
+  };
+
+  //
+  const isUsername = async (username) => {
+    if (!username) return;
+    const isValid = await checkUserName(username);
+    console.log(isValid);
+    if (!isValid) {
+      setError(2);
+      setUserNameError(true);
+
+      resetError();
+      return;
+    }
+    setUserNameError(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (
-      Object.entries(userDetails).length !== 5 ||
-      Object.values(userDetails).some((value) => value == "")
-    ) {
-      setError(3);
-      setErrorMsg("Fill all the fields");
-      setTimeout(() => {
-        setError(0);
-      }, 1500);
-
+    if (!userDetails.name) {
+      setError(1);
+      resetError();
       return;
     }
-    if (!validateEmail(userDetails.email)) {
-      setError(1);
-      setTimeout(() => {
-        setError(0);
-      }, 1500);
+    if (!userDetails.userName) {
+      setError(2);
+      resetError();
+      return;
+    }
+
+    if (!userDetails.email) {
+      setError(3);
+      resetError();
+      return;
+    }
+
+    if (!userDetails.password) {
+      setError(4);
+      resetError();
+      return;
+    }
+
+    if (!userDetails.confirmPassword) {
+      setError(5);
+      resetError();
+      return;
+    }
+    const email = validateEmail(userDetails.email);
+    if (!email) {
+      setError(3);
+      setErrorMsg({ ...errorMsg, emailError: "Enter a valid email" });
+      resetError();
       return;
     }
     const pass = validatePassword(userDetails.password);
     if (pass !== true) {
-      setPassError(pass);
-      setError(2);
-      setTimeout(() => {
-        setError(0);
-      }, 1500);
+      setError(4);
+      setErrorMsg({ ...errorMsg, passwordError: pass });
+      resetError();
       return;
     }
 
-    if (userDetails.password !== userDetails.confirmPassword) {
-      setPassError(pass);
+    if (userDetails.password != userDetails.confirmPassword) {
+      setErrorMsg({ ...errorMsg, confirmPassError: "Password does not match" });
       setError(5);
-      setTimeout(() => {
-        setError(0);
-      }, 1500);
+      resetError();
       return;
     }
+
     dispatch(startLoading());
-    const response = await axiosInstance.post(
-      "/user/registration",
-      userDetails
-    );
-    if (response.status == 200) {
-      dispatch(otpAuthIn(response.data.user.activationToken));
+    const response = await registerUser(userDetails);
+
+    if (response.status) {
+      const { token } = response;
+      dispatch(otpAuthIn(token));
       dispatch(stopLoading());
       navigate("/submit-otp");
+    }
+    if (usernameError) {
+      setUserNameError(true);
+      setError(2);
+
+      resetError();
+
+      return;
     }
   };
 
@@ -90,17 +151,17 @@ export default function SignupForm() {
     <form className="w-full">
       <h1 className="text-3xl font-bold mb-1">Create Account</h1>
       <div className="w-full">
-        <div
-          className={`  text-xs text-red-500 transition-opacity duration-500 ${
-            customError ? " " : error == 3 ? "" : "opacity-0"
-          }`}
-        >
-          {customError
-            ? customError
-            : errorMsg
-            ? errorMsg
-            : "Fill all the fields"}
+        <div className="flex justify-between">
+          <div
+            className={`  text-xs text-red-500 transition-opacity duration-500 ${
+              customError ? " " : "opacity-0"
+            }`}
+          >
+            {customError}
+          </div>
+          <div className="text-xs opacity-0 ">sda</div>
         </div>
+
         <input
           onChange={(e) =>
             setUserDetails({ ...userDetails, name: e.target.value.trim() })
@@ -108,27 +169,32 @@ export default function SignupForm() {
           type="text"
           placeholder="Name"
         />
+        <div
+          className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
+            error == 1 ? " " : "opacity-0"
+          }`}
+        >
+          Name is required
+        </div>
       </div>
       <div className="w-full ">
-        <div
-          className={`pb-1  text-xs text-red-500 transition-opacity duration-500 opacity-0`}
-        >
-          Fill all the fields
-        </div>
         <input
-          onChange={(e) =>
-            setUserDetails({ ...userDetails, userName: e.target.value.trim() })
-          }
+          onChange={(e) => {
+            isUsername(e.target.value);
+            setUserDetails({ ...userDetails, userName: e.target.value.trim() });
+          }}
           type="text"
           placeholder="Username"
         />
 
         <div
           className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-            error == 4 ? "" : "opacity-0"
+            error == 2 ? "" : "opacity-0"
           }`}
         >
-          Username not available
+          {usernameError
+            ? "User name is not valid try another one"
+            : "Username is required"}
         </div>
       </div>
       <div className="w-full">
@@ -141,10 +207,10 @@ export default function SignupForm() {
         />
         <div
           className={` pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error == 1 ? "" : "opacity-0"
+            error == 3 ? "" : "opacity-0"
           }`}
         >
-          Enter a valid email
+          {errorMsg.emailError ? errorMsg.emailError : "Email is required"}
         </div>
       </div>
 
@@ -172,12 +238,13 @@ export default function SignupForm() {
         <div className=" text-sm flex w-full justify-between ">
           <div
             className={` py-1 text-xs text-red-500 transition-opacity duration-500 ${
-              error == 2 ? "" : "opacity-0"
+              error == 4 ? "" : "opacity-0"
             }`}
           >
-            {passError}
+            {errorMsg.passwordError
+              ? errorMsg.passwordError
+              : "Password is required"}
           </div>
-          <div className="cursor-pointer  opacity-0">asldn</div>
         </div>
       </div>
 
@@ -197,7 +264,9 @@ export default function SignupForm() {
             error == 5 ? "" : "opacity-0"
           }`}
         >
-          Password doesnt match
+          {errorMsg.confirmPassError
+            ? errorMsg.confirmPassError
+            : "Confirm password required"}
         </div>
       </div>
       <div className="flex justify-center items-center"></div>

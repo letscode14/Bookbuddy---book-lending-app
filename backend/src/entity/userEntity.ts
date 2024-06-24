@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Document } from "mongoose";
+import { BlockLike } from "typescript";
 
 interface User {
   _id?: string;
@@ -14,14 +14,15 @@ interface User {
   updateAt: Date;
   followers: { userId: mongoose.Types.ObjectId; followedOn: Date }[];
   following: { userId: mongoose.Types.ObjectId; followedOn: Date }[];
-  gender: "Male" | "Female" | "Not added";
+  gender: string | boolean;
   profileUrl?: string;
-  privacy: "Public" | "Private";
+  privacy: boolean;
   about: string;
   contact: string;
   badge: string;
   isBlocked: boolean;
   isDeleted: boolean;
+  role: string;
 }
 
 export default User;

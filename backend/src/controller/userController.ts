@@ -12,23 +12,41 @@ class UserController {
     try {
       const userData = req.body;
       const user = await this.userCase.registrationUser(userData);
+      console.log(user);
+
       if (user.activationToken) {
         res.cookie("activationToken", user.activationToken, {
           httpOnly: true,
           secure: true,
         });
       }
-      return res.status(user?.statusCode).json({ user });
+      return res.status(user?.statusCode).json({ ...user });
     } catch (error) {
       console.log(error);
       next(error);
     }
   }
+
+  async checkUsername(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { username } = req.body;
+      const result = await this.userCase.checkUsername(username);
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+      next();
+    }
+  }
   async activateUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { otp } = req.body;
+
       const token = req.cookies.activationToken;
       const user = await this.userCase.activateUser(token, otp);
+      res.cookie("refreshToken", user.refreshToken, {
+        httpOnly: true,
+        maxAge: 30 * 24 * 60 * 60 * 10000,
+      });
       let message;
       if (user?.message) {
         message = user.message;
@@ -51,7 +69,9 @@ class UserController {
           secure: true,
         });
       }
-      res.status(user?.statusCode).json({ message: user.message });
+      console.log(user);
+
+      res.status(user?.statusCode).json({ message: user.message, ...user });
     } catch (error) {
       console.log(error);
       next(error);
@@ -64,13 +84,11 @@ class UserController {
       console.log(user);
 
       const result = await this.userCase.googleAuth(user);
-      if (result.authToken) {
-        res.cookie("authToken", result.authToken, { httpOnly: true });
-      }
-
-      res
-        .status(result.statusCode)
-        .json({ message: result.message, ...result });
+      res.cookie("refreshToken", result.refreshToken, {
+        httpOnly: true,
+        maxAge: 30 * 24 * 60 * 60 * 10000,
+      });
+      res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
       next(error);
@@ -91,25 +109,51 @@ class UserController {
       res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
-  async refreshToken(req: Request, res: Response, next: NextFunction) {
+
+  async protected(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await this.userCase.refreshToken(req);
-      if (result.accessToken) {
-        res.cookie("accessToken", result.accessToken, { maxAge: 10000 });
+      res.status(200).json({ message: "" });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async loginWithOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.body;
+      console.log(user);
+
+      const result = await this.userCase.loginWithOtp(user);
+      res.cookie("activationToken", result.accessToken, {
+        httpOnly: true,
+        secure: true,
+      });
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async submitLoginOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token, otp } = req.body;
+
+      const result = await this.userCase.submitOtp(token, otp);
+      if (result.statusCode == 200) {
+        res.cookie("refreshToken", result.refreshToken, {
+          httpOnly: true,
+          maxAge: 30 * 24 * 60 * 60 * 10000,
+        });
       }
       res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
-    }
-  }
-  async protected(req: Request, res: Response, next: NextFunction) {
-    try {
-      console.log("again called");
-      res.status(200).json({ message: "" });
-    } catch (error) {
-      console.log(error);
+      next(error);
     }
   }
 
@@ -122,6 +166,39 @@ class UserController {
       res.status(200).json({ message: "User LogOut success fully" });
     } catch (error) {
       console.log(error);
+      next(error);
+    }
+  }
+
+  //create post
+
+  async createPost(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.createPost(req);
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async getPost(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.getPost(req.params.id);
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async getUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await this.userCase.getUser(req.params.id);
+      res.status(user.statusCode).json({ ...user });
+    } catch (error) {
+      console.log(error);
+      next(error);
     }
   }
 }

@@ -4,6 +4,7 @@ import Home from "../Home/Home";
 import Search from "../Search/Search";
 import Page from "../../errorPages/Page404";
 import Profile from "../Profile/Profile";
+import CreatePost from "../Create/CreatePost";
 
 export default function Homepage() {
   return (
@@ -13,6 +14,7 @@ export default function Homepage() {
         <Route path="/Home" element={<Home />}></Route>
         <Route path="/search" element={<Search />}></Route>
         <Route path={`/profile`} element={<Profile />}></Route>
+        <Route path ={'/create'} element = {<CreatePost/>}/>
         <Route path="*" element={<Page />}></Route>
       </Routes>
     </div>

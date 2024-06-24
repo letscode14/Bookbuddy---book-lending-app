@@ -1,5 +1,7 @@
-import { useEffect, useRef } from "react";
-import { removeUser } from "../../../store/slice/userAuth";
+import React from "react";
+
+import { useEffect, useRef, useState } from "react";
+import { removeUser, selecUser } from "../../../store/slice/userAuth";
 
 import { useDispatch, useSelector } from "react-redux";
 import { startLoading, stopLoading } from "../../../store/slice/loadinSlice";
@@ -8,15 +10,33 @@ import { selectLoading } from "../../../store/slice/loadinSlice";
 import "./Profile.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../../../Service/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBook,
+  faCalendar,
+  faHandshake,
+  faImages,
+} from "@fortawesome/free-solid-svg-icons";
+
+import Post from "./Post/Post";
+import { useConfirmationModal } from "../../Modal/ModalContext";
+import { getUser } from "../../../Service/Apiservice/UserApi";
 export default function Search() {
   const contentPage = useRef(null);
+  const [bio, setBio] = useState(false);
+  const lineMenu = useRef(null);
+  const [menu, setMenu] = useState(0);
+  const [userDetails, setUserDetails] = useState({});
   const { isLoading } = useSelector(selectLoading);
+  const { user } = useSelector(selecUser);
   const { pathname } = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { showModal } = useConfirmationModal();
+
   useEffect(() => {
     const element = contentPage.current;
-
+    document.title = "Profile";
     element.style.right = "12px";
   }, [pathname]);
   const logout = async () => {
@@ -33,31 +53,176 @@ export default function Search() {
     }
   };
 
+  useEffect(() => {
+    (async function fetchUser() {
+      const response = await getUser(user);
+      console.log(response);
+      if (response) {
+        setUserDetails(response);
+      }
+    })();
+  }, [user]);
+
+  useEffect(() => {
+    const element = lineMenu.current;
+    switch (menu) {
+      case 0:
+        element.style.left = `245px`;
+        element.style.width = `88px`;
+        break;
+      case 1:
+        element.style.left = `354px`;
+        element.style.width = `132px`;
+        break;
+      case 2:
+        element.style.left = `510px`;
+        element.style.width = `133px`;
+        break;
+      case 3:
+        element.style.left = `663px`;
+        element.style.width = `96px`;
+        break;
+    }
+  }, [menu]);
   return (
     <div
       ref={contentPage}
-      className=" profile-content absolute flex top-3 bottom-3   bg-[#ffffff]"
+      className="  ps-20  profile-content overflow-y-auto  absolute flex top-3 bottom-3 bg-[#ffffff]"
     >
-      <div className="w-[75%] ">
-        <div className="">
-          <div className="bg-[#7D7B7B] relative profile-photo">
-            <button
-              disabled={isLoading}
-              onClick={logout}
-              className="edit-profile-button flex justify-center"
+      <div className="w-[65%] pt-10  ">
+        <div className="flex">
+          <div className="relative profile-photo  flex  flex-col  ">
+            <React.Suspense
+              fallback={
+                <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
+              }
             >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
-              ) : (
-                "logout"
-              )}
-            </button>
+              <img
+                className="rounded-full object-contain"
+                src={userDetails?.profileUrl}
+              />
+            </React.Suspense>
+            <div className="mt-3 grid gap-y-2 grid-cols-2">
+              <div className="grid gap-y-2">
+                <div className="font-bold text-2xl">{userDetails.userName}</div>
+                <div className="text-xl font-medium">{userDetails.name}</div>
+              </div>
+
+              <div className="mt-3 ms-2">
+                <div>
+                  <span className="font-bold ps-3">Bio</span>
+                  <span
+                    onClick={() => {
+                      if (bio) setBio(false);
+                      else setBio(true);
+                    }}
+                    className="text-xs ms-2 font-bold text-gray-400"
+                  >
+                    {bio ? "hide" : "view"}
+                  </span>
+                </div>
+                <div className={`text-md ms-3 ${bio ? `` : "hidden"}`}>
+                  {userDetails.about}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="ms-20 px-20 profile-right-container">
+            <div className="grid font-bold mt-3 text-2xl grid-cols-3 gap-4">
+              <div className=" ">
+                <div className="text-center">
+                  {userDetails.followers?.length}
+                </div>
+                <div className="text-center">Followers</div>
+              </div>
+              <div className="">
+                <div className="text-center">
+                  {userDetails.following?.length}
+                </div>
+                <div className="text-center">Following</div>
+              </div>
+              <div className=" ">
+                <div className="text-center">
+                  {userDetails.followers?.length}
+                </div>
+                <div className="text-center">Posts</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-7 my-8 justify-center">
+              <div>
+                <button className="subscribe-button">subscribe</button>
+              </div>
+
+              <div className="grid gap-y-2 text-center font-bold text-2xl">
+                <div>lend Score</div>
+                <div className="text-3xl">0</div>
+                <div>no badge </div>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-center mt-2 mb-5">
+              <button
+                disabled={isLoading}
+                onClick={() =>
+                  showModal("Are you sure you need to logout", "user", () =>
+                    logout()
+                  )
+                }
+                className="log-out-button flex justify-center"
+              >
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
+                ) : (
+                  "logout"
+                )}
+              </button>
+              <button className="edit-profile-button">edit profile</button>
+            </div>
           </div>
         </div>
-        <div></div>
+
+        <div className="border-line mt-5"></div>
+        <div className="relative">
+          <div ref={lineMenu} className="absolute line-menu"></div>
+        </div>
+
+        <div className="flex gap-7 mt-2 justify-center  menu-profile">
+          <div
+            onClick={() => setMenu(0)}
+            className={menu == 0 ? "" : "text-gray-400"}
+          >
+            <FontAwesomeIcon icon={faImages} className="me-1" />
+            <span className="font-semibold">POSTS</span>
+          </div>
+          <div
+            onClick={() => setMenu(1)}
+            className={menu == 1 ? "" : "text-gray-400"}
+          >
+            <FontAwesomeIcon icon={faBook} className="me-1" />
+            <span className="font-semibold">BOOKSHELF</span>
+          </div>
+          <div
+            onClick={() => setMenu(2)}
+            className={menu == 2 ? "" : "text-gray-400"}
+          >
+            <FontAwesomeIcon icon={faHandshake} className="me-1" />
+            <span className="font-semibold">BORROWED</span>
+          </div>
+          <div
+            onClick={() => setMenu(3)}
+            className={menu == 3 ? "" : "text-gray-400"}
+          >
+            <FontAwesomeIcon icon={faCalendar} className="me-1" />
+            <span className="font-semibold">LENDED</span>
+          </div>
+        </div>
+        <div className="post-list mt-4 pb-10 grid grid-cols-4 gap-4  mx-20">
+          {menu == 0 && <Post />}
+        </div>
       </div>
-      <div className="border border-[#7D7B7B]-500 border-2"></div>
-      <div></div>
+      <div className="">
+        <div className="fixed  ms-1 border-line-vertical"></div>
+      </div>
     </div>
   );
 }

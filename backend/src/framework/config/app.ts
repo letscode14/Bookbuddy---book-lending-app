@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "../routes/userRoutes";
+import adminRouter from "../routes/adminRoutes";
 const createServer = () => {
   try {
     const app: express.Application = express();
@@ -16,6 +17,7 @@ const createServer = () => {
     //Routes
 
     app.use("/user", userRouter);
+    app.use("/admin", adminRouter);
 
     return app;
   } catch (error) {

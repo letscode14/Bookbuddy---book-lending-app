@@ -1,6 +1,42 @@
 .home-content {
-  left: 280px;
   right: 1200px;
   border-radius: 40px;
+  scrollbar-width: none;
   transition: right 1s ease;
+}
+.left-container-home {
+  width: 75%;
+  height: fit-content;
+}
+.right-container-home {
+  width: 25%;
+}
+.story-segment {
+  height: 135px;
+
+  overflow-x: auto;
+  scrollbar-width: 0px;
+}
+
+.post-container {
+  width: 40%;
+
+  height: 3000px;
+}
+
+.own-profile {
+  width: 110px;
+  height: 110px;
+}
+
+.post-profile {
+  width: 50px;
+  height: 50px;
+}
+.post-home {
+  height: 450px;
+  min-height: 450px;
+}
+.post-home img {
+  object-fit: contain;
 }

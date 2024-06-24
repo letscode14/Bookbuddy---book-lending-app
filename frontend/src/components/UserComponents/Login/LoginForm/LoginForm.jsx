@@ -1,7 +1,7 @@
 import otpLogo from "/images/email.png";
 import "./LoginForm.css";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 //font awesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,68 +23,75 @@ import {
   startLoading,
   stopLoading,
 } from "../../../../store/slice/loadinSlice";
+import { login } from "../../../../Service/Apiservice/UserApi";
 import { saveUser } from "../../../../store/slice/userAuth";
-import axiosInstance, {
-  updateAuthorizationHeader,
-} from "../../../../Service/api";
+import { showSuccessToast } from "../../../../utils/toast";
+
 export default function LoginForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [userDetails, setUserDetails] = useState({});
+  const [fieldError, setFieldError] = useState({ email: "", password: "" });
+  const [userDetails, setUserDetails] = useState({ email: "", password: "" });
   const [error, setError] = useState(0);
   const [passwordError, setPassError] = useState("");
   const [passView, setPassView] = useState(false);
   const { customError } = useSelector(selectError);
   const { isLoading } = useSelector(selectLoading);
+  useEffect(() => {
+    document.title = "Login"
+  },[])
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (
-      Object.entries(userDetails).length !== 2 ||
-      Object.values(userDetails).some((value) => value == "")
-    ) {
-      setError(3);
+    function resetError() {
       setTimeout(() => {
         setError(0);
-      }, 1500);
 
+        setTimeout(() => {
+          setFieldError({ email: "", password: "" });
+          setPassError("");
+        }, 300);
+      }, 1700);
+    }
+    e.preventDefault();
+
+    if (!userDetails.email) {
+      setFieldError({ ...fieldError, email: "Email is required" });
+      setError(1);
+      resetError();
       return;
     }
+
+    if (!userDetails.password) {
+      setFieldError({ ...fieldError, password: "Password is required" });
+      setError(2);
+      resetError();
+      return;
+    }
+
     if (!validateEmail(userDetails.email)) {
       setError(1);
-      setTimeout(() => {
-        setError(0);
-      }, 1500);
+      resetError();
       return;
     }
-
     const pass = validatePassword(userDetails.password);
+
     if (pass !== true) {
       setPassError(pass);
       setError(2);
-      setTimeout(() => {
-        setError(0);
-        setPassError("");
-      }, 1500);
+      resetError();
       return;
     }
-    dispatch(startLoading());
-    const response = await axiosInstance.post("/user/login", userDetails);
-    if (response) {
-      dispatch(stopLoading());
-    }
-    if (response.status == 200) {
-      dispatch(
-        saveUser({
-          user: response.data._id,
-          accessToken: response.data.accessToken,
-        })
-      );
 
-      localStorage.setItem("accessToken", response.data.accessToken);
-      localStorage.setItem("refreshToken", response.data.refreshToken);
-      updateAuthorizationHeader();
+    dispatch(startLoading());
+    const response = await login(userDetails);
+    if (response.status) {
+      dispatch(stopLoading());
+      dispatch(
+        saveUser({ user: response.user, accessToken: response.accessToken })
+      );
+      
       navigate("/user/home");
+      showSuccessToast("Logged in");
     }
   };
 
@@ -95,17 +102,11 @@ export default function LoginForm() {
       <div className="w-full ">
         <div className="flex justify-between">
           <div
-            className={` pt-1 text-xs text-red-500 transition-opacity duration-200 ${
-              error == 3 ? "" : "opacity-0"
-            }`}
-          >
-            Fill all the fields
-          </div>
-          <div
             className={` pt-1 text-xs text-red-500 transition-opacity duration-200 `}
           >
             {customError}
           </div>
+          <div className="opacity-0 text-xs">sdv</div>
         </div>
 
         <input
@@ -120,7 +121,7 @@ export default function LoginForm() {
             error == 1 ? "" : "opacity-0"
           }`}
         >
-          Enter a valid email
+          {fieldError.email ? fieldError.email : "Enter a valid email"}
         </div>
       </div>
       <div className="w-full relative">
@@ -152,7 +153,11 @@ export default function LoginForm() {
             error == 2 ? "" : "opacity-0"
           }`}
         >
-          {passwordError}
+          {fieldError.password
+            ? fieldError.password
+            : passwordError
+            ? passwordError
+            : "Enter a valid email"}
         </div>
         <div
           onClick={() => {
@@ -169,7 +174,7 @@ export default function LoginForm() {
         className="signup-button flex justify-center items-center"
       >
         {isLoading ? (
-          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
+          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#]"></div>
         ) : (
           "SIGN in"
         )}

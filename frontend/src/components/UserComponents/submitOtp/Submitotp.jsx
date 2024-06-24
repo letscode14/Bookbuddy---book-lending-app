@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   decrementOtpCounter,
+  otpAuthOut,
   resetOtpCounter,
 } from "../../../store/slice/authSlice";
 import { useNavigate } from "react-router-dom";
@@ -10,12 +11,21 @@ import {
   startLoading,
   stopLoading,
 } from "../../../store/slice/loadinSlice";
-import axiosInstance, { updateAuthorizationHeader } from "../../../Service/api";
+import {
+  removeOtpToken,
+  selectOtpLoginAuth,
+  setOtpToken,
+} from "../../../store/slice/otpLoginAuth";
+import { saveUser } from "../../../store/slice/userAuth";
+import { resendOtp, submitOtp } from "../../../Service/Apiservice/UserApi";
+import { selectError } from "../../../store/slice/errorSlice";
 export default function Submitotp() {
   const [error, setError] = useState(false);
+  const { loginOtpToken } = useSelector(selectOtpLoginAuth);
   const [errorMsg, setErrorMsg] = useState("");
   const [data, setOtp] = useState({});
   const { isLoading } = useSelector(selectLoading);
+  const { customError } = useSelector(selectError);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const otpCounter = useSelector((state) => state.otpAuth.otpCounter);
@@ -44,22 +54,28 @@ export default function Submitotp() {
       return;
     }
     dispatch(startLoading());
-    await axiosInstance
-      .post("/user/create-user", data)
-      .then((response) => {
-        if (response.status == 200) {
-          dispatch(stopLoading());
-          setErrorMessages(response.data.message, 2);
-          navigate("/users/home");
-          localStorage.setItem("accessToken", response.data.accessToken);
-          localStorage.setItem("refreshToken", response.data.refreshToken);
-          updateAuthorizationHeader();
-        }
-      })
-      .catch((error) => {
-        dispatch(stopLoading());
-        setErrorMessages(error.response.data.message, 2);
-      });
+    const obj = {
+      token: loginOtpToken,
+      otp: data.otp,
+    };
+
+    const response = await submitOtp(
+      loginOtpToken ? "/user/otp/login" : "/user/create-user",
+      loginOtpToken ? obj : data
+    );
+    if (response?.status == true) {
+      dispatch(stopLoading());
+      dispatch(otpAuthOut());
+      loginOtpToken ? dispatch(removeOtpToken()) : dispatch(otpAuthOut());
+      dispatch(
+        saveUser({
+          user: response.user,
+          accessToken: response.token,
+        })
+      );
+
+      navigate("/user/home");
+    }
   };
 
   function setErrorMessages(message, code) {
@@ -72,36 +88,50 @@ export default function Submitotp() {
       setErrorMsg("");
     }, 1800);
   }
+  useEffect(() => {
+    document.title = "Submit otp";
+  }, []);
   const handleResendOtp = async (e) => {
     try {
       e.preventDefault();
       dispatch(startLoading());
-      const response = await axiosInstance.get("/user/resendotp");
-      if (response.status == 200) {
+      const response = await resendOtp();
+      if (response?.status == true) {
+        console.log("h");
+
+        dispatch(resetOtpCounter());
         dispatch(stopLoading());
         setError(2);
-        dispatch(resetOtpCounter());
-        setErrorMessages(response.data.message, 2);
-
-        return;
+        setErrorMessages(response.message, 2);
+        loginOtpToken ? dispatch(setOtpToken(response.activationToken)) : "";
       }
     } catch (error) {
       dispatch(stopLoading());
-      setErrorMessages(error.response.data.message, 2);
     }
   };
+
   return (
     <form className="w-full">
       <h1 className="text-3xl font-bold mb-2">Submit OTP</h1>
 
       <div className="w-full">
-        <div
-          className={`pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error == 2 ? "" : "opacity-0"
-          }`}
-        >
-          {errorMsg ? errorMsg : "Enter the otp"}
+        <div className="flex justify-between">
+          <div
+            className={`pb-1 text-xs text-red-500 transition-opacity duration-500 ${
+              error == 2 ? "" : "opacity-0"
+            }`}
+          >
+            {errorMsg ? errorMsg : "Enter the otp"}
+          </div>{" "}
+          <div
+            className={`pb-1 text-xs text-red-500 transition-opacity duration-500 ${
+              customError ? "" : "opacity-0"
+            }`}
+          >
+            {customError}
+          </div>
         </div>
+
         <input
           onChange={(e) => setOtp({ otp: e.target.value.trim() })}
           placeholder="Enter your otp"

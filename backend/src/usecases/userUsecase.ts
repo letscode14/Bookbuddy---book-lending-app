@@ -3,6 +3,7 @@ import { Response, Request } from "express";
 import IUserRepository from "./interface/IUserRepository";
 import SendEmail from "../framework/services/SendEmail";
 import JwtTokenService from "../framework/services/JwtToken";
+import Cloudinary from "../framework/services/Cloudinary";
 
 interface ResponseType {
   _id?: string;
@@ -20,15 +21,18 @@ class UserUseCase {
   private iUserRepository: IUserRepository;
   private sendEmail: SendEmail;
   private JwtToken: JwtTokenService;
+  private Cloudinary: Cloudinary;
 
   constructor(
     iuserRepository: IUserRepository,
     sendEmail: SendEmail,
-    jwtToken: JwtTokenService
+    jwtToken: JwtTokenService,
+    cloudinary: Cloudinary
   ) {
     this.iUserRepository = iuserRepository;
     this.sendEmail = sendEmail;
     this.JwtToken = jwtToken;
+    this.Cloudinary = cloudinary;
   }
 
   async registrationUser(user: User): Promise<ResponseType> {
@@ -39,7 +43,7 @@ class UserUseCase {
       if (isEmailExists) {
         return {
           status: false,
-          message: "User already exists",
+          message: "Account already exists",
           statusCode: 409,
         };
       }
@@ -74,6 +78,29 @@ class UserUseCase {
       };
     }
   }
+
+  async checkUsername(username: string): Promise<ResponseType> {
+    try {
+      const isValid = await this.iUserRepository.checkUsernameValid(username);
+      if (isValid) {
+        return {
+          statusCode: 422,
+          message: "Username is not valid",
+        };
+      }
+
+      return {
+        statusCode: 200,
+        message: "Username is valid",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server Error",
+      };
+    }
+  }
   async activateUser(token: string, otp: string): Promise<ResponseType> {
     try {
       const data = await this.JwtToken.verifyOtpToken(token, otp);
@@ -81,6 +108,7 @@ class UserUseCase {
         const result = (await this.iUserRepository.createUser(data.user)) as {
           email: string;
           _id: string;
+          role: string;
         };
 
         if (!result) {
@@ -89,9 +117,15 @@ class UserUseCase {
             message: "error in creating the user",
           };
         } else {
-          const { _id } = result;
-          const accessToken = await this.JwtToken.SignInAccessToken(_id);
-          const refreshToken = await this.JwtToken.SignInRefreshToken(_id);
+          const { _id, role } = result;
+          const accessToken = await this.JwtToken.SignInAccessToken({
+            id: _id,
+            role: role,
+          });
+          const refreshToken = await this.JwtToken.SignInRefreshToken({
+            id: _id,
+            role: role,
+          });
 
           return {
             statusCode: 200,
@@ -132,7 +166,6 @@ class UserUseCase {
           code,
         });
         const user = result.user;
-        console.log(user);
 
         const token = await this.JwtToken.SignUpActivationToken(user, code);
         if (sendEmail) {
@@ -158,10 +191,8 @@ class UserUseCase {
   async googleAuth(user: User): Promise<ResponseType> {
     try {
       const email = user.email;
-      console.log(email);
 
       const emailExists = await this.iUserRepository.findByEmail(email);
-      console.log(emailExists);
 
       if (emailExists) {
         if (emailExists.isBlocked) {
@@ -171,12 +202,14 @@ class UserUseCase {
             message: "User Blocked contect admin",
           };
         }
-        const accessToken = await this.JwtToken.SignInAccessToken(
-          emailExists._id as string
-        );
-        const refreshToken = await this.JwtToken.SignInRefreshToken(
-          emailExists._id as string
-        );
+        const accessToken = await this.JwtToken.SignInAccessToken({
+          id: emailExists._id as string,
+          role: emailExists.role as string,
+        });
+        const refreshToken = await this.JwtToken.SignInRefreshToken({
+          id: emailExists._id as string,
+          role: emailExists.role as string,
+        });
 
         const { _id, name, userName, email } = emailExists as User;
         return {
@@ -201,12 +234,14 @@ class UserUseCase {
           };
         }
         const { _id, email } = savedUser;
-        const token = await this.JwtToken.SignInAccessToken(
-          savedUser._id as string
-        );
-        const refreshToken = await this.JwtToken.SignInRefreshToken(
-          savedUser._id as string
-        );
+        const token = await this.JwtToken.SignInAccessToken({
+          id: savedUser._id as string,
+          role: savedUser.role as string,
+        });
+        const refreshToken = await this.JwtToken.SignInRefreshToken({
+          id: savedUser._id as string,
+          role: savedUser.role as string,
+        });
         return {
           statusCode: 201,
           status: true,
@@ -245,13 +280,15 @@ class UserUseCase {
           password
         );
         if (isValid) {
-          const accessToken = await this.JwtToken.SignInAccessToken(
-            emailExists._id as string
-          );
+          const accessToken = await this.JwtToken.SignInAccessToken({
+            id: emailExists._id,
+            role: emailExists.role,
+          });
 
-          const refreshToken = await this.JwtToken.SignInRefreshToken(
-            emailExists._id as string
-          );
+          const refreshToken = await this.JwtToken.SignInRefreshToken({
+            id: emailExists._id,
+            role: emailExists.role,
+          });
           return {
             statusCode: 200,
             accessToken,
@@ -276,31 +313,198 @@ class UserUseCase {
       return {
         statusCode: 500,
         status: false,
-        message: "Internal sever error",
+        message: "Internal server error",
       };
     }
   }
 
-  async refreshToken(req: Request): Promise<ResponseType> {
+  async loginWithOtp(user: User): Promise<ResponseType> {
     try {
-      const result = await this.JwtToken.verifyRreshToken(req);
-      if (result.message == "ok") {
-        const id = result.id;
-        const token = await this.JwtToken.SignInAccessToken(id as string);
+      const email = user.email;
+      const emailExists = await this.iUserRepository.findByEmail(user.email);
+
+      if (!emailExists) {
         return {
-          statusCode: 200,
-          accessToken: token,
-          message: "New refesh token created",
+          statusCode: 401,
+          message: "Email provided is not registered",
+        };
+      }
+      if (emailExists.isBlocked) {
+        return {
+          statusCode: 401,
+          message: "User Blocked contect admin",
         };
       }
 
-      return result;
+      const subject = "Please provide this code for your Login";
+      const code = Math.floor(100000 + Math.random() * 9000).toString();
+      const sendEmail = await this.sendEmail.sendEmail({
+        email,
+        subject,
+        code,
+      });
+
+      const token = await this.JwtToken.SignUpActivationToken(user, code);
+      if (!sendEmail) {
+        return {
+          statusCode: 500,
+          message: "Internal Server error",
+        };
+      }
+      return {
+        statusCode: 200,
+        accessToken: token,
+        message: "Otp Has sent to the email",
+      };
     } catch (error) {
       console.log(error);
-
       return {
         statusCode: 500,
         message: "Internal Server error",
+      };
+    }
+  }
+
+  async submitOtp(token: string, code: string): Promise<ResponseType> {
+    try {
+      const data = await this.JwtToken.verifyOtpToken(token, code);
+
+      if ("user" in data) {
+        const email = data.user.email;
+        const emailExists = (await this.iUserRepository.findByEmail(
+          email
+        )) as User;
+        if (emailExists) {
+          const refreshToken = await this.JwtToken.SignInRefreshToken({
+            id: emailExists._id as string,
+            role: emailExists.role as string,
+          });
+
+          const accessToken = await this.JwtToken.SignInAccessToken({
+            id: emailExists._id as string,
+            role: emailExists.role as string,
+          });
+
+          return {
+            statusCode: 200,
+            accessToken,
+            refreshToken,
+            _id: emailExists._id,
+          };
+        }
+      }
+      return {
+        statusCode: 401,
+        ...data,
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+
+  //create post
+  async createPost(req: Request): Promise<ResponseType> {
+    try {
+      const { files } = req;
+      const { description } = req.body;
+      const { id } = req.params;
+      const file = files.images;
+
+      const cloudRes = await this.Cloudinary.cloudinaryUpload(file);
+
+      if (Array.isArray(cloudRes)) {
+        const imageUrlArray = cloudRes.map((document) => ({
+          publicId: document.public_id,
+          secure_url: document.secure_url,
+        }));
+
+        const post = await this.iUserRepository.addPost(
+          id,
+          description,
+          imageUrlArray as []
+        );
+
+        if (post) {
+          return {
+            statusCode: 201,
+            message: "Post added sucessfully",
+          };
+        }
+      } else {
+        const imageUrlArray = [
+          {
+            publicId: cloudRes.public_id,
+            secure_url: cloudRes.secure_url,
+          },
+        ];
+        const post = await this.iUserRepository.addPost(
+          id,
+          description,
+          imageUrlArray as []
+        );
+        if (post) {
+          return {
+            statusCode: 201,
+            message: "Post added sucessfully",
+          };
+        }
+      }
+
+      return {
+        statusCode: 500,
+        message: "Something error with adding post",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+
+  async getPost(userId: string): Promise<ResponseType> {
+    try {
+      const data = await this.iUserRepository.getPost(userId);
+      if (data) {
+        return {
+          statusCode: 200,
+          result: data,
+        };
+      }
+      return {
+        statusCode: 404,
+        message: "Resource not found",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+  async getUser(userId: string): Promise<ResponseType> {
+    try {
+      const user = await this.iUserRepository.getUser(userId);
+      if (user) {
+        return {
+          statusCode: 200,
+          result: user,
+        };
+      }
+      return {
+        statusCode: 404,
+        message: "User no found",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internak server error",
       };
     }
   }

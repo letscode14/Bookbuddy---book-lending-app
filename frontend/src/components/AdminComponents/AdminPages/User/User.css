@@ -1,0 +1,22 @@
+.dropdown {
+  border: solid 1.5px rgb(81 85 126);
+  border-radius: 10px;
+  color: rgb(81 85 126);
+}
+.table-head {
+  color: #ffffff;
+  height: 60px;
+  border: solid;
+}
+
+table {
+  height: fit-content;
+}
+.head {
+  background-color: rgb(81 85 126);
+  border: solid 0.5px transparent;
+}
+
+.head th {
+  width: 100px;
+}

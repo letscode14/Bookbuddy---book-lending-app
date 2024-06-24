@@ -10,6 +10,7 @@ import pageLoadingSlice from "./slice/pageLoadingSlice";
 import errorSlice from "./slice/errorSlice";
 import userAuth from "./slice/userAuth";
 import adminAuth from "./slice/adminAuth";
+import otpLoginAuth from "./slice/otpLoginAuth";
 
 const persistConfig = {
   key: "root",
@@ -32,6 +33,7 @@ const rootReducer = combineReducers({
   customError: errorSlice,
   user: userAuth,
   admin: adminAuth,
+  loginOtpAuth: otpLoginAuth,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

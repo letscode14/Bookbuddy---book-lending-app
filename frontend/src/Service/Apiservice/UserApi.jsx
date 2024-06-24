@@ -1,0 +1,138 @@
+import axiosInstance from "../api";
+import { updateAuthorizationHeader } from "../api";
+
+export const login = async (userDetails) => {
+  try {
+    const response = await axiosInstance.post("/user/login", userDetails);
+    if (response.status == 200) {
+      localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
+      updateAuthorizationHeader("user");
+      return {
+        status: true,
+        accessToken: response.data.accessToken,
+        user: response.data._id,
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return { status: false, message: "error in api call" };
+  }
+};
+
+export const checkUserName = async (username) => {
+  try {
+    await axiosInstance.post("/user/check/user/name", {
+      username: username,
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+export const registerUser = async (userDetails) => {
+  try {
+    const response = await axiosInstance.post(
+      "/user/registration",
+      userDetails
+    );
+
+    if (response.status === 200) {
+      return { status: true, token: response.data.activationToken };
+    }
+  } catch (error) {
+    console.log(error);
+    return { status: false };
+  }
+};
+
+export const resendOtp = async () => {
+  const response = await axiosInstance.get("/user/resendotp");
+  if (response.status == 200)
+    return {
+      status: true,
+      message: response.data.message,
+      activationToken: response.data.activationToken,
+    };
+  else return false;
+};
+
+export const submitOtp = async (url, data) => {
+  try {
+    const response = await axiosInstance.post(url, data);
+    if (response.status == 200) {
+      localStorage.setItem("accessToken", response.data.accessToken);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
+      updateAuthorizationHeader("user");
+      return {
+        status: true,
+        user: response.data._id,
+        token: response.data.accessToken,
+      };
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const loginWithOtp = async (user) => {
+  try {
+    const response = await axiosInstance.post("/user/login-otp", user);
+    if (response.status == 200) return response.data.accessToken;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+export const createPost = async (formData, id) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.post(
+      `/user/create/post/${id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    if (response.status == 201)
+      return { status: true, message: response.data.message };
+    else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getPost = async (userId) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.get(`/user/post/${userId}`);
+    if (response.status == 200) {
+      return response.data.result;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUser = async (userId) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.get(`/user/profile/${userId}`);
+    if (response.status == 200) {
+      return response.data.result;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};

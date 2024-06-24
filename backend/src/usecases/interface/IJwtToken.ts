@@ -1,16 +1,12 @@
 import User from "../../entity/userEntity";
 
 interface IJwtToken {
-  SignInAccessToken(user: string): Promise<string>;
-  SignInRefreshToken(user: string): Promise<string>;
+  SignInAccessToken(user: {}): Promise<string>;
+  SignInRefreshToken(user: {}): Promise<string>;
   SignUpActivationToken(user: User, code: string): Promise<string>;
-  verifyOtpToken(
-    accessToken: string,
-    otp: string
-  ): Promise<
-    { user: User; code: string } | { status: boolean; message: string }
-  >;
-  
+
+  SignInAdminRefreshToken(admin: string): Promise<string>;
+  SignInAdminAccessToken(admin: string): Promise<string>;
 }
 
 export default IJwtToken;

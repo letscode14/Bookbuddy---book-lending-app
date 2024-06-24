@@ -1,8 +1,5 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
-import { config } from "dotenv";
-import jwt from "jsonwebtoken";
+import mongoose, { Document, Model, Mongoose, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-config();
 //
 interface IFollower {
   userId: mongoose.Types.ObjectId;
@@ -20,17 +17,18 @@ interface IUser extends Document {
   updateAt: Date;
   followers: IFollower[];
   following: IFollower[];
-  gender: "Male" | "Female" | "Not added";
+  gender: boolean | string;
   profileUrl?: string;
-  privacy: "Public" | "Private";
+  privacy: boolean;
   about: string;
   contact: string;
-  badge: string;
+  badge: string | mongoose.Types.ObjectId;
   isBlocked: boolean;
   isDeleted: boolean;
   isSubscribed: boolean;
+  role: string;
+  isGoogleSignUp: boolean;
 }
-
 const userSchema: Schema<IUser> = new mongoose.Schema({
   userName: {
     type: String,
@@ -99,17 +97,17 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   },
   gender: {
     type: String,
-    default: "Not added",
-    enum: ["Male", "Female", "Not added"],
+    default: false,
   },
   profileUrl: {
     type: String,
-    default: "Not Added",
+
+    default:
+      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
   },
   privacy: {
-    type: String,
-    default: "Private",
-    enum: ["Public", "Private"],
+    type: Boolean,
+    default: false,
   },
   about: {
     type: String,
@@ -120,7 +118,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: "Not Added",
   },
   badge: {
-    type: String,
+    type: String || mongoose.Types.ObjectId,
     default: "No badge",
   },
   isBlocked: {
@@ -128,6 +126,15 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: false,
   },
   isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  role: {
+    type: String,
+
+    default: "user",
+  },
+  isGoogleSignUp: {
     type: Boolean,
     default: false,
   },

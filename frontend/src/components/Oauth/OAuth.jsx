@@ -34,7 +34,7 @@ export default function OAuth() {
             setTimeout(() => {
               const obj = {
                 accessToken: response.data.accessToken,
-                user: { ...response.data.result },
+                user: response.data.result._id,
               };
               dispatch(saveUser(obj));
               dispatch(stopPageLoading());
@@ -48,7 +48,6 @@ export default function OAuth() {
         .catch((error) => {
           console.log(error);
         });
-      console.log(body);
     } catch (error) {
       console.log(error);
     }
