@@ -17,6 +17,7 @@ import {
   faHandshake,
   faImages,
 } from "@fortawesome/free-solid-svg-icons";
+import { showSuccessToast } from "../../../utils/toast";
 
 import Post from "./Post/Post";
 import { useConfirmationModal } from "../../Modal/ModalContext";
@@ -48,7 +49,7 @@ export default function Search() {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       dispatch(stopLoading());
-
+      showSuccessToast("Logged out success fully");
       navigate("/login");
     }
   };
@@ -108,7 +109,7 @@ export default function Search() {
                 <div className="text-xl font-medium">{userDetails.name}</div>
               </div>
 
-              <div className="mt-3 ms-2">
+              <div className="mt-3 ms-3">
                 <div>
                   <span className="font-bold ps-3">Bio</span>
                   <span

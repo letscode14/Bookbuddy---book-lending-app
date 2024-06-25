@@ -196,6 +196,10 @@ export default function CreatePost() {
       showErrorToast("Add a description");
       return;
     }
+    if (desc.length > 150) {
+      showErrorToast("Description length is too high");
+      return;
+    }
 
     const files = croppedImages.map((file) => file.file);
     const formData = new FormData();
@@ -289,7 +293,19 @@ export default function CreatePost() {
                 ))}
               </div>
               <div className="me-2">
-                <button className="add-more-button">add more</button>
+                <button
+                  className="add-more-button"
+                  onClick={() => imageInput.current.click()}
+                >
+                  add more
+                </button>
+                <input
+                  onChange={handleImageInput}
+                  type="file"
+                  ref={imageInput}
+                  className="hidden"
+                  multiple
+                />
               </div>
             </div>
           </div>

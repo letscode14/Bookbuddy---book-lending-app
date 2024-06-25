@@ -12,7 +12,7 @@
   width: 25%;
 }
 .story-segment {
-  height: 135px;
+  height: fit-content;
 
   overflow-x: auto;
   scrollbar-width: 0px;
@@ -39,4 +39,41 @@
 }
 .post-home img {
   object-fit: contain;
+}
+.comments-overflow {
+  scrollbar-width: none;
+}
+.add-comment {
+  border: none;
+}
+
+.add-comment:focus {
+  border: none;
+  outline: none; /* This removes the black border */
+}
+
+.follow-small-button {
+  background-color: #512da8;
+  color: #fff;
+  font-size: 10px;
+  padding: 5px 25px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  cursor: pointer;
+}
+.unfollow-small-button {
+  color: #512da8;
+  font-size: 10px;
+  padding: 5px 25px;
+  border: 1px solid #512da8;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  cursor: pointer;
 }

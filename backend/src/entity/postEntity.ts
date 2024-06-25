@@ -8,5 +8,7 @@ interface Post {
   imageUrls: [{ publicId: mongoose.Types.ObjectId; secure_url: string }];
   updatedAt: Date;
   isAddedToBookShelf: boolean;
+  likes: [];
+  comments: [];
 }
 export default Post;

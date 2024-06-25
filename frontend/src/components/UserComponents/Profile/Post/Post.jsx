@@ -14,6 +14,7 @@ const ImageComponent = React.lazy(() =>
 export default function Post() {
   const { user } = useSelector(selecUser);
   const [post, setPost] = useState();
+  
 
   useEffect(() => {
     (async function fetchPost() {

@@ -1,5 +1,6 @@
 import Post from "../../entity/postEntity";
 import User from "../../entity/userEntity";
+import { Request } from "express";
 
 interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
@@ -12,7 +13,12 @@ interface IUserRepository {
   getPost(id: string): Promise<[] | null>;
   getUser(id: string): Promise<{} | null>;
 
- 
+  getSuggestion(req: Request): Promise<User[] | null>;
+  followUser(req: Request): Promise<boolean>;
+  unFollowUser(req: Request): Promise<boolean>;
+  fetchPostData(id: string): Promise<[] | null>;
+  likePost(req: Request): Promise<boolean>;
+  unlikePost(req: Request): Promise<boolean>;
 }
 
 export default IUserRepository;

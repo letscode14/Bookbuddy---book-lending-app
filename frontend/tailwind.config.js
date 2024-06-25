@@ -6,6 +6,15 @@ export default {
       fontFamily: {
         sans: ["Roboto", "sans-serif"], // Replace 'Roboto' with your preferred font family
       },
+      keyframes: {
+        heartbeat: {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.5)" },
+        },
+      },
+      animation: {
+        heartbeat: "heartbeat 1s ease-in-out",
+      },
       colors: {
         white: "#ffffffb",
         access: "#828282",

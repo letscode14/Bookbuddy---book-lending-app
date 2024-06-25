@@ -201,6 +201,75 @@ class UserController {
       next(error);
     }
   }
+
+  async getSuggestion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await this.userCase.suggestUsers(req);
+      res.status(user.statusCode).json({ users: user.result });
+    } catch (error) {
+      console.log(error);
+      next();
+    }
+  }
+
+  async getPostContent(req: Request, res: Response, next: NextFunction) {
+    try {
+    } catch (error) {
+      console.log(error);
+      next();
+    }
+  }
+
+  async followUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.userCase.followUser(req);
+      res.status(response.statusCode).json({ response });
+    } catch (error) {
+      console.log(error);
+      next();
+    }
+  }
+  async unFollowUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.userCase.unFollowUser(req);
+      res.status(response.statusCode).json({ response });
+    } catch (error) {
+      console.log(error);
+      next();
+    }
+  }
+
+  async getPostData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+
+      const response = await this.userCase.getPostData(id);
+      res.status(response.statusCode).json({ ...response });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async likePost(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.userCase.likePost(req);
+      res.status(response.statusCode).json({ ...response });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async UnLikePost(req: Request, res: Response, next: NextFunction) {
+
+    try {
+      const response = await this.userCase.UnLikePost(req);
+      console.log(response);
+
+      res.status(response.statusCode).json({ ...response });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 export default UserController;

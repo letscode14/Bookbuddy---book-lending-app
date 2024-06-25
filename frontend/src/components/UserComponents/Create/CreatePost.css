@@ -97,3 +97,17 @@
 .reactEasyCrop_Container img {
   object-fit: contain;
 }
+.add-more-button {
+  background-color: #512da8;
+  color: #fff;
+  font-size: 10px;
+  padding: 6px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: all 3s ease-in-out;
+}

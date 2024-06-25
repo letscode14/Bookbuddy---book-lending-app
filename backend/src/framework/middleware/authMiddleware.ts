@@ -26,7 +26,6 @@ export const authMiddleware = async (
 ) => {
   const authHeader = req.headers["authorization"];
   const bearerToken = authHeader && authHeader.split(" ")[1];
-  console.log(bearerToken);
 
   if (!bearerToken) {
     return res.status(401).json({ message: "Token missing" });
@@ -36,7 +35,6 @@ export const authMiddleware = async (
       bearerToken,
       process.env.ACCESS_TOKEN_SECRET as Secret
     ) as DecodedToken;
-    console.log("before expire", decoded);
 
     req.user = decoded;
 

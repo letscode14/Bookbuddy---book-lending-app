@@ -508,6 +508,132 @@ class UserUseCase {
       };
     }
   }
+
+  async suggestUsers(req: Request): Promise<ResponseType> {
+    try {
+      const user = await this.iUserRepository.getSuggestion(req);
+      if (user) {
+        return {
+          statusCode: 200,
+          result: user,
+        };
+      }
+      return {
+        statusCode: 404,
+        message: "User no found",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internak server error",
+      };
+    }
+  }
+
+  async followUser(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.followUser(req);
+      if (result) {
+        return {
+          statusCode: 200,
+          message: "Follower User success fully",
+        };
+      }
+      return {
+        statusCode: 409,
+        message: "Error in following",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal sever error",
+      };
+    }
+  }
+  async unFollowUser(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.unFollowUser(req);
+      if (result) {
+        return {
+          statusCode: 200,
+          message: "unfollowed User success fully",
+        };
+      }
+      return {
+        statusCode: 409,
+        message: "Error in following",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal sever error",
+      };
+    }
+  }
+  async getPostData(id: string): Promise<ResponseType> {
+    try {
+      const response = await this.iUserRepository.fetchPostData(id);
+
+      if (response) {
+        return {
+          statusCode: 200,
+          message: "post fetched sucessfully",
+          result: response,
+        };
+      }
+
+      return {
+        statusCode: 409,
+        message: "Error in fetching post",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "internal server error",
+      };
+    }
+  }
+
+  async likePost(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.likePost(req);
+      if (result) {
+        return { statusCode: 200, message: "Liked the post" };
+      }
+
+      return {
+        statusCode: 409,
+        message: "error in liking the post",
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "Internal  sever error",
+      };
+    }
+  }
+
+  async UnLikePost(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.unlikePost(req);
+      if (result) {
+        return { statusCode: 200, message: "uniLiked the post" };
+      }
+      return {
+        statusCode: 409,
+        message: "error in liking the post",
+      };
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: "Internal  sever error",
+      };
+    }
+  }
 }
 
 export default UserUseCase;

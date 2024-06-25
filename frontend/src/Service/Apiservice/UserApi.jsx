@@ -136,3 +136,92 @@ export const getUser = async (userId) => {
     console.log(error);
   }
 };
+
+export const getSuggestion = async (userId) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.get("/user/suggestions", {
+      params: { id: userId },
+    });
+    if (response.status == 200) {
+      return response.data.users;
+    }
+    return false;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const followUser = async (userId, targetId) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.post("/user/follow", {
+      userId: userId,
+      target: targetId,
+    });
+
+    if (response.status == 200) {
+      return true;
+    } else return false;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const unfollowUser = async (userId, targetId) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.post("/user/unfollow", {
+      userId: userId,
+      target: targetId,
+    });
+    if (response.status == 200) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getPostForHome = async (userId) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.get(`/user/post/content/${userId}`);
+    if (response.status == 200) {
+      return response.data.result;
+    }
+    return false;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const likePost = async (postId, userId) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.patch(`/user/post/like`, {
+      userId,
+      postId,
+    });
+    if (response.status == 200) {
+      return true;
+    } else return false;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const UnLikePost = async (postId, userId) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.patch(`/user/post/dislike`, {
+      postId,
+      userId,
+    });
+    if (response.status == 200) {
+      return true;
+    } else return false;
+  } catch (error) {
+    console.log(error);
+  }
+};

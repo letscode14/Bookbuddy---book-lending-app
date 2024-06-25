@@ -30,6 +30,7 @@ interface IPost extends Document {
   updatedAt: Date;
   isAddedToBookShelf: boolean;
   comments: IComment[];
+  likes: [];
 }
 
 const ReplySchema: Schema<IReply> = new mongoose.Schema({
@@ -78,6 +79,12 @@ const postSchema: Schema<IPost> = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  likes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   isAddedToBookShelf: {
     type: Boolean,
     default: false,

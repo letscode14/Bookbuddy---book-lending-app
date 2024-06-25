@@ -5,6 +5,7 @@ import userModel from "../databases/userModel";
 import bcrypt from "bcryptjs";
 import postModel from "../databases/postModel";
 import { ObjectId } from "mongodb";
+import { Request } from "express";
 
 class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -104,6 +105,156 @@ class UserRepository implements IUserRepository {
     } catch (error) {
       console.log(error);
       return null;
+    }
+  }
+
+  async getSuggestion(req: Request): Promise<User[] | null> {
+    try {
+      const now = new Date();
+      console.log(req.query.id);
+
+      const startOfCurrentWeek = new Date(
+        now.setDate(now.getDate() - now.getDay())
+      );
+      const id = req.query.id as string;
+      const currentUser = (await userModel.findById(id)) as User;
+
+      const currentWeekUsers = (await userModel
+        .find({
+          _id: { $ne: new ObjectId(id) },
+          createdAt: { $gte: startOfCurrentWeek },
+          "followers.userId": { $nin: [new ObjectId(id)] },
+        })
+        .select("-password") // Exclude password field
+        .sort({ createdAt: -1 }) // Sort by createdAt descending
+        .exec()) as User[];
+      console.log(currentWeekUsers);
+
+      if (currentWeekUsers) {
+        return currentWeekUsers;
+      }
+
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async followUser(req: Request): Promise<boolean> {
+    try {
+      const { userId, target } = req.body;
+
+      if (!userId || !target) {
+        return false;
+      }
+
+      await userModel.findByIdAndUpdate(userId, {
+        $addToSet: { following: { userId: new ObjectId(target) } },
+      });
+
+      await userModel.findByIdAndUpdate(target, {
+        $addToSet: { followers: { userId: new ObjectId(userId) } },
+      });
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  async unFollowUser(req: Request): Promise<boolean> {
+    const { userId, target } = req.body;
+    if (!userId || !target) {
+      return false;
+    }
+
+    console.log(req.body);
+
+    try {
+      await userModel.findByIdAndUpdate(userId, {
+        $pull: { following: { userId: new ObjectId(target) } },
+      });
+
+      await userModel.findByIdAndUpdate(target, {
+        $pull: { followers: { userId: new ObjectId(userId) } },
+      });
+
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  async fetchPostData(id: string): Promise<[] | null> {
+    try {
+      if (!id) {
+        throw new Error("User ID is required");
+      }
+      const user = (await userModel
+        .findById(id)
+        .populate("followers.userId", "_id")
+        .populate("following.userId", "_id")
+        .exec()) as User;
+      const followerIds = user.followers.map((follower) => follower.userId._id);
+      const followingIds = user.following.map(
+        (following) => following.userId._id
+      );
+      const userIds = [...new Set([...followerIds, ...followingIds, user._id])];
+      const posts = await postModel
+        .find({ userId: { $in: userIds } })
+        .populate("userId", "userName email profileUrl")
+        .sort({ createdAt: -1 })
+        .exec();
+
+      return posts.length > 0 ? (posts as []) : null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async likePost(req: Request): Promise<boolean> {
+    try {
+      const { postId, userId } = req.body;
+      const result = await postModel.findByIdAndUpdate(
+        postId,
+        {
+          $addToSet: { likes: userId },
+        },
+        { new: true }
+      );
+      if (result) {
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+  async unlikePost(req: Request): Promise<boolean> {
+    try {
+      const { postId, userId } = req.body;
+      console.log(req.body);
+
+      const result = await postModel.findByIdAndUpdate(
+        postId,
+        {
+          $pull: { likes: userId },
+        },
+        { new: true }
+      );
+      if (result) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log(error);
+      return false;
     }
   }
 }

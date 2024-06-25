@@ -83,4 +83,35 @@ userRouter.get("/post/:id", authMiddleware, (req, res, next) => {
 userRouter.get("/profile/:id", authMiddleware, (req, res, next) => {
   controller.getUser(req, res, next);
 });
+
+userRouter.get("/suggestions", authMiddleware, (req, res, next) => {
+  controller.getSuggestion(req, res, next);
+});
+
+userRouter.get("/list/post/content", authMiddleware, (req, res, next) => {
+  controller.getPostContent(req, res, next);
+});
+
+//follow usr
+userRouter.post("/follow", authMiddleware, (req, res, next) => {
+  controller.followUser(req, res, next);
+});
+
+//unfollow user
+userRouter.post("/unfollow", authMiddleware, (req, res, next) => {
+  controller.unFollowUser(req, res, next);
+});
+
+//list all the post
+userRouter.get("/post/content/:id", authMiddleware, (req, res, next) => {
+  controller.getPostData(req, res, next);
+});
+
+userRouter.patch("/post/like", authMiddleware, (req, res, next) => {
+  controller.likePost(req, res, next);
+});
+userRouter.patch("/post/dislike", (req, res, next) => {
+  controller.UnLikePost(req, res, next);
+});
+
 export default userRouter;
