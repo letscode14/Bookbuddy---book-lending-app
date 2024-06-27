@@ -93,6 +93,8 @@
 }
 .reactEasyCrop_Container {
   position: relative;
+  height: 100%;
+  width: 100%;
 }
 .reactEasyCrop_Container img {
   object-fit: contain;

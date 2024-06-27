@@ -70,9 +70,14 @@ userRouter.post("/otp/login", (req, res, next) => {
 });
 
 //create post route
-userRouter.post("/create/post/:id", fileParser, (req, res, next) => {
-  controller.createPost(req, res, next);
-});
+userRouter.post(
+  "/create/post/:id",
+  authMiddleware,
+  fileParser,
+  (req, res, next) => {
+    controller.createPost(req, res, next);
+  }
+);
 
 userRouter.get("/post/:id", authMiddleware, (req, res, next) => {
   controller.getPost(req, res, next);
@@ -110,8 +115,23 @@ userRouter.get("/post/content/:id", authMiddleware, (req, res, next) => {
 userRouter.patch("/post/like", authMiddleware, (req, res, next) => {
   controller.likePost(req, res, next);
 });
-userRouter.patch("/post/dislike", (req, res, next) => {
+userRouter.patch("/post/dislike", authMiddleware, (req, res, next) => {
   controller.UnLikePost(req, res, next);
+});
+
+userRouter.post("/edit/verify/email/:id", authMiddleware, (req, res, next) => {
+  controller.verifyEditEmail(req, res, next);
+});
+
+userRouter.post(
+  "/submit/verify/email/otp",
+  authMiddleware,
+  (req, res, next) => {
+    controller.verifyEmailEditOtp(req, res, next);
+  }
+);
+userRouter.post("/edit/details", fileParser, (req, res, next) => {
+  controller.editUserDetails(req, res, next);
 });
 
 export default userRouter;

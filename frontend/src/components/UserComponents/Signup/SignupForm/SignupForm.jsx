@@ -31,7 +31,7 @@ export default function SignupForm() {
   const { customError } = useSelector(selectError);
 
   const navigate = useNavigate();
-  const [error, setError] = useState(0);
+  const [error, setError] = useState([]);
   const [usernameError, setUserNameError] = useState(false);
   const [userDetails, setUserDetails] = useState({
     name: "",
@@ -52,22 +52,22 @@ export default function SignupForm() {
   }, []);
   const resetError = () => {
     setTimeout(() => {
-      setError(0);
-      setErrorMsg({
-        emailError: "",
-        passwordError: "",
-        confirmPassError: "",
-      });
+      setError([]);
+      setTimeout(() => {
+        setErrorMsg({
+          emailError: "",
+          passwordError: "",
+          confirmPassError: "",
+        });
+      }, 300);
     }, 1500);
   };
 
-  //
   const isUsername = async (username) => {
     if (!username) return;
     const isValid = await checkUserName(username);
-    console.log(isValid);
     if (!isValid) {
-      setError(2);
+      setError([2]);
       setUserNameError(true);
 
       resetError();
@@ -78,44 +78,38 @@ export default function SignupForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!userDetails.name) {
-      setError(1);
-      resetError();
-      return;
-    }
-    if (!userDetails.userName) {
-      setError(2);
+
+    const errorIndices = [];
+    const keys = Object.keys(userDetails);
+
+    keys.forEach((key, index) => {
+      if (userDetails[key] === "") {
+        errorIndices.push(index + 1);
+      }
+    });
+
+    if (errorIndices.length > 0) {
+      setError(errorIndices);
       resetError();
       return;
     }
 
-    if (!userDetails.email) {
-      setError(3);
+    if (usernameError) {
+      setError([2]);
       resetError();
       return;
     }
 
-    if (!userDetails.password) {
-      setError(4);
-      resetError();
-      return;
-    }
-
-    if (!userDetails.confirmPassword) {
-      setError(5);
-      resetError();
-      return;
-    }
     const email = validateEmail(userDetails.email);
     if (!email) {
-      setError(3);
+      setError([3]);
       setErrorMsg({ ...errorMsg, emailError: "Enter a valid email" });
       resetError();
       return;
     }
     const pass = validatePassword(userDetails.password);
     if (pass !== true) {
-      setError(4);
+      setError([4]);
       setErrorMsg({ ...errorMsg, passwordError: pass });
       resetError();
       return;
@@ -123,7 +117,7 @@ export default function SignupForm() {
 
     if (userDetails.password != userDetails.confirmPassword) {
       setErrorMsg({ ...errorMsg, confirmPassError: "Password does not match" });
-      setError(5);
+      setError([5]);
       resetError();
       return;
     }
@@ -139,7 +133,7 @@ export default function SignupForm() {
     }
     if (usernameError) {
       setUserNameError(true);
-      setError(2);
+      setError([2]);
 
       resetError();
 
@@ -171,7 +165,7 @@ export default function SignupForm() {
         />
         <div
           className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-            error == 1 ? " " : "opacity-0"
+            error.includes(1) ? " " : "opacity-0"
           }`}
         >
           Name is required
@@ -189,7 +183,7 @@ export default function SignupForm() {
 
         <div
           className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-            error == 2 ? "" : "opacity-0"
+            error.includes(2) ? "" : "opacity-0"
           }`}
         >
           {usernameError
@@ -207,7 +201,7 @@ export default function SignupForm() {
         />
         <div
           className={` pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error == 3 ? "" : "opacity-0"
+            error.includes(3) ? "" : "opacity-0"
           }`}
         >
           {errorMsg.emailError ? errorMsg.emailError : "Email is required"}
@@ -238,7 +232,7 @@ export default function SignupForm() {
         <div className=" text-sm flex w-full justify-between ">
           <div
             className={` py-1 text-xs text-red-500 transition-opacity duration-500 ${
-              error == 4 ? "" : "opacity-0"
+              error.includes(4) ? "" : "opacity-0"
             }`}
           >
             {errorMsg.passwordError
@@ -261,7 +255,7 @@ export default function SignupForm() {
         />
         <div
           className={`  text-xs text-red-500 transition-opacity duration-500 ${
-            error == 5 ? "" : "opacity-0"
+            error.includes(5) ? "" : "opacity-0"
           }`}
         >
           {errorMsg.confirmPassError

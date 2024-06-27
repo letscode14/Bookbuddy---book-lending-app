@@ -634,6 +634,113 @@ class UserUseCase {
       };
     }
   }
+
+  async verifyEditEmail(req: Request): Promise<ResponseType> {
+    try {
+      const { email } = req.body;
+
+      const emailExist = await this.iUserRepository.findByEmail(email);
+      if (emailExist) {
+        return {
+          statusCode: 409,
+          message: "This email aready exixt please try another one",
+        };
+      }
+
+      const subject = "Please provide this code for your verification";
+      const code = Math.floor(100000 + Math.random() * 9000).toString();
+      const sendEmail = await this.sendEmail.sendEmail({
+        email,
+        subject,
+        code,
+      });
+      const token = await this.JwtToken.SignUpActivationToken(
+        { email: email } as User,
+        code
+      );
+      if (sendEmail) {
+        return {
+          status: true,
+          statusCode: 200,
+          message: "Otp has send to your email ",
+          activationToken: token,
+        };
+      }
+      return {
+        statusCode: 409,
+        message: "error in verifying the message",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "internal server error",
+      };
+    }
+  }
+  async verifyEmailEditOtp(token: string, otp: string): Promise<ResponseType> {
+    try {
+      const data = await this.JwtToken.verifyOtpToken(token, otp);
+      if ("user" in data) {
+        return {
+          statusCode: 200,
+          message: "Email success fully verified",
+        };
+      }
+
+      return {
+        statusCode: 401,
+        ...data,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "internal server error",
+      };
+    }
+  }
+  async editUserDetails(req: Request): Promise<ResponseType> {
+    try {
+      console.log(req.body);
+      const { files } = req;
+      const file = files.newProfile;
+      if (file) {
+        const cloudRes = await this.Cloudinary.cloudinaryUpload(file);
+        console.log();
+
+        const result = await this.iUserRepository.updateUserDetails(
+          req,
+          cloudRes
+        );
+        if (result) {
+          return {
+            statusCode: 200,
+            message: "User details updated successfully",
+          };
+        }
+      } else {
+        const result = await this.iUserRepository.updateUserDetails(req, {});
+        if (result) {
+          return {
+            statusCode: 200,
+            message: "User details updated successfully",
+          };
+        }
+      }
+
+      return {
+        statusCode: 409,
+        message: "Error in updating the userDetails",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
 }
 
 export default UserUseCase;

@@ -1,20 +1,21 @@
 import { useEffect, useRef } from "react";
 import "./Search.css";
-import { useLocation } from "react-router-dom";
-export default function Search() {
-  const contentPage = useRef(null);
-  const { pathname } = useLocation();
-  useEffect(() => {
-    const element = contentPage.current;
 
-    element.style.right = "12px";
-  }, [pathname]);
+export default function Search() {
+  const searchContainer = useRef();
+  useEffect(() => {
+    searchContainer.current.style.right = "12px";
+  });
   return (
     <div
-      ref={contentPage}
-      className="text-center home-content absolute top-3 bottom-3   bg-[#ffffff]"
+      ref={searchContainer}
+      className="text-center search-content absolute top-3 bottom-3   bg-[#ffffff]"
     >
-      search
+      <div className="App">
+        <button className="mt-3 inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:mt-0 sm:w-auto">
+          Open Modal
+        </button>
+      </div>
     </div>
   );
 }

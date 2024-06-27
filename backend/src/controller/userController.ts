@@ -260,12 +260,48 @@ class UserController {
   }
 
   async UnLikePost(req: Request, res: Response, next: NextFunction) {
-
     try {
       const response = await this.userCase.UnLikePost(req);
       console.log(response);
 
       res.status(response.statusCode).json({ ...response });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async verifyEditEmail(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.verifyEditEmail(req);
+      if (result.activationToken) {
+        res.cookie("activationToken", result.activationToken, {
+          httpOnly: true,
+          secure: true,
+        });
+      }
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async verifyEmailEditOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const token = req.cookies.activationToken;
+      const result = await this.userCase.verifyEmailEditOtp(
+        token,
+        req.body.code
+      );
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async editUserDetails(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.editUserDetails(req);
+      res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
     }

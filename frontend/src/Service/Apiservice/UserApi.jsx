@@ -1,3 +1,4 @@
+import axios from "axios";
 import axiosInstance from "../api";
 import { updateAuthorizationHeader } from "../api";
 
@@ -223,5 +224,71 @@ export const UnLikePost = async (postId, userId) => {
     } else return false;
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const sendVerifyEmail = async (email, userId) => {
+  try {
+    updateAuthorizationHeader("user");
+
+    const response = await axiosInstance.post(
+      `/user/edit/verify/email/${userId}`,
+      { email }
+    );
+    if (response.status == 200) {
+      return response.data;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
+export const submitEmailVerifyOtp = async (code) => {
+  try {
+    updateAuthorizationHeader("user");
+    const response = await axiosInstance.post("/user/submit/verify/email/otp", {
+      code,
+    });
+    console.log(response);
+    if (response.status == 200) {
+      return true;
+    }
+  } catch (error) {
+    console.log(error);
+
+    return false;
+  }
+};
+
+export const editUserDetails = async (formData) => {
+  console.log(formData);
+  try {
+    const response = await axiosInstance.post(`/user/edit/details`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.status == 200) {
+      return response.data.message;
+    }
+  } catch (error) {
+    console.log("axios", error);
+    return false;
+  }
+};
+
+export const fetchPost = async (postId) => {
+  try {
+    const response = await axiosInstance.get("/user/get/post", {
+      params: postId,
+    });
+    if (response.status == 200) {
+      return response.data.post;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
   }
 };

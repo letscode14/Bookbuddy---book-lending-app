@@ -32,19 +32,19 @@ export default function LoginForm() {
   const navigate = useNavigate();
   const [fieldError, setFieldError] = useState({ email: "", password: "" });
   const [userDetails, setUserDetails] = useState({ email: "", password: "" });
-  const [error, setError] = useState(0);
+  const [error, setError] = useState([]);
   const [passwordError, setPassError] = useState("");
   const [passView, setPassView] = useState(false);
   const { customError } = useSelector(selectError);
   const { isLoading } = useSelector(selectLoading);
   useEffect(() => {
-    document.title = "Login"
-  },[])
+    document.title = "Login";
+  }, []);
 
   const handleSubmit = async (e) => {
     function resetError() {
       setTimeout(() => {
-        setError(0);
+        setError([]);
 
         setTimeout(() => {
           setFieldError({ email: "", password: "" });
@@ -53,23 +53,33 @@ export default function LoginForm() {
       }, 1700);
     }
     e.preventDefault();
+    if (!userDetails.email && !userDetails.password) {
+      setFieldError({
+        ...fieldError,
+        password: "password is required ",
+        email: "email is required",
+      });
+      setError([1, 2]);
+      resetError();
+      return;
+    }
 
     if (!userDetails.email) {
       setFieldError({ ...fieldError, email: "Email is required" });
-      setError(1);
+      setError([1]);
       resetError();
       return;
     }
 
     if (!userDetails.password) {
       setFieldError({ ...fieldError, password: "Password is required" });
-      setError(2);
+      setError([2]);
       resetError();
       return;
     }
 
     if (!validateEmail(userDetails.email)) {
-      setError(1);
+      setError([1]);
       resetError();
       return;
     }
@@ -77,7 +87,7 @@ export default function LoginForm() {
 
     if (pass !== true) {
       setPassError(pass);
-      setError(2);
+      setError([2]);
       resetError();
       return;
     }
@@ -89,7 +99,7 @@ export default function LoginForm() {
       dispatch(
         saveUser({ user: response.user, accessToken: response.accessToken })
       );
-      
+
       navigate("/user/home");
       showSuccessToast("Logged in");
     }
@@ -118,7 +128,7 @@ export default function LoginForm() {
 
         <div
           className={`pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error == 1 ? "" : "opacity-0"
+            error.includes(1) ? "" : "opacity-0"
           }`}
         >
           {fieldError.email ? fieldError.email : "Enter a valid email"}
@@ -150,14 +160,14 @@ export default function LoginForm() {
       <div className=" text-sm flex w-full justify-between ">
         <div
           className={` py-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error == 2 ? "" : "opacity-0"
+            error.includes(2) ? "" : "opacity-0"
           }`}
         >
           {fieldError.password
             ? fieldError.password
             : passwordError
             ? passwordError
-            : "Enter a valid email"}
+            : ""}
         </div>
         <div
           onClick={() => {
@@ -168,10 +178,11 @@ export default function LoginForm() {
           Forget your password?
         </div>
       </div>
+
       <button
         disabled={isLoading}
         onClick={handleSubmit}
-        className="signup-button flex justify-center items-center"
+        className="signup-button   flex justify-center items-center"
       >
         {isLoading ? (
           <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#]"></div>

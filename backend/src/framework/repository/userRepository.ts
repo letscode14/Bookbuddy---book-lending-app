@@ -257,6 +257,35 @@ class UserRepository implements IUserRepository {
       return false;
     }
   }
+
+  async updateUserDetails(
+    req: Request,
+    cloudRes: { secure_url: string }
+  ): Promise<boolean | null> {
+    try {
+      const { age, contact, email, gender, name, privacy, userName, userId } =
+        req.body;
+      const profileUrl = cloudRes.secure_url
+        ? cloudRes.secure_url
+        : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+      const updatedUser = await userModel.findByIdAndUpdate(userId, {
+        age,
+        contact,
+        email,
+        gender,
+        name,
+        privacy: privacy == "public" ? false : true,
+        profileUrl,
+      });
+      if (updatedUser) {
+        return true;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 }
 
 export default UserRepository;

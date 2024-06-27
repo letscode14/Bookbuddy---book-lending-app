@@ -16,9 +16,12 @@ import { selecUser } from "../../../store/slice/userAuth";
 import { createPost } from "../../../Service/Apiservice/UserApi";
 import { startLoading, stopLoading } from "../../../store/slice/loadinSlice";
 import { selectLoading } from "../../../store/slice/loadinSlice";
+import { useConfirmationModal } from "../../Modal/ModalContext";
+
 //
 
 export default function CreatePost() {
+  const { showModal } = useConfirmationModal();
   const { isLoading } = useSelector(selectLoading);
   const [isMoved, setIsRoundMoved] = useState(false);
   const [desc, setDesc] = useState("");
@@ -251,8 +254,8 @@ export default function CreatePost() {
                 )}
               </div>
               {croppedImages.length > 0 ? (
-                <div className="ms-1 crop-image-container h-full items-center flex">
-                  <div>
+                <div className="w-[35%] crop-image-container h-full flex justify-center items-center">
+                  <div className="">
                     <div className="text-center font-bold">Final review</div>
                     <img
                       className="w-48 object-contain h-48"
@@ -281,7 +284,11 @@ export default function CreatePost() {
                     <FontAwesomeIcon
                       className=" absolute text-lg bottom-[-4px] right-[-6px] text-red-600"
                       icon={faXmark}
-                      onClick={() => removeImage(images.id, index)}
+                      onClick={() =>
+                        showModal("Are you sure to remove this ?", "user", () =>
+                          removeImage(images.id, index)
+                        )
+                      }
                     />
                     <img
                       className=" object-cover h-full w-full "

@@ -1,0 +1,13 @@
+.edit-profile-container {
+  object-fit: contain;
+}
+
+.edit-profile-image-container {
+  width: 200px;
+  height: 200px;
+  position: relative;
+}
+.new-profile-outcome {
+  height: 200px;
+  width: 200px;
+}

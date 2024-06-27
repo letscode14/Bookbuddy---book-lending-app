@@ -21,13 +21,17 @@ const userAuthSlice = createSlice({
       state.user = null;
     },
 
+    setUser: (state, action) => {
+      state.user = action.payload;
+    },
+
     saveUserDetails: (state, action) => {
       state.userDetails = action.payload;
     },
   },
 });
 
-export const { saveUserDetails, saveUser, removeUser, saveToken } =
+export const { setUser, saveUserDetails, saveUser, removeUser, saveToken } =
   userAuthSlice.actions;
 
 export const selectToken = (state) => state.user;

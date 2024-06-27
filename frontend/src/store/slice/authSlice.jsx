@@ -4,6 +4,7 @@ let initialState = {
   isAuthForOtp: false,
   user: null,
   otpCounter: 59,
+  resetTrigger: false,
 };
 
 const otpAuthSlice = createSlice({
@@ -25,6 +26,7 @@ const otpAuthSlice = createSlice({
     },
     resetOtpCounter: (state) => {
       state.otpCounter = 59;
+      state.resetTrigger = true;
     },
     resetAuthState: (state) => {
       state.isAuthForOtp = initialState.isAuthForOtp;
@@ -32,9 +34,6 @@ const otpAuthSlice = createSlice({
       state.user = initialState.user;
     },
   },
-   
-  
-
 });
 
 export const {

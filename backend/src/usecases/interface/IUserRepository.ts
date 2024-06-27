@@ -19,6 +19,7 @@ interface IUserRepository {
   fetchPostData(id: string): Promise<[] | null>;
   likePost(req: Request): Promise<boolean>;
   unlikePost(req: Request): Promise<boolean>;
+  updateUserDetails(req: Request, cloudRes: {}): Promise<boolean | null>;
 }
 
 export default IUserRepository;

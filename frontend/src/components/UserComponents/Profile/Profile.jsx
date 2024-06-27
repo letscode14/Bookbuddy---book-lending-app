@@ -19,22 +19,29 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { showSuccessToast } from "../../../utils/toast";
 
+import ContentModal from "../../Modal/ContentModal";
+
 import Post from "./Post/Post";
 import { useConfirmationModal } from "../../Modal/ModalContext";
 import { getUser } from "../../../Service/Apiservice/UserApi";
+import EditUser from "./EditUser/EditUser";
+import { setVerifyFalse } from "../../../store/slice/VerifyEmailAuth";
 export default function Search() {
+  //modal state
+
   const contentPage = useRef(null);
   const [bio, setBio] = useState(false);
   const lineMenu = useRef(null);
   const [menu, setMenu] = useState(0);
   const [userDetails, setUserDetails] = useState({});
+
   const { isLoading } = useSelector(selectLoading);
   const { user } = useSelector(selecUser);
   const { pathname } = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [userData, setUserData] = useState({});
   const { showModal } = useConfirmationModal();
-
   useEffect(() => {
     const element = contentPage.current;
     document.title = "Profile";
@@ -53,16 +60,25 @@ export default function Search() {
       navigate("/login");
     }
   };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleContentModalClose = () => {
+    dispatch(setVerifyFalse());
+    setUserData(userDetails);
+    setIsModalOpen(false);
+    dispatch(stopLoading());
+  };
 
   useEffect(() => {
     (async function fetchUser() {
       const response = await getUser(user);
-      console.log(response);
+      console.log("useEffect user deatils", response);
       if (response) {
         setUserDetails(response);
+        setUserData(response);
       }
     })();
-  }, [user]);
+  }, [user, isModalOpen]);
 
   useEffect(() => {
     const element = lineMenu.current;
@@ -84,146 +100,167 @@ export default function Search() {
         element.style.width = `96px`;
         break;
     }
+    dispatch(setVerifyFalse());
   }, [menu]);
+
   return (
-    <div
-      ref={contentPage}
-      className="  ps-20  profile-content overflow-y-auto  absolute flex top-3 bottom-3 bg-[#ffffff]"
-    >
-      <div className="w-[65%] pt-10  ">
-        <div className="flex">
-          <div className="relative profile-photo  flex  flex-col  ">
-            <React.Suspense
-              fallback={
-                <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
-              }
-            >
-              <img
-                className="rounded-full object-contain"
-                src={userDetails?.profileUrl}
-              />
-            </React.Suspense>
-            <div className="mt-3 grid gap-y-2 grid-cols-2">
-              <div className="grid gap-y-2">
-                <div className="font-bold text-2xl">{userDetails.userName}</div>
-                <div className="text-xl font-medium">{userDetails.name}</div>
-              </div>
-
-              <div className="mt-3 ms-3">
-                <div>
-                  <span className="font-bold ps-3">Bio</span>
-                  <span
-                    onClick={() => {
-                      if (bio) setBio(false);
-                      else setBio(true);
-                    }}
-                    className="text-xs ms-2 font-bold text-gray-400"
-                  >
-                    {bio ? "hide" : "view"}
-                  </span>
-                </div>
-                <div className={`text-md ms-3 ${bio ? `` : "hidden"}`}>
-                  {userDetails.about}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="ms-20 px-20 profile-right-container">
-            <div className="grid font-bold mt-3 text-2xl grid-cols-3 gap-4">
-              <div className=" ">
-                <div className="text-center">
-                  {userDetails.followers?.length}
-                </div>
-                <div className="text-center">Followers</div>
-              </div>
-              <div className="">
-                <div className="text-center">
-                  {userDetails.following?.length}
-                </div>
-                <div className="text-center">Following</div>
-              </div>
-              <div className=" ">
-                <div className="text-center">
-                  {userDetails.followers?.length}
-                </div>
-                <div className="text-center">Posts</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-7 my-8 justify-center">
-              <div>
-                <button className="subscribe-button">subscribe</button>
-              </div>
-
-              <div className="grid gap-y-2 text-center font-bold text-2xl">
-                <div>lend Score</div>
-                <div className="text-3xl">0</div>
-                <div>no badge </div>
-              </div>
-            </div>
-            <div className="flex gap-3 justify-center mt-2 mb-5">
-              <button
-                disabled={isLoading}
-                onClick={() =>
-                  showModal("Are you sure you need to logout", "user", () =>
-                    logout()
-                  )
+    <>
+      <ContentModal
+        isContentModalOpen={isModalOpen}
+        onContentClose={handleContentModalClose}
+      >
+        <EditUser userInfo={userData} onClose={handleContentModalClose} />
+      </ContentModal>
+      <div
+        ref={contentPage}
+        className="  ps-20  profile-content overflow-y-auto  absolute flex top-3 bottom-3 bg-[#ffffff]"
+      >
+        <div className="w-[65%] pt-10  ">
+          <div className="flex">
+            <div className="relative profile-photo  flex  flex-col  ">
+              <React.Suspense
+                fallback={
+                  <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
                 }
-                className="log-out-button flex justify-center"
               >
-                {isLoading ? (
-                  <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
-                ) : (
-                  "logout"
-                )}
-              </button>
-              <button className="edit-profile-button">edit profile</button>
+                <img
+                  className="rounded-full object-contain"
+                  src={userDetails?.profileUrl}
+                />
+              </React.Suspense>
+              <div className="mt-3 grid gap-y-2 grid-cols-2">
+                <div className="grid gap-y-2">
+                  <div className="font-bold text-2xl">
+                    {userDetails.userName}
+                  </div>
+                  <div className="text-xl font-medium">{userDetails.name}</div>
+                </div>
+
+                <div className="mt-3 ms-3">
+                  <div>
+                    <span className="font-bold ps-3">Bio</span>
+                    <span
+                      onClick={() => {
+                        if (bio) setBio(false);
+                        else setBio(true);
+                      }}
+                      className="text-xs ms-2 font-bold text-gray-400"
+                    >
+                      {bio ? "hide" : "view"}
+                    </span>
+                  </div>
+                  <div className={`text-md ms-3 ${bio ? `` : "hidden"}`}>
+                    {userDetails.about}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="ms-20 px-20 profile-right-container">
+              <div className="grid font-bold mt-3 text-2xl grid-cols-3 gap-4">
+                <div className=" ">
+                  <div className="text-center">
+                    {userDetails.followers?.length}
+                  </div>
+                  <div className="text-center">Followers</div>
+                </div>
+                <div className="">
+                  <div className="text-center">
+                    {userDetails.following?.length}
+                  </div>
+                  <div className="text-center">Following</div>
+                </div>
+                <div className=" ">
+                  <div className="text-center">
+                    {userDetails.followers?.length}
+                  </div>
+                  <div className="text-center">Posts</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-7 my-8 justify-center">
+                <div>
+                  <button className="subscribe-button">subscribe</button>
+                </div>
+
+                <div className="grid gap-y-2 text-center font-bold text-2xl">
+                  <div>lend Score</div>
+                  <div className="text-3xl">0</div>
+                  <div>no badge </div>
+                </div>
+              </div>
+              <div className="flex gap-3 justify-center mt-2 mb-5">
+                <button
+                  disabled={isLoading}
+                  onClick={() =>
+                    showModal("Are you sure you need to logout", "user", () =>
+                      logout()
+                    )
+                  }
+                  className="log-out-button flex justify-center"
+                >
+                  {isLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
+                  ) : (
+                    "logout"
+                  )}
+                </button>
+                <button
+                  onClick={() =>
+                    showModal("Do you wish to continue", "user", () =>
+                      setIsModalOpen(true)
+                    )
+                  }
+                  className="edit-profile-button"
+                >
+                  edit profile
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="border-line mt-5"></div>
-        <div className="relative">
-          <div ref={lineMenu} className="absolute line-menu"></div>
-        </div>
+          <div className="border-line mt-5"></div>
+          <div className="relative">
+            <div ref={lineMenu} className="absolute line-menu"></div>
+          </div>
 
-        <div className="flex gap-7 mt-2 justify-center  menu-profile">
-          <div
-            onClick={() => setMenu(0)}
-            className={menu == 0 ? "" : "text-gray-400"}
-          >
-            <FontAwesomeIcon icon={faImages} className="me-1" />
-            <span className="font-semibold">POSTS</span>
+          <div className="flex gap-7 mt-2 justify-center  menu-profile">
+            <div
+              onClick={() => setMenu(0)}
+              className={menu == 0 ? "" : "text-gray-400"}
+            >
+              <FontAwesomeIcon icon={faImages} className="me-1" />
+              <span className="font-semibold">POSTS</span>
+            </div>
+            <div
+              onClick={() => setMenu(1)}
+              className={menu == 1 ? "" : "text-gray-400"}
+            >
+              <FontAwesomeIcon icon={faBook} className="me-1" />
+              <span className="font-semibold">BOOKSHELF</span>
+            </div>
+            <div
+              onClick={() => setMenu(2)}
+              className={menu == 2 ? "" : "text-gray-400"}
+            >
+              <FontAwesomeIcon icon={faHandshake} className="me-1" />
+              <span className="font-semibold">BORROWED</span>
+            </div>
+            <div
+              onClick={() => setMenu(3)}
+              className={menu == 3 ? "" : "text-gray-400"}
+            >
+              <FontAwesomeIcon icon={faCalendar} className="me-1" />
+              <span className="font-semibold">LENDED</span>
+            </div>
           </div>
-          <div
-            onClick={() => setMenu(1)}
-            className={menu == 1 ? "" : "text-gray-400"}
-          >
-            <FontAwesomeIcon icon={faBook} className="me-1" />
-            <span className="font-semibold">BOOKSHELF</span>
-          </div>
-          <div
-            onClick={() => setMenu(2)}
-            className={menu == 2 ? "" : "text-gray-400"}
-          >
-            <FontAwesomeIcon icon={faHandshake} className="me-1" />
-            <span className="font-semibold">BORROWED</span>
-          </div>
-          <div
-            onClick={() => setMenu(3)}
-            className={menu == 3 ? "" : "text-gray-400"}
-          >
-            <FontAwesomeIcon icon={faCalendar} className="me-1" />
-            <span className="font-semibold">LENDED</span>
+          <div className="post-list mt-4 pb-10 grid grid-cols-4 gap-4  mx-20">
+            {menu == 0 && <Post />}
           </div>
         </div>
-        <div className="post-list mt-4 pb-10 grid grid-cols-4 gap-4  mx-20">
-          {menu == 0 && <Post />}
+        <div className="">
+          <div className="fixed  ms-1 border-line-vertical"></div>
         </div>
       </div>
-      <div className="">
-        <div className="fixed  ms-1 border-line-vertical"></div>
-      </div>
-    </div>
+    </>
   );
 }

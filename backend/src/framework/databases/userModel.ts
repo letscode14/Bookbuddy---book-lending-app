@@ -97,7 +97,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   },
   gender: {
     type: String,
-    default: false,
+    default: "",
   },
   profileUrl: {
     type: String,
@@ -111,15 +111,15 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   },
   about: {
     type: String,
-    default: "Not Added",
+    default: "",
   },
   contact: {
     type: String,
-    default: "Not Added",
+    default: "",
   },
   badge: {
     type: String || mongoose.Types.ObjectId,
-    default: "No badge",
+    default: "No Badge",
   },
   isBlocked: {
     type: Boolean,

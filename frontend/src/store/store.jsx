@@ -11,6 +11,7 @@ import errorSlice from "./slice/errorSlice";
 import userAuth from "./slice/userAuth";
 import adminAuth from "./slice/adminAuth";
 import otpLoginAuth from "./slice/otpLoginAuth";
+import VerifyEmailAuth from "./slice/VerifyEmailAuth";
 
 const persistConfig = {
   key: "root",
@@ -34,6 +35,7 @@ const rootReducer = combineReducers({
   user: userAuth,
   admin: adminAuth,
   loginOtpAuth: otpLoginAuth,
+  editAuth: VerifyEmailAuth,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

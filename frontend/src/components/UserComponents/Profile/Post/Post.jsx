@@ -7,6 +7,8 @@ import { selecUser } from "../../../../store/slice/userAuth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
 import { getPost } from "../../../../Service/Apiservice/UserApi";
+import ContentModal from "../../../Modal/ContentModal";
+import PostView from "../PostView/PostView";
 const ImageComponent = React.lazy(() =>
   import("../../../ImageComponent/Image")
 );
@@ -14,7 +16,8 @@ const ImageComponent = React.lazy(() =>
 export default function Post() {
   const { user } = useSelector(selecUser);
   const [post, setPost] = useState();
-  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [postDetails, setPostDetails] = useState({});
 
   useEffect(() => {
     (async function fetchPost() {
@@ -24,13 +27,32 @@ export default function Post() {
       }
     })();
   }, []);
+  const getPost = async (postId) => {
+    try {
+      const response = await fetchPo(postId);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleContentClose = () => {
+    setIsModalOpen(false);
+  };
 
   return (
     <>
+      <ContentModal
+        isContentModalOpen={isModalOpen}
+        onContentClose={handleContentClose}
+      >
+        <PostView />
+      </ContentModal>
+
       {post?.length > 0 ? (
         post.map((posts, index) => {
           return (
             <div
+              onClick={() => getPost(posts._id)}
               key={index}
               className="post border flex justify-center items-center relative"
             >
