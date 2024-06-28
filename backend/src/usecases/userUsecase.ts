@@ -741,6 +741,28 @@ class UserUseCase {
       };
     }
   }
+  async getPostDetails(req: Request): Promise<ResponseType> {
+    try {
+      const post = await this.iUserRepository.getPostDetails(req);
+
+      if (post) {
+        return {
+          statusCode: 200,
+          result: post,
+        };
+      }
+      return {
+        statusCode: 409,
+        message: "Error while fetching the details",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
 }
 
 export default UserUseCase;

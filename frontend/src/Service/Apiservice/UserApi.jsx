@@ -1,4 +1,3 @@
-import axios from "axios";
 import axiosInstance from "../api";
 import { updateAuthorizationHeader } from "../api";
 
@@ -262,7 +261,8 @@ export const submitEmailVerifyOtp = async (code) => {
 };
 
 export const editUserDetails = async (formData) => {
-  console.log(formData);
+  updateAuthorizationHeader("user");
+
   try {
     const response = await axiosInstance.post(`/user/edit/details`, formData, {
       headers: {
@@ -280,12 +280,13 @@ export const editUserDetails = async (formData) => {
 };
 
 export const fetchPost = async (postId) => {
+  updateAuthorizationHeader("user");
   try {
     const response = await axiosInstance.get("/user/get/post", {
       params: postId,
     });
     if (response.status == 200) {
-      return response.data.post;
+      return response.data.result;
     }
   } catch (error) {
     console.log(error);

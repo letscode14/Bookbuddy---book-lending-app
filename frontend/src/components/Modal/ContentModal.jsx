@@ -43,7 +43,7 @@ export default function ContentModal({
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <DialogPanel
-                className={`relative p-10     z-50 transform overflow-hidden rounded-lg 
+                className={`relative  p-2   z-50 transform overflow-hidden rounded-[20px]
                    bg-[#ffffff]
                  text-left shadow-xl transition-all sm:my-8 fit-content relative`}
               >
@@ -52,8 +52,6 @@ export default function ContentModal({
                   className="absolute top-5 right-5 text-xl"
                   onClick={() => {
                     onContentClose();
-
-                    console.log("this si cliked");
                   }}
                   icon={faXmark}
                 />

@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 import postModel from "../databases/postModel";
 import { ObjectId } from "mongodb";
 import { Request } from "express";
+import { ParamsDictionary } from "express-serve-static-core";
+import { ParsedQs } from "qs";
 
 class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -279,6 +281,24 @@ class UserRepository implements IUserRepository {
       });
       if (updatedUser) {
         return true;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getPostDetails(req: Request): Promise<Post | null> {
+    try {
+      const { postId } = req.query;
+      const post = await postModel
+        .findById(postId)
+        .populate<{ likes: User[] }>("likes", "userName")
+        .populate("userId", "profileUrl userName")
+        .lean<Post>();
+      if (post) {
+        return post;
       }
       return null;
     } catch (error) {

@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Roboto", "sans-serif"], // Replace 'Roboto' with your preferred font family
+        sans: ["Roboto", "sans-serif"], 
       },
       keyframes: {
         heartbeat: {

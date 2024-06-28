@@ -306,6 +306,15 @@ class UserController {
       console.log(error);
     }
   }
+
+  async getPostDetails(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.getPostDetails(req);
+      res.status(200).json({ ...result });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 export default UserController;

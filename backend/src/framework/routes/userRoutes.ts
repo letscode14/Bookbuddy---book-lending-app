@@ -130,8 +130,17 @@ userRouter.post(
     controller.verifyEmailEditOtp(req, res, next);
   }
 );
-userRouter.post("/edit/details", fileParser, (req, res, next) => {
-  controller.editUserDetails(req, res, next);
+userRouter.post(
+  "/edit/details",
+  authMiddleware,
+  fileParser,
+  (req, res, next) => {
+    controller.editUserDetails(req, res, next);
+  }
+);
+
+userRouter.get("/get/post", (req, res, next) => {
+  controller.getPostDetails(req, res, next);
 });
 
 export default userRouter;

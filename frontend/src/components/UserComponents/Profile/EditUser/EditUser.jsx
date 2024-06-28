@@ -42,7 +42,7 @@ import {
   selectError,
   setCustomError,
 } from "../../../../store/slice/errorSlice";
-import { selectUserDetails, setUser } from "../../../../store/slice/userAuth";
+import { selectUserDetails } from "../../../../store/slice/userAuth";
 
 export default function EditUser({ userInfo, onClose }) {
   const dispatch = useDispatch();
@@ -118,7 +118,7 @@ export default function EditUser({ userInfo, onClose }) {
         age: userInfo.age || prevData.age,
         gender: userInfo.gender || prevData.gender,
         contact: userInfo.contact || prevData.contact,
-        privacy: userInfo.privacy || prevData.privacy,
+        privacy: userInfo.privacy ? "private" : "public",
 
         profileUrl: userInfo.profileUrl || prevData.profileUrl,
       }));
