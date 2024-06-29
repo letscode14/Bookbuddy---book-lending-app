@@ -3,12 +3,10 @@ import User from "../../entity/userEntity";
 import Post from "../../entity/postEntity";
 import userModel from "../databases/userModel";
 import bcrypt from "bcryptjs";
-import postModel from "../databases/postModel";
+import postModel, { IComment, IPost } from "../databases/postModel";
 import { ObjectId } from "mongodb";
 import { Request } from "express";
-import { ParamsDictionary } from "express-serve-static-core";
-import { ParsedQs } from "qs";
-
+import mongoose from "mongoose";
 class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return await userModel.findOne({ email }).select("+password");
@@ -113,29 +111,40 @@ class UserRepository implements IUserRepository {
   async getSuggestion(req: Request): Promise<User[] | null> {
     try {
       const now = new Date();
-      console.log(req.query.id);
 
-      const startOfCurrentWeek = new Date(
-        now.setDate(now.getDate() - now.getDay())
-      );
       const id = req.query.id as string;
-      const currentUser = (await userModel.findById(id)) as User;
-
-      const currentWeekUsers = (await userModel
-        .find({
-          _id: { $ne: new ObjectId(id) },
-          createdAt: { $gte: startOfCurrentWeek },
-          "followers.userId": { $nin: [new ObjectId(id)] },
-        })
-        .select("-password") // Exclude password field
-        .sort({ createdAt: -1 }) // Sort by createdAt descending
-        .exec()) as User[];
-      console.log(currentWeekUsers);
-
-      if (currentWeekUsers) {
-        return currentWeekUsers;
+      const user = await userModel
+        .findById(id)
+        .populate("following.userId", "userName");
+      if (!user) {
+        return null;
       }
+      const followersIds = user.following.map((follower) => follower.userId);
 
+      const followingOfFollowers = await userModel.find({
+        _id: { $in: followersIds },
+      });
+
+      const secondDegreeFollowerIds = new Set();
+      followingOfFollowers.forEach((follower) => {
+        follower.following.forEach((f) => {
+          if (!followersIds.includes(f.userId)) {
+            secondDegreeFollowerIds.add(f.userId.toString());
+          }
+        });
+      });
+
+      secondDegreeFollowerIds.delete(id);
+
+      const suggestions = (await userModel
+        .find({
+          _id: { $in: Array.from(secondDegreeFollowerIds) },
+        })
+        .populate("followers.userId", "userName")) as User[];
+
+      if (suggestions) {
+        return suggestions;
+      }
       return null;
     } catch (error) {
       console.log(error);
@@ -208,6 +217,7 @@ class UserRepository implements IUserRepository {
       const posts = await postModel
         .find({ userId: { $in: userIds } })
         .populate("userId", "userName email profileUrl")
+        .populate("comments.author", "userName ")
         .sort({ createdAt: -1 })
         .exec();
 
@@ -301,6 +311,31 @@ class UserRepository implements IUserRepository {
         return post;
       }
       return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+  async addComment(req: Request): Promise<IComment | null> {
+    try {
+      const { postId, userId, comment } = req.body;
+      const post = (await postModel.findByIdAndUpdate(
+        postId,
+        {
+          $push: {
+            comments: { author: new ObjectId(userId), content: comment },
+          },
+        },
+        { new: true }
+      )) as IPost | null;
+
+      if (post) {
+        await post.populate("comments.author", "userName");
+        const newComment = post.comments[post.comments.length - 1];
+        return newComment;
+      } else {
+        return null;
+      }
     } catch (error) {
       console.log(error);
       return null;

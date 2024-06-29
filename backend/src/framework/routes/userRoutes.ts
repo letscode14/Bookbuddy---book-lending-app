@@ -139,8 +139,12 @@ userRouter.post(
   }
 );
 
-userRouter.get("/get/post", (req, res, next) => {
+userRouter.get("/get/post", authMiddleware, (req, res, next) => {
   controller.getPostDetails(req, res, next);
+});
+
+userRouter.patch("/add/comment", authMiddleware, (req, res, next) => {
+  controller.addComment(req, res, next);
 });
 
 export default userRouter;

@@ -315,6 +315,15 @@ class UserController {
       console.log(error);
     }
   }
+
+  async addComment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.addComment(req);
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 export default UserController;

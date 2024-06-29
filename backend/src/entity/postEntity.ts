@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 interface Post {
-  _id?: string;
+  _id?: mongoose.Types.ObjectId | string;
   userId: mongoose.Types.ObjectId;
   createdAt: Date;
   description: string;

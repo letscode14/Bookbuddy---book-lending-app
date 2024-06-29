@@ -10,19 +10,17 @@ interface IReply extends Document {
   author: mongoose.Schema.Types.ObjectId;
   likes: mongoose.Schema.Types.ObjectId[];
   createdAt: Date;
-  updatedAt: Date;
 }
 
-interface IComment extends Document {
+export interface IComment extends Document {
   content: string;
   author: mongoose.Schema.Types.ObjectId;
   likes: mongoose.Schema.Types.ObjectId[];
   replies: IReply[];
   createdAt: Date;
-  updatedAt: Date;
 }
 
-interface IPost extends Document {
+export interface IPost extends Document {
   userId: mongoose.Schema.Types.ObjectId;
   createdAt: Date;
   description: string;

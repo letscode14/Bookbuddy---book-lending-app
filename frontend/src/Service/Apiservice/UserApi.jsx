@@ -293,3 +293,22 @@ export const fetchPost = async (postId) => {
     return false;
   }
 };
+
+export const addComment = async (postId, userId, comment) => {
+  updateAuthorizationHeader("user");
+  try {
+    const response = await axiosInstance.patch("/user/add/comment", {
+      postId,
+      userId,
+      comment,
+    });
+    console.log(response);
+    if (response.status == 200) {
+      return response.data.result;
+    }
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};

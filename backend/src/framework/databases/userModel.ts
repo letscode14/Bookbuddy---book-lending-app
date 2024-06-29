@@ -72,6 +72,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
       {
         userId: {
           type: mongoose.Types.ObjectId,
+          ref: "User",
         },
         followedOn: {
           type: Date,
@@ -86,6 +87,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
       {
         userId: {
           type: mongoose.Types.ObjectId,
+          ref: "User",
         },
         followedOn: {
           type: Date,

@@ -433,6 +433,10 @@ class UserUseCase {
             message: "Post added sucessfully",
           };
         }
+        return {
+          statusCode: 409,
+          message: "unexpected error occured",
+        };
       } else {
         const imageUrlArray = [
           {
@@ -454,8 +458,8 @@ class UserUseCase {
       }
 
       return {
-        statusCode: 500,
-        message: "Something error with adding post",
+        statusCode: 409,
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -476,8 +480,8 @@ class UserUseCase {
         };
       }
       return {
-        statusCode: 404,
-        message: "Resource not found",
+        statusCode: 409,
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -497,8 +501,8 @@ class UserUseCase {
         };
       }
       return {
-        statusCode: 404,
-        message: "User no found",
+        statusCode: 409,
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -519,8 +523,8 @@ class UserUseCase {
         };
       }
       return {
-        statusCode: 404,
-        message: "User no found",
+        statusCode: 409,
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -542,7 +546,7 @@ class UserUseCase {
       }
       return {
         statusCode: 409,
-        message: "Error in following",
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -563,7 +567,7 @@ class UserUseCase {
       }
       return {
         statusCode: 409,
-        message: "Error in following",
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -587,7 +591,7 @@ class UserUseCase {
 
       return {
         statusCode: 409,
-        message: "Error in fetching post",
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -607,7 +611,7 @@ class UserUseCase {
 
       return {
         statusCode: 409,
-        message: "error in liking the post",
+        message: "unexpected error occured",
       };
     } catch (error) {
       return {
@@ -625,7 +629,7 @@ class UserUseCase {
       }
       return {
         statusCode: 409,
-        message: "error in liking the post",
+        message: "unexpected error occured",
       };
     } catch (error) {
       return {
@@ -668,7 +672,7 @@ class UserUseCase {
       }
       return {
         statusCode: 409,
-        message: "error in verifying the message",
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -719,6 +723,10 @@ class UserUseCase {
             message: "User details updated successfully",
           };
         }
+        return {
+          statusCode: 409,
+          message: "unexpected error occured",
+        };
       } else {
         const result = await this.iUserRepository.updateUserDetails(req, {});
         if (result) {
@@ -731,7 +739,7 @@ class UserUseCase {
 
       return {
         statusCode: 409,
-        message: "Error in updating the userDetails",
+        message: "unexpected error occured",
       };
     } catch (error) {
       console.log(error);
@@ -753,8 +761,33 @@ class UserUseCase {
       }
       return {
         statusCode: 409,
-        message: "Error while fetching the details",
+        message: "unexpected error occured",
       };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+
+  async addComment(req: Request): Promise<ResponseType> {
+    try {
+      const comment = await this.iUserRepository.addComment(req);
+
+      if (comment) {
+        return {
+          statusCode: 200,
+          message: "added the comment",
+          result: comment,
+        };
+      } else {
+        return {
+          statusCode: 409,
+          message: "unexpected error occured",
+        };
+      }
     } catch (error) {
       console.log(error);
       return {
