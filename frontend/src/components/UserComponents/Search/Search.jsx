@@ -5,7 +5,7 @@ export default function Search() {
   const searchContainer = useRef();
   useEffect(() => {
     searchContainer.current.style.right = "12px";
-  });
+  }, []);
   return (
     <div
       ref={searchContainer}

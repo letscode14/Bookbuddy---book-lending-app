@@ -796,6 +796,30 @@ class UserUseCase {
       };
     }
   }
+
+  async addReply(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.addReply(req);
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+          message: "comment added",
+        };
+      }
+
+      return {
+        statusCode: 409,
+        message: "unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
 }
 
 export default UserUseCase;

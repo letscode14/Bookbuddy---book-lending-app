@@ -5,6 +5,7 @@ import Search from "../Search/Search";
 import Page from "../../errorPages/Page404";
 import Profile from "../Profile/Profile";
 import CreatePost from "../Create/CreatePost";
+import Notification from "../Notification/Notification";
 
 export default function Homepage() {
   return (
@@ -12,9 +13,10 @@ export default function Homepage() {
       <Navbar />
       <Routes>
         <Route path="/Home" element={<Home />}></Route>
+        <Route path="/notification" element={<Notification />} />
         <Route path="/search" element={<Search />}></Route>
         <Route path={`/profile`} element={<Profile />}></Route>
-        <Route path ={'/create'} element = {<CreatePost/>}/>
+        <Route path={"/create"} element={<CreatePost />} />
         <Route path="*" element={<Page />}></Route>
       </Routes>
     </div>

@@ -51,7 +51,7 @@ export default function Post() {
         isContentModalOpen={isModalOpen}
         onContentClose={handleContentClose}
       >
-        <PostView post={postDetails} user={postDetails.userId} />
+        <PostView postData={postDetails} user={postDetails.userId} />
       </ContentModal>
 
       {post?.length > 0 ? (

@@ -44,6 +44,11 @@ export default function Navbar() {
         element.style.top = `${258.5}px`;
         setMenu(5);
         break;
+
+      case "/user/notification":
+        element.style.top = "206px";
+        setMenu(4);
+        break;
     }
   }, [pathname]);
 
@@ -103,7 +108,7 @@ export default function Navbar() {
         </div>
         <div
           onClick={() => {
-            setMenu(4), navigate("/home");
+            setMenu(4), navigate("/user/notification");
           }}
           className={`flex items-baseline  ${
             menu == 4 ? "text-[#000000]" : "text-[#ffffff]"

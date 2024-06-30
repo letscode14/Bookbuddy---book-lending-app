@@ -5,7 +5,7 @@ interface ImageUrl {
   secure_url: string;
 }
 
-interface IReply extends Document {
+export interface IReply extends Document {
   content: string;
   author: mongoose.Schema.Types.ObjectId;
   likes: mongoose.Schema.Types.ObjectId[];

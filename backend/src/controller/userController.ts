@@ -324,6 +324,14 @@ class UserController {
       console.log(error);
     }
   }
+  async addReply(req: Request, res: Response, next: NextFunction) {
+    try {
+      const reponse = await this.userCase.addReply(req);
+      res.status(response.statusCode).json({ ...reponse });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 export default UserController;

@@ -3,10 +3,9 @@ import User from "../../entity/userEntity";
 import Post from "../../entity/postEntity";
 import userModel from "../databases/userModel";
 import bcrypt from "bcryptjs";
-import postModel, { IComment, IPost } from "../databases/postModel";
+import postModel, { IComment, IPost, IReply } from "../databases/postModel";
 import { ObjectId } from "mongodb";
 import { Request } from "express";
-import mongoose from "mongoose";
 class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return await userModel.findOne({ email }).select("+password");
@@ -119,7 +118,26 @@ class UserRepository implements IUserRepository {
       if (!user) {
         return null;
       }
-      const followersIds = user.following.map((follower) => follower.userId);
+
+      const followersIds = user.following.map((following) => following.userId);
+
+      if (followersIds.length == 0) {
+        let suggestionForNewUser = (await userModel.find({
+          _id: { $ne: new ObjectId(id) },
+        })) as User[];
+
+        shuffleArray(suggestionForNewUser as []);
+
+        suggestionForNewUser = suggestionForNewUser.slice(0, 6);
+
+        return suggestionForNewUser;
+      }
+      function shuffleArray(array: []) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
 
       const followingOfFollowers = await userModel.find({
         _id: { $in: followersIds },
@@ -135,6 +153,17 @@ class UserRepository implements IUserRepository {
       });
 
       secondDegreeFollowerIds.delete(id);
+      if (secondDegreeFollowerIds.size == 0) {
+        const followersId = user.followers.map((doc) => doc.userId);
+
+        const suggestions = (await userModel
+          .find({
+            _id: { $in: followersId },
+          })
+          .populate("followers.userId", "userName")) as User[];
+
+        return suggestions;
+      }
 
       const suggestions = (await userModel
         .find({
@@ -209,6 +238,7 @@ class UserRepository implements IUserRepository {
         .populate("followers.userId", "_id")
         .populate("following.userId", "_id")
         .exec()) as User;
+
       const followerIds = user.followers.map((follower) => follower.userId._id);
       const followingIds = user.following.map(
         (following) => following.userId._id
@@ -217,7 +247,9 @@ class UserRepository implements IUserRepository {
       const posts = await postModel
         .find({ userId: { $in: userIds } })
         .populate("userId", "userName email profileUrl")
-        .populate("comments.author", "userName ")
+        .populate("likes", "userName")
+        .populate("comments.author", "userName  profileUrl")
+        .populate("comments.replies.author", "userName profileUrl")
         .sort({ createdAt: -1 })
         .exec();
 
@@ -306,6 +338,8 @@ class UserRepository implements IUserRepository {
         .findById(postId)
         .populate<{ likes: User[] }>("likes", "userName")
         .populate("userId", "profileUrl userName")
+        .populate("comments.author", "profileUrl userName")
+        .populate("comments.replies.author", "profileUrl userName")
         .lean<Post>();
       if (post) {
         return post;
@@ -330,12 +364,54 @@ class UserRepository implements IUserRepository {
       )) as IPost | null;
 
       if (post) {
-        await post.populate("comments.author", "userName");
+        await post.populate("comments.author", "userName profileUrl");
         const newComment = post.comments[post.comments.length - 1];
         return newComment;
       } else {
         return null;
       }
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async addReply(req: Request): Promise<IReply | null> {
+    try {
+      const { userId, commentId, content, postId } = req.body;
+
+      const post = await postModel
+        .findOneAndUpdate(
+          {
+            _id: postId,
+            "comments._id": commentId,
+          },
+          {
+            $push: {
+              "comments.$.replies": {
+                content: content,
+                author: new ObjectId(userId),
+              },
+            },
+          },
+          { new: true }
+        )
+        .populate("comments.replies.author", "userName profileUrl");
+
+      if (post) {
+        const updatedComment = post.comments.find((comment) => {
+          if (comment._id == commentId) {
+            return comment;
+          }
+        });
+
+        const newReply = updatedComment?.replies[
+          updatedComment.replies.length - 1
+        ] as IReply;
+
+        return newReply;
+      }
+      return null;
     } catch (error) {
       console.log(error);
       return null;

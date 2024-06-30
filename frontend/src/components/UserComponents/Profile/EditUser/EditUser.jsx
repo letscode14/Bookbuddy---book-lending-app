@@ -167,7 +167,6 @@ export default function EditUser({ userInfo, onClose }) {
         reader.readAsDataURL(file);
 
         reader.onload = () => {
-          alert("hi");
           setNewProfile(reader.result);
           setModalFor("crop");
           setChildOpen(true);
@@ -528,17 +527,20 @@ export default function EditUser({ userInfo, onClose }) {
         )}
       </ChildModal>
       <div className=" py-7 px-3 flex w-[700px]">
-        <div className="w-[20%] h-28 mx-6">
-          <React.Suspense
-            fallback={
-              <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
-            }
-          >
-            <img
-              className="rounded-full object-contain"
-              src={userData.profileUrl}
-            />
-          </React.Suspense>
+        <div className="w-[20%]   h-28 mx-6">
+          <div className="flex justify-center h-28">
+            <React.Suspense
+              fallback={
+                <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
+              }
+            >
+              <img
+                className="rounded-full object-contain"
+                src={userData.profileUrl}
+              />
+            </React.Suspense>
+          </div>
+
           <input
             type="file"
             onChange={(e) => {

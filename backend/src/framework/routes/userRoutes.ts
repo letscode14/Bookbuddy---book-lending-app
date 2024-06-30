@@ -147,4 +147,8 @@ userRouter.patch("/add/comment", authMiddleware, (req, res, next) => {
   controller.addComment(req, res, next);
 });
 
+userRouter.patch("/add/reply", authMiddleware, (req, res, next) => {
+  controller.addReply(req, res, next);
+});
+
 export default userRouter;

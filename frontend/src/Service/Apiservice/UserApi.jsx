@@ -312,3 +312,15 @@ export const addComment = async (postId, userId, comment) => {
     return false;
   }
 };
+
+export const addReply = async (reply) => {
+  try {
+    const response = await axiosInstance.patch("/user/add/reply", reply);
+
+    if (response.status === 200) {
+      return response.data.result;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};

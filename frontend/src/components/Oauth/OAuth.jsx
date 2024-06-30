@@ -19,8 +19,9 @@ export default function OAuth() {
       const provider = new GoogleAuthProvider();
       const auth = getAuth(app);
       const result = await signInWithPopup(auth, provider);
+
       const body = {
-        userName: result.user.displayName,
+        userName: result.user.displayName.split(" ")[0],
         name: result.user.displayName.split(" ")[0],
         email: result.user.email,
         profileUrl: result.user.photoURL,

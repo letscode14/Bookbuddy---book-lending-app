@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import {
   UnLikePost,
   addComment,
+  addReply,
   followUser,
   getPostForHome,
   getSuggestion,
@@ -23,26 +24,31 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart, faComment } from "@fortawesome/free-regular-svg-icons";
+import useEmblaCarousel from "embla-carousel-react";
 
 const ImageComponent = React.lazy(() =>
   import("../../ImageComponent/PostImage")
 );
 export default function Home() {
   const { user } = useSelector(selecUser);
+  const [emblaRef, emblaApi] = useEmblaCarousel();
 
   const contentPage = useRef(null);
   const { pathname } = useLocation();
   const [userData, setUser] = useState({});
   const [sugggestions, setSuggestion] = useState([]);
   const [followersId, setFollowersId] = useState([]);
+  const [followingId, setFollowingId] = useState([]);
   const [post, setPost] = useState([]);
   const [comment, setComment] = useState({});
   const [showAllComments, setCommentShow] = useState({});
+  const [showReply, setShowReply] = useState({});
   const [reply, setReply] = useState({});
   const replyInput = useRef();
 
   const dispatch = useDispatch();
   const [followingStatus, setFollowingStatus] = useState({});
+
   useEffect(() => {
     const element = contentPage.current;
     document.title = "Home";
@@ -56,23 +62,45 @@ export default function Home() {
         setUser(response);
         dispatch(saveUserDetails(response));
         setFollowersId(response.followers.map((data) => data.userId));
+        setFollowingId(response.following.map((data) => data.userId));
       }
     }
     fetchUser();
-  }, [user, dispatch]);
 
+    async function fetchPost() {
+      const response = await getPostForHome(user);
+      if (response) {
+        setPost(response);
+        const initialShowComments = {};
+        const initialReplyCommentsShow = {};
+        response.forEach((post) => {
+          initialShowComments[post._id] = false;
+          post.comments.forEach((com) => {
+            initialReplyCommentsShow[com._id] = false;
+          });
+        });
+        setCommentShow(initialShowComments);
+        setShowReply(initialReplyCommentsShow);
+      }
+    }
+    fetchPost();
+  }, [setShowReply]);
   useEffect(() => {
     async function fetchSuggestions() {
       const response = await getSuggestion(user);
       if (response) {
         setSuggestion(response);
-
+        console.log(response);
         const initialFollowStatus = {};
 
         response.forEach((suggestion) => {
+          console.log(suggestion);
           initialFollowStatus[suggestion._id] = false;
           if (followersId.includes(suggestion._id)) {
             initialFollowStatus[suggestion._id] = "follows you";
+          }
+          if (followingId.includes(suggestion._id)) {
+            initialFollowStatus[suggestion._id] = "followed";
           }
         });
 
@@ -81,17 +109,8 @@ export default function Home() {
     }
 
     fetchSuggestions();
-    async function fetchPost() {
-      const response = await getPostForHome(user);
-      if (response) {
-        setPost(response);
-        const initialShowComments = {};
-        response.forEach((post) => (initialShowComments[post._id] = false));
-        setCommentShow(initialShowComments);
-      }
-    }
-    fetchPost();
-  }, [followersId, user]);
+  }, [followersId]);
+
   const handleFollow = async (userId, target) => {
     try {
       const response = await followUser(userId, target);
@@ -130,6 +149,7 @@ export default function Home() {
       }
     }
   };
+  console.log(post);
 
   const handleLike = async (postId, userId) => {
     try {
@@ -137,7 +157,10 @@ export default function Home() {
       if (response) {
         const updatedPosts = post.map((doc) => {
           if (doc._id === postId) {
-            doc.likes = [...doc.likes, userId];
+            doc.likes = [
+              ...doc.likes,
+              { _id: userId, userName: userData.userName },
+            ];
           }
           return doc;
         });
@@ -155,7 +178,7 @@ export default function Home() {
       if (response) {
         const filteredPost = post.map((doc) => {
           if (doc._id == postId) {
-            doc.likes = doc.likes.filter((like) => like !== userId);
+            doc.likes = doc.likes.filter((like) => like._id !== userId);
           }
           return doc;
         });
@@ -172,7 +195,6 @@ export default function Home() {
       const response = await addComment(postId, userId, commentText);
 
       if (response) {
-        console.log(response);
         setComment((prev) => ({ ...prev, [postId]: "" }));
         const p = post.map((p) => {
           if (p._id == postId) {
@@ -181,6 +203,7 @@ export default function Home() {
           return p;
         });
         setPost(p);
+        setShowReply((prev) => ({ ...prev, [response._id]: false }));
       }
     } catch (error) {
       console.log(error);
@@ -189,6 +212,31 @@ export default function Home() {
 
   const handleReplyComment = async (reply) => {
     try {
+      const response = await addReply(reply);
+
+      if (response) {
+        setPost((prev) => {
+          return prev.map((posts) => {
+            if (posts._id == reply.postId) {
+              const updatedComments = posts.comments.map((comments) => {
+                if (comments._id == reply.commentId) {
+                  return {
+                    ...comments,
+                    replies: [...comments.replies, response],
+                  };
+                }
+                return comments;
+              });
+              return {
+                ...posts,
+                comments: updatedComments,
+              };
+            }
+            return posts;
+          });
+        });
+        setReply({});
+      }
     } catch (error) {
       console.log(error);
     }
@@ -202,6 +250,7 @@ export default function Home() {
       )
       .map((follower) => follower.userId.userName);
   };
+
   return (
     <div
       ref={contentPage}
@@ -272,6 +321,22 @@ export default function Home() {
                   </div>
 
                   <div className="border post-home flex justify-center items-center">
+                    {/* <div className="embla  h-full" ref={emblaRef}>
+                      <div className="embla__container h-full">
+                        {post.imageUrls.map((image, index) => (
+                          <div key={index} className="embla__slide ">
+                            <React.Suspense
+                              fallback={
+                                <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                              }
+                            >
+                              <ImageComponent src={image.secure_url} />
+                            </React.Suspense>
+                          </div>
+                        ))}
+                      </div>
+                    </div> */}
+
                     <React.Suspense
                       fallback={
                         <div className="animate-spin rounded-full h-20 w-20  border-t-2 border-b-2 border-[#512da8]"></div>
@@ -282,7 +347,10 @@ export default function Home() {
                   </div>
                   <div className="flex justify-between items-center">
                     <div className="text-2xl mt-1">
-                      {post.likes.includes(userData._id) ? (
+                      {post.likes.some((like) => {
+                        if (like._id == userData._id) return true;
+                        else return false;
+                      }) ? (
                         <FontAwesomeIcon
                           className="me-4 text-red-400"
                           onClick={() => handleUnlike(post._id, userData._id)}
@@ -357,85 +425,255 @@ export default function Home() {
                           post.comments.map((comment, index) => (
                             <div
                               key={index}
-                              className="flex mt-1  justify-between items-center"
+                              className="flex mt-2 relative justify-between items-center"
                             >
-                              <div className="text-sm mb-1">
+                              <div className="text-sm  w-full">
+                                <div className="flex w-full center">
+                                  <div>
+                                    <div className="me-2 rounded-full w-6 h-6 flex items-center justify-center   overflow-hidden">
+                                      <React.Suspense
+                                        fallback={
+                                          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                        }
+                                      >
+                                        <ImageComponent
+                                          src={comment.author.profileUrl}
+                                        />
+                                      </React.Suspense>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span>{comment.author.userName}</span>
+                                    <span className="ms-2 font-medium">
+                                      {comment.content}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="cursor-pointer  mt-2 text-gray-400 text-xs">
+                                  <span
+                                    onClick={() => {
+                                      setComment((prev) => ({
+                                        ...prev,
+                                        [post._id]: "",
+                                      }));
+                                      setReply(() => ({
+                                        userName: comment.author.userName,
+                                        userId: userData._id,
+                                        commentId: comment._id,
+                                        placeHolder: `Reply to ${comment.author.userName} `,
+                                        content: "",
+                                        postId: post._id,
+                                      }));
+                                    }}
+                                  >
+                                    Reply
+                                  </span>
+                                  {comment.replies.length ? (
+                                    showReply[comment._id] ? (
+                                      <span
+                                        className="ms-2"
+                                        onClick={() =>
+                                          setShowReply((prev) => ({
+                                            ...prev,
+                                            [comment._id]: false,
+                                          }))
+                                        }
+                                      >
+                                        Hide Reply
+                                      </span>
+                                    ) : (
+                                      <span
+                                        className="ms-2"
+                                        onClick={() =>
+                                          setShowReply((prev) => ({
+                                            ...prev,
+                                            [comment._id]: true,
+                                          }))
+                                        }
+                                      >
+                                        View Reply
+                                      </span>
+                                    )
+                                  ) : (
+                                    <span className="ms-2">0 Replies</span>
+                                  )}
+                                </div>
+                                {showReply[comment._id] && (
+                                  <div className="py-2">
+                                    {comment.replies.map((rep, index) => {
+                                      return (
+                                        <div
+                                          key={index}
+                                          className="flex mb-2  ps-16 relative justify-between items-center w-full"
+                                        >
+                                          <div className="flex items-top">
+                                            <div className="w-6 h-6 me-2">
+                                              <span className="me-2 rounded-full w-6 h-6 flex items-center justify-center   overflow-hidden">
+                                                <React.Suspense
+                                                  fallback={
+                                                    <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                                  }
+                                                >
+                                                  <ImageComponent
+                                                    src={rep.author.profileUrl}
+                                                  />
+                                                </React.Suspense>
+                                              </span>
+                                            </div>
+                                            <div className="pe-4">
+                                              <span>{rep.author.userName}</span>
+                                              <span className="ms-2 font-medium">
+                                                {rep.content}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <FontAwesomeIcon
+                                            className="text-xs absolute right-0 top-1"
+                                            icon={faHeart}
+                                          />
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+
+                              <FontAwesomeIcon
+                                className="text-xs absolute top-1 right-0 "
+                                icon={faHeart}
+                              />
+                            </div>
+                          ))
+                        ) : (
+                          <div className="flex mt-1 relative justify-between w-full">
+                            <div className="text-sm w-full">
+                              <div className="flex  items-center">
                                 <div>
-                                  <span>{comment.author.userName}</span>
-                                  <span className="ms-2 font-medium">
-                                    {comment.content}
+                                  <span className="me-2 mt-1 rounded-full w-6 h-6 flex items-center justify-center   overflow-hidden">
+                                    <React.Suspense
+                                      fallback={
+                                        <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                      }
+                                    >
+                                      <ImageComponent
+                                        src={post.comments[0].author.profileUrl}
+                                      />
+                                    </React.Suspense>
                                   </span>
                                 </div>
-                                <div
+                                <div>
+                                  <span>
+                                    {post.comments[0].author.userName}
+                                  </span>
+                                  <span className="ms-2  font-medium">
+                                    {post.comments[0].content}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="mt-2   cursor-pointer text-gray-400 text-xs">
+                                <span
                                   onClick={() => {
                                     setComment((prev) => ({
                                       ...prev,
                                       [post._id]: "",
                                     }));
                                     setReply(() => ({
-                                      userName: comment.author.userName,
+                                      userName:
+                                        post.comments[0].author.userName,
                                       userId: userData._id,
-                                      commentId: comment._id,
-                                      placeHolder: `Reply to ${comment.author.userName} `,
+                                      commentId: post.comments[0]._id,
+                                      placeHolder: `Reply to ${post.comments[0].author.userName}`,
                                       content: "",
                                       postId: post._id,
                                     }));
                                   }}
-                                  className="cursor-pointer text-gray-400 text-xs"
                                 >
                                   Reply
-                                </div>
-                              </div>
-                              <div>
-                                <FontAwesomeIcon
-                                  className="text-xs"
-                                  icon={faHeart}
-                                />
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="flex mt-1 justify-between items-center">
-                            <div className="text-sm ">
-                              <div>
-                                <span>{post.comments[0].author.userName}</span>
-                                <span className="ms-2 font-medium">
-                                  {post.comments[0].content}
                                 </span>
+                                {post.comments[0].replies.length ? (
+                                  showReply[post.comments[0]._id] ? (
+                                    <span
+                                      className="ms-2"
+                                      onClick={() =>
+                                        setShowReply((prev) => ({
+                                          ...prev,
+                                          [post.comments[0]._id]: false,
+                                        }))
+                                      }
+                                    >
+                                      Hide Reply
+                                    </span>
+                                  ) : (
+                                    <span
+                                      className="ms-2"
+                                      onClick={() =>
+                                        setShowReply((prev) => ({
+                                          ...prev,
+                                          [post.comments[0]._id]: true,
+                                        }))
+                                      }
+                                    >
+                                      View Reply
+                                    </span>
+                                  )
+                                ) : (
+                                  <span className="ms-2">0 Replies</span>
+                                )}
                               </div>
-                              <div
-                                onClick={() => {
-                                  setComment((prev) => ({
-                                    ...prev,
-                                    [post._id]: "",
-                                  }));
-                                  setReply(() => ({
-                                    userName: post.comments[0].author.userName,
-                                    userId: userData._id,
-                                    commentId: post.comments[0]._id,
-                                    placeHolder: `Reply to ${post.comments[0].author.userName}`,
-                                    content: "",
-                                    postId: post._id,
-                                  }));
-                                }}
-                                className="cursor-pointer text-gray-400 text-xs"
-                              >
-                                Reply
-                              </div>
+                              {showReply[post.comments[0]._id] && (
+                                <>
+                                  {post.comments[0].replies.map(
+                                    (rep, index) => {
+                                      return (
+                                        <div
+                                          key={index}
+                                          className="flex mt-1 mb-1 relative ps-16 justify-between items-center w-full"
+                                        >
+                                          <div className="flex items-top ">
+                                            <div className="w-6 h-6 me-2 mt-1">
+                                              <div className="me-2 rounded-full  w-6 h-6 flex items-center justify-center   overflow-hidden">
+                                                <React.Suspense
+                                                  fallback={
+                                                    <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                                  }
+                                                >
+                                                  <ImageComponent
+                                                    src={rep.author.profileUrl}
+                                                  />
+                                                </React.Suspense>
+                                              </div>
+                                            </div>
+
+                                            <div>
+                                              <span>{rep.author.userName}</span>
+                                              <span className="ms-2 font-medium">
+                                                {rep.content}
+                                              </span>
+                                            </div>
+                                          </div>
+                                          <FontAwesomeIcon
+                                            className="text-xs absolute right-0 top-1"
+                                            icon={faHeart}
+                                          />
+                                        </div>
+                                      );
+                                    }
+                                  )}
+                                </>
+                              )}
                             </div>
-                            <div>
-                              <FontAwesomeIcon
-                                className="text-xs"
-                                icon={faHeart}
-                              />
-                            </div>
+
+                            <FontAwesomeIcon
+                              className="text-xs absolute top-2 right-0 "
+                              icon={faHeart}
+                            />
                           </div>
                         )}
                       </div>
                     </>
                   )}
 
-                  <div className="relative">
+                  <div className="relative pe-9">
                     {Object.entries(reply).length > 0 &&
                     post._id == reply.postId ? (
                       <>
@@ -457,14 +695,15 @@ export default function Home() {
                           value={
                             reply.content ? reply.content : reply.placeHolder
                           }
-                          className={`add-comment relative ${
+                          className={`add-comment relative  ${
                             reply.content ? "" : "text-gray-400"
-                          } text-sm  my-2 w-full mt-2`}
+                          } text-sm   w-full mb-2`}
                           placeholder="add reply"
                         />
+
                         <FontAwesomeIcon
                           onClick={() => setReply({})}
-                          className="top-3 right-1 text-lg  absolute text-lg text-red-400"
+                          className="top-1 right-1 text-lg  absolute text-lg text-red-400"
                           icon={faXmark}
                         />
                       </>
@@ -477,7 +716,7 @@ export default function Home() {
                             [post._id]: e.target.value,
                           }));
                         }}
-                        className="text-sm add-comment my-2 w-full mt-2"
+                        className="text-sm add-comment  w-full mb-2"
                         placeholder="add comment"
                       />
                     )}
@@ -491,16 +730,16 @@ export default function Home() {
                             comment[post._id].trim()
                           )
                         }
-                        className="absolute me-3 text-lg top-3 text-[#512da8] right-0"
+                        className="absolute me-3 text-lg top-1 text-[#512da8] right-0"
                         icon={faPaperPlane}
                       />
                     )}
-                    {reply?.content?.trim() && (
+                    {reply?.content?.trim() && reply.postId == post._id && (
                       <FontAwesomeIcon
                         onClick={() => {
                           handleReplyComment(reply);
                         }}
-                        className="absolute me-3 text-lg top-3 text-[#512da8] right-4"
+                        className="absolute me-3 text-lg top-1 text-[#512da8] right-4"
                         icon={faPaperPlane}
                       />
                     )}
@@ -535,10 +774,14 @@ export default function Home() {
                     <div className="ms-3">
                       <div className="font-semibold">{u.userName}</div>
                       <div className="text-gray-600 text-xs">
-                        {findFollowedByCurrentUser(userData, u).map(
-                          (username) => (
-                            <div key={username}>Followed by {username}</div>
+                        {findFollowedByCurrentUser(userData, u).length > 0 ? (
+                          findFollowedByCurrentUser(userData, u).map(
+                            (username) => (
+                              <div key={username}>Followed by {username}</div>
+                            )
                           )
+                        ) : (
+                          <div>suggestions for you.</div>
                         )}
                       </div>
                     </div>
