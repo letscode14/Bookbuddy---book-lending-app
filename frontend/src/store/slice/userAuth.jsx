@@ -19,6 +19,7 @@ const userAuthSlice = createSlice({
     removeUser: (state) => {
       state.accessToken = null;
       state.user = null;
+      state.userDetails = {};
     },
 
     setUser: (state, action) => {

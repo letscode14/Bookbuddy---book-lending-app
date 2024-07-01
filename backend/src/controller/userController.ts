@@ -332,6 +332,24 @@ class UserController {
       console.log(error);
     }
   }
+
+  async getF(req: Request, res: Response, next: NextFunction) {
+    try {
+      const reponse = await this.userCase.getF(req);
+      res.status(response.statusCode).json({ ...reponse });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async report(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.postReport(req);
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 
 export default UserController;

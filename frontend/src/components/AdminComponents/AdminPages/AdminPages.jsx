@@ -10,6 +10,7 @@ export default function AdminPages() {
       <Routes>
         <Route path="/user/management" element={<User />}></Route>
         <Route path="/dashboard" element={<Dashboard />}></Route>
+        
         <Route path="*" element={<Page404 />}></Route>
       </Routes>
     </div>

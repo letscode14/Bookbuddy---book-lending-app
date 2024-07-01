@@ -8,7 +8,7 @@ interface User {
   email: string;
   password: string;
   age?: number;
-  reportCount: number;
+
   isSubscribed?: boolean;
   createdAt: Date;
   updateAt: Date;

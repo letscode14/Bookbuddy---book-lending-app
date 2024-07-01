@@ -25,6 +25,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart, faComment } from "@fortawesome/free-regular-svg-icons";
 import useEmblaCarousel from "embla-carousel-react";
+import ContentModal from "../../Modal/ContentModal";
+import Report from "../Report/Report";
 
 const ImageComponent = React.lazy(() =>
   import("../../ImageComponent/PostImage")
@@ -43,7 +45,12 @@ export default function Home() {
   const [comment, setComment] = useState({});
   const [showAllComments, setCommentShow] = useState({});
   const [showReply, setShowReply] = useState({});
+  const [reportBox, setReportBox] = useState({});
+  const [reportDetails, setReporDetails] = useState({});
   const [reply, setReply] = useState({});
+
+  const [isModalOpen, setModalOpen] = useState(false);
+
   const replyInput = useRef();
 
   const dispatch = useDispatch();
@@ -73,14 +80,18 @@ export default function Home() {
         setPost(response);
         const initialShowComments = {};
         const initialReplyCommentsShow = {};
+        const initialReportBox = {};
         response.forEach((post) => {
           initialShowComments[post._id] = false;
+          initialReportBox[post._id] = false;
           post.comments.forEach((com) => {
             initialReplyCommentsShow[com._id] = false;
           });
         });
+
         setCommentShow(initialShowComments);
         setShowReply(initialReplyCommentsShow);
+        setReportBox(initialReportBox);
       }
     }
     fetchPost();
@@ -90,11 +101,9 @@ export default function Home() {
       const response = await getSuggestion(user);
       if (response) {
         setSuggestion(response);
-        console.log(response);
         const initialFollowStatus = {};
 
         response.forEach((suggestion) => {
-          console.log(suggestion);
           initialFollowStatus[suggestion._id] = false;
           if (followersId.includes(suggestion._id)) {
             initialFollowStatus[suggestion._id] = "follows you";
@@ -149,7 +158,6 @@ export default function Home() {
       }
     }
   };
-  console.log(post);
 
   const handleLike = async (postId, userId) => {
     try {
@@ -251,13 +259,23 @@ export default function Home() {
       .map((follower) => follower.userId.userName);
   };
 
+  const handleContentModalClose = () => {
+    setModalOpen(false);
+  };
+
   return (
     <div
       ref={contentPage}
       className="ps-20 pe-20  overflow-auto  home-content absolute top-3 bottom-3 flex   bg-[#ffffff]"
     >
+      <ContentModal
+        isContentModalOpen={isModalOpen}
+        onContentClose={handleContentModalClose}
+      >
+        <Report reportData={reportDetails} onClose={handleContentModalClose} />
+      </ContentModal>
       <div className="left-container-home object-fit  relative  ">
-        <div className="story-segment bg-[#ffffff] z-50 pt-10 items-center ps-2 overflow-y-auto sticky top-0  flex">
+        <div className="story-segment bg-[#ffffff] z-20 pt-10 items-center ps-2 overflow-y-auto sticky top-0  flex">
           <div className="own-profile relative flex justify-center">
             <FontAwesomeIcon
               className="text-2xl  absolute right-2 bottom-1"
@@ -315,8 +333,39 @@ export default function Home() {
                         <div></div>
                       </div>
                     </div>
-                    <div>
-                      <FontAwesomeIcon className="text-2xl" icon={faEllipsis} />
+                    <div className="relative ">
+                      <FontAwesomeIcon
+                        className="text-2xl"
+                        onClick={() =>
+                          setReportBox((prev) => ({
+                            ...prev,
+                            [post._id]: !prev[post._id],
+                          }))
+                        }
+                        icon={faEllipsis}
+                      />
+                      <div
+                        className={`text-box ${
+                          reportBox[post._id] ? "w-20" : "w-0"
+                        }  overflow-hidden flex justify-center items-center absolute bg-[#512da8]   left-3`}
+                      >
+                        <span
+                          onClick={() => {
+                            setReporDetails({
+                              culprit: post.userId._id,
+                              contentId: post._id,
+                              userId: userData._id,
+                              email: userData.email,
+                              userName: userData.userName,
+                              type: "Post",
+                            });
+                            setModalOpen(true);
+                          }}
+                          className="  font-semibold uppercase text-xs    text-[#ffffff]"
+                        >
+                          Report
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -372,7 +421,15 @@ export default function Home() {
                       </div>
                     )}
                   </div>
-                  <div className="font-semibold">{post.likes.length} Likes</div>
+                  <div className="font-semibold">
+                    {post.likes.length > 1
+                      ? `Liked by ${post.likes[0].userName}  and ${
+                          post.likes.length - 1
+                        } others`
+                      : post.likes.length == 1
+                      ? `Liked by ${post.likes[0]?.userName} `
+                      : "O Likes"}
+                  </div>
                   <div className="font-semibold mt-2 ">
                     <div className="my-1">{post.userId.userName}</div>
 

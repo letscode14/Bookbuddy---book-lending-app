@@ -1,7 +1,11 @@
 import React from "react";
 
 import { useEffect, useRef, useState } from "react";
-import { removeUser, selecUser } from "../../../store/slice/userAuth";
+import {
+  removeUser,
+  saveUserDetails,
+  selecUser,
+} from "../../../store/slice/userAuth";
 
 import { useDispatch, useSelector } from "react-redux";
 import { startLoading, stopLoading } from "../../../store/slice/loadinSlice";
@@ -26,6 +30,8 @@ import { useConfirmationModal } from "../../Modal/ModalContext";
 import { getUser } from "../../../Service/Apiservice/UserApi";
 import EditUser from "./EditUser/EditUser";
 import { setVerifyFalse } from "../../../store/slice/VerifyEmailAuth";
+import FollowerList from "./FollowersList/FollowerList";
+import FollowingList from "./FollowingLIst/FollowingList";
 export default function Search() {
   //modal state
 
@@ -42,6 +48,7 @@ export default function Search() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({});
   const { showModal } = useConfirmationModal();
+  const [modalFor, setModaFor] = useState("");
   useEffect(() => {
     const element = contentPage.current;
     document.title = "Profile";
@@ -66,19 +73,21 @@ export default function Search() {
     dispatch(setVerifyFalse());
     setUserData(userDetails);
     setIsModalOpen(false);
+    setModaFor("");
     dispatch(stopLoading());
   };
 
   useEffect(() => {
     (async function fetchUser() {
       const response = await getUser(user);
-      console.log("useEffect user deatils", response);
+
       if (response) {
+        dispatch(saveUserDetails(response));
         setUserDetails(response);
         setUserData(response);
       }
     })();
-  }, [user, isModalOpen]);
+  }, [isModalOpen]);
 
   useEffect(() => {
     const element = lineMenu.current;
@@ -109,7 +118,11 @@ export default function Search() {
         isContentModalOpen={isModalOpen}
         onContentClose={handleContentModalClose}
       >
-        <EditUser userInfo={userData} onClose={handleContentModalClose} />
+        {modalFor == "edituser" && (
+          <EditUser userInfo={userData} onClose={handleContentModalClose} />
+        )}
+        {modalFor == "followers" && <FollowerList user={userData} />}
+        {modalFor == "following" && <FollowingList user={userData} />}
       </ContentModal>
       <div
         ref={contentPage}
@@ -162,13 +175,29 @@ export default function Search() {
                   <div className="text-center">
                     {userDetails.followers?.length}
                   </div>
-                  <div className="text-center">Followers</div>
+                  <div
+                    className="cursor-pointer text-center"
+                    onClick={() => {
+                      setModaFor("followers");
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    Followers
+                  </div>
                 </div>
                 <div className="">
                   <div className="text-center">
                     {userDetails.following?.length}
                   </div>
-                  <div className="text-center">Following</div>
+                  <div
+                    className="text-center cursor-pointer"
+                    onClick={() => {
+                      setModaFor("following");
+                      setIsModalOpen(true);
+                    }}
+                  >
+                    Following
+                  </div>
                 </div>
                 <div className=" ">
                   <div className="text-center">
@@ -206,9 +235,10 @@ export default function Search() {
                 </button>
                 <button
                   onClick={() =>
-                    showModal("Do you wish to continue", "user", () =>
-                      setIsModalOpen(true)
-                    )
+                    showModal("Do you wish to continue", "user", () => {
+                      setIsModalOpen(true);
+                      setModaFor("edituser");
+                    })
                   }
                   className="edit-profile-button"
                 >

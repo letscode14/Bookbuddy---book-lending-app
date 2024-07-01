@@ -61,6 +61,7 @@ const postSchema: Schema<IPost> = new mongoose.Schema({
     required: true,
     default: "Not Added",
   },
+
   imageUrls: [
     {
       publicId: {

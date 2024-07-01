@@ -2,6 +2,7 @@ import Post from "../../entity/postEntity";
 import User from "../../entity/userEntity";
 import { Request } from "express";
 import { IComment, IPost, IReply } from "../../framework/databases/postModel";
+import { IFollower } from "../../framework/databases/userModel";
 
 interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
@@ -24,6 +25,8 @@ interface IUserRepository {
   getPostDetails(req: Request): Promise<Post | null>;
   addComment(req: Request): Promise<IComment | null>;
   addReply(req: Request): Promise<IReply | null>;
+  getF(req: Request): Promise<User | null>;
+  postReport(req: Request): Promise<boolean | null>;
 }
 
 export default IUserRepository;

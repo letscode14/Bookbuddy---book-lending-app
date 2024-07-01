@@ -1,7 +1,7 @@
 import mongoose, { Document, Model, Mongoose, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
 //
-interface IFollower {
+export interface IFollower {
   userId: mongoose.Types.ObjectId;
   followedOn: Date;
 }
@@ -12,7 +12,8 @@ interface IUser extends Document {
   email: string;
   password: string;
   age: number;
-  reportCount: number;
+  reportCount: mongoose.Types.ObjectId[];
+  reportsMade: mongoose.Types.ObjectId[];
   createdAt: Date;
   updateAt: Date;
   followers: IFollower[];
@@ -51,10 +52,21 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  reportCount: {
-    type: Number,
-    default: 0,
-  },
+  reportsMade: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Report",
+      default: [],
+    },
+  ],
+
+  reportCount: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Report",
+      default: [],
+    },
+  ],
   isSubscribed: {
     type: Boolean,
     default: false,

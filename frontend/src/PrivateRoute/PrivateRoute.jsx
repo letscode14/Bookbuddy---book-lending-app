@@ -1,8 +1,10 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { selectToken } from "../store/slice/userAuth";
+import { useDispatch, useSelector } from "react-redux";
+import { removeUser, selecUser, selectToken } from "../store/slice/userAuth";
 import { selectAdminToken } from "../store/slice/adminAuth";
 import { selectOtpLoginAuth } from "../store/slice/otpLoginAuth";
+import { useEffect } from "react";
+import { showErrorToast } from "../utils/toast";
 
 export function SubmitOtpPrivateRoute() {
   const { isAuthForOtp } = useSelector((state) => state.otpAuth);
@@ -13,6 +15,17 @@ export function SubmitOtpPrivateRoute() {
 
 export function UserAccessRoutes() {
   const { accessToken } = useSelector(selectToken);
+  const { userDetails } = useSelector(selecUser);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (userDetails.isBlocked) {
+      dispatch(removeUser());
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      showErrorToast("Admin blocked you please contact admin for futher !");
+    }
+  }, [userDetails, dispatch]);
 
   return accessToken ? <Outlet /> : <Navigate to="/login" />;
 }

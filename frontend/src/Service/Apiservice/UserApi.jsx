@@ -314,6 +314,8 @@ export const addComment = async (postId, userId, comment) => {
 };
 
 export const addReply = async (reply) => {
+  updateAuthorizationHeader("user");
+
   try {
     const response = await axiosInstance.patch("/user/add/reply", reply);
 
@@ -322,5 +324,33 @@ export const addReply = async (reply) => {
     }
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const fetchF = async (query) => {
+  updateAuthorizationHeader("user");
+
+  try {
+    const response = await axiosInstance.get("/user/friends/users", {
+      params: query,
+    });
+    if (response.status == 200) {
+      return response.data.result;
+    }
+    return false;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const postReport = async (reportData) => {
+  updateAuthorizationHeader("user");
+  try {
+    const response = await axiosInstance.post("/user/report", reportData);
+    if (response.status == 200) return true;
+    return false;
+  } catch (error) {
+    console.log(error);
+    return error.response.data.message;
   }
 };

@@ -151,4 +151,13 @@ userRouter.patch("/add/reply", authMiddleware, (req, res, next) => {
   controller.addReply(req, res, next);
 });
 
+//fetch followers
+userRouter.get("/friends/users", authMiddleware, (req, res, next) => {
+  controller.getF(req, res, next);
+});
+
+userRouter.post("/report", authMiddleware, (req, res, next) => {
+  controller.report(req, res, next);
+});
+
 export default userRouter;

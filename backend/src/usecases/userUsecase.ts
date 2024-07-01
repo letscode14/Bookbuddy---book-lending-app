@@ -820,6 +820,58 @@ class UserUseCase {
       };
     }
   }
+
+  async getF(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.getF(req);
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        };
+      }
+      return {
+        statusCode: 409,
+        message: "unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+
+  async postReport(req: Request): Promise<ResponseType> {
+    try {
+      const response = await this.iUserRepository.postReport(req);
+      if (response) {
+        return {
+          statusCode: 200,
+          message: "Reported successfully",
+        };
+      }
+      if (response == null) {
+        return {
+          statusCode: 409,
+          message:
+            "You have already reported on this wait until it get resolved",
+        };
+      }
+
+      return {
+        statusCode: 409,
+        message: "unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
 }
 
 export default UserUseCase;

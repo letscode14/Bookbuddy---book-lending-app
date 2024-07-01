@@ -1,11 +1,13 @@
 import IUserRepository from "../../usecases/interface/IUserRepository";
 import User from "../../entity/userEntity";
 import Post from "../../entity/postEntity";
-import userModel from "../databases/userModel";
+import userModel, { IFollower } from "../databases/userModel";
 import bcrypt from "bcryptjs";
 import postModel, { IComment, IPost, IReply } from "../databases/postModel";
 import { ObjectId } from "mongodb";
-import { Request } from "express";
+import { Request, response } from "express";
+import reportModel from "../databases/reportsModel";
+
 class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return await userModel.findOne({ email }).select("+password");
@@ -114,7 +116,8 @@ class UserRepository implements IUserRepository {
       const id = req.query.id as string;
       const user = await userModel
         .findById(id)
-        .populate("following.userId", "userName");
+        .populate("following.userId", "userName")
+        .select("-password");
       if (!user) {
         return null;
       }
@@ -160,7 +163,8 @@ class UserRepository implements IUserRepository {
           .find({
             _id: { $in: followersId },
           })
-          .populate("followers.userId", "userName")) as User[];
+          .populate("followers.userId", "userName")
+          .select("-password")) as User[];
 
         return suggestions;
       }
@@ -169,7 +173,8 @@ class UserRepository implements IUserRepository {
         .find({
           _id: { $in: Array.from(secondDegreeFollowerIds) },
         })
-        .populate("followers.userId", "userName")) as User[];
+        .populate("followers.userId", "userName")
+        .select("-password")) as User[];
 
       if (suggestions) {
         return suggestions;
@@ -415,6 +420,71 @@ class UserRepository implements IUserRepository {
     } catch (error) {
       console.log(error);
       return null;
+    }
+  }
+  async getF(req: Request): Promise<User | null> {
+    try {
+      const { userId, query } = req.query;
+
+      let response;
+      if (query == "followers") {
+        response = (await userModel
+          .findById(userId, { _id: 0, followers: 1 })
+          .populate("followers.userId", "userName profileUrl name")) as User;
+      } else {
+        response = (await userModel
+          .findById(userId, { following: 1 })
+          .populate("following.userId", "userName profileUrl name")) as User;
+      }
+
+      if (response) {
+        return response;
+      }
+
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+  async postReport(req: Request): Promise<boolean | null> {
+    try {
+      const { culprit, type, contentId, reportedBy, reason } = req.body;
+
+      const report = await reportModel.find({
+        reportedBy: reportedBy,
+        targetId: contentId,
+        status: { $in: ["Pending", "Reviewed"] },
+      });
+
+      if (report) {
+        return null;
+      }
+
+      const reported = await reportModel.create({
+        reportedBy,
+        targetType: type,
+        targetId: contentId,
+        reason,
+      });
+      if (reported) {
+        await userModel.findByIdAndUpdate(culprit, {
+          $push: { reportCount: reported._id },
+        });
+
+        await userModel.findByIdAndUpdate(reportedBy, {
+          $push: { reportsMade: reported._id },
+        });
+      }
+
+      if (reported) {
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.log(error);
+      return false;
     }
   }
 }
