@@ -1,78 +1,78 @@
-import "./AdminLogin.css";
-import Logo from "/images/Logo2.png";
-import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import './AdminLogin.css'
+import Logo from '/images/Logo2.png'
+import { useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import {
   validateEmail,
   validatePassword,
-} from "../../../../helpers/ValidationHelpers/ValidationHelper";
-import { startLoading, stopLoading } from "../../../store/slice/loadinSlice";
-import { selectLoading } from "../../../store/slice/loadinSlice";
-import { useSelector, useDispatch } from "react-redux";
-import { selectError } from "../../../store/slice/errorSlice";
+} from '../../../../helpers/ValidationHelpers/ValidationHelper'
+import { startLoading, stopLoading } from '../../../store/slice/loadinSlice'
+import { selectLoading } from '../../../store/slice/loadinSlice'
+import { useSelector, useDispatch } from 'react-redux'
+import { selectError } from '../../../store/slice/errorSlice'
 
-import { useNavigate } from "react-router-dom";
-import { saveAdmin } from "../../../store/slice/adminAuth";
-import { adminLogin } from "../../../Service/Apiservice/AdminApi";
+import { useNavigate } from 'react-router-dom'
+import { saveAdmin } from '../../../store/slice/adminAuth'
+import { adminLogin } from '../../../Service/Apiservice/AdminApi'
 
 export default function AdminLogin() {
-  const { isLoading } = useSelector(selectLoading);
-  const { customError } = useSelector(selectError);
-  const [error, setError] = useState(0);
-  const [adminDetails, setUserDetails] = useState({});
-  const [passView, setPassView] = useState(true);
-  const [passwordError, setPassError] = useState("");
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const { isLoading } = useSelector(selectLoading)
+  const { customError } = useSelector(selectError)
+  const [error, setError] = useState(0)
+  const [adminDetails, setUserDetails] = useState({})
+  const [passView, setPassView] = useState(true)
+  const [passwordError, setPassError] = useState('')
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    dispatch;
+    e.preventDefault()
+    dispatch
     if (
       Object.entries(adminDetails).length !== 2 ||
-      Object.values(adminDetails).some((value) => value == "")
+      Object.values(adminDetails).some((value) => value == '')
     ) {
-      setError(3);
+      setError(3)
       setTimeout(() => {
-        setError(0);
-      }, 1500);
+        setError(0)
+      }, 1500)
 
-      return;
+      return
     }
     if (!validateEmail(adminDetails.email)) {
-      setError(1);
+      setError(1)
       setTimeout(() => {
-        setError(0);
-      }, 1500);
-      return;
+        setError(0)
+      }, 1500)
+      return
     }
 
-    const pass = validatePassword(adminDetails.password);
+    const pass = validatePassword(adminDetails.password)
     if (pass !== true) {
-      setPassError(pass);
-      setError(2);
+      setPassError(pass)
+      setError(2)
       setTimeout(() => {
-        setError(0);
-        setPassError("");
-      }, 1500);
-      return;
+        setError(0)
+        setPassError('')
+      }, 1500)
+      return
     }
-    dispatch(startLoading());
+    dispatch(startLoading())
 
-    const response = await adminLogin(adminDetails);
+    const response = await adminLogin(adminDetails)
 
     if (response.status == 200) {
-      dispatch(stopLoading());
+      dispatch(stopLoading())
       dispatch(
         saveAdmin({
           admin: response.data._id,
           adminAccessToken: response.data.accessToken,
         })
-      );
-      navigate("/admin/dashboard");
+      )
+      navigate('/admin/dashboard')
     }
-  };
+  }
 
   return (
     <div className="flex justify-center items-center relative admin-login-container">
@@ -121,7 +121,7 @@ export default function AdminLogin() {
               <div className="flex justify-between">
                 <div
                   className={` pt-1 text-xs text-red-500 transition-opacity duration-500 ${
-                    error == 3 ? "" : "opacity-0"
+                    error == 3 ? '' : 'opacity-0'
                   }`}
                 >
                   Fill all the fields
@@ -143,7 +143,7 @@ export default function AdminLogin() {
 
               <div
                 className={`pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-                  error == 1 ? "" : "opacity-0"
+                  error == 1 ? '' : 'opacity-0'
                 }`}
               >
                 Enter a valid email
@@ -151,7 +151,7 @@ export default function AdminLogin() {
             </div>
             <div className="w-full relative">
               <input
-                type={passView ? "text" : "password"}
+                type={passView ? 'text' : 'password'}
                 onChange={(e) =>
                   setUserDetails({
                     ...adminDetails,
@@ -178,7 +178,7 @@ export default function AdminLogin() {
             <div className=" text-sm flex w-full justify-between ">
               <div
                 className={` py-1 text-xs text-red-500 transition-opacity duration-500 ${
-                  error == 2 ? " " : "opacity-0"
+                  error == 2 ? ' ' : 'opacity-0'
                 }`}
               >
                 {passwordError}
@@ -194,7 +194,7 @@ export default function AdminLogin() {
                 {isLoading ? (
                   <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
                 ) : (
-                  "SIGN in"
+                  'SIGN in'
                 )}
               </button>
             </div>
@@ -202,5 +202,5 @@ export default function AdminLogin() {
         </div>
       </div>
     </div>
-  );
+  )
 }
