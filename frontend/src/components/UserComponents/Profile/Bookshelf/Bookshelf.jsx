@@ -1,48 +1,46 @@
-import React, { useEffect, useState } from "react";
-import "./Bookshelf.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
+import React, { useEffect, useState } from 'react'
+import './Bookshelf.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faLocationDot } from '@fortawesome/free-solid-svg-icons'
 import {
   getBookshelf,
   viewOneBook,
-} from "../../../../Service/Apiservice/UserApi";
-import ContentModal from "../../../Modal/ContentModal";
-import ViewBook from "./ViewBookshelf/ViewBook";
-const ImageComponent = React.lazy(() =>
-  import("../../../ImageComponent/Image")
-);
+} from '../../../../Service/Apiservice/UserApi'
+import ContentModal from '../../../Modal/ContentModal'
+import ViewBook from './ViewBookshelf/ViewBook'
+const ImageComponent = React.lazy(() => import('../../../ImageComponent/Image'))
 
 export default function Bookshelf({ userId }) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isModelOpen, setModel] = useState(false);
-  const [shelfOwned, setShelOwned] = useState("");
-  const [bookData, setBookData] = useState({});
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [isModelOpen, setModel] = useState(false)
+  const [shelfOwned, setShelOwned] = useState('')
+  const [bookData, setBookData] = useState({})
 
   useEffect(() => {
     const fetechBookshelf = async () => {
-      const response = await getBookshelf(userId);
+      const response = await getBookshelf(userId)
       if (response) {
-        setData(response.shelf);
-        setShelOwned(response.userId);
+        setData(response.shelf)
+        setShelOwned(response.userId)
       }
-      setLoading(false);
-    };
-    fetechBookshelf();
-  }, [isModelOpen]);
+      setLoading(false)
+    }
+    fetechBookshelf()
+  }, [isModelOpen])
 
   const handleContentClose = () => {
-    setModel(false);
-  };
+    setModel(false)
+  }
 
   const viewBookshelf = async (bookId, userId) => {
-    const response = await viewOneBook(bookId, userId);
-    console.log(response);
+    const response = await viewOneBook(bookId, userId)
+    console.log(response)
     if (response) {
-      setBookData(response);
-      setModel(true);
+      setBookData(response)
+      setModel(true)
     }
-  };
+  }
 
   return (
     <>
@@ -100,5 +98,5 @@ export default function Bookshelf({ userId }) {
         </div>
       )}
     </>
-  );
+  )
 }
