@@ -7,6 +7,8 @@ import postModel, { IComment, IPost, IReply } from "../databases/postModel";
 import { ObjectId } from "mongodb";
 import { Request, response } from "express";
 import reportModel from "../databases/reportsModel";
+import BookshelfModel from "../databases/bookShelfModel";
+import { IBookShelf, IShelf } from "../../entity/bookShelfEntity";
 
 class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -69,14 +71,43 @@ class UserRepository implements IUserRepository {
   async addPost(
     id: string,
     description: string,
-    images: []
+    images: [{ secure_url: string; publicId: string }],
+    req: Request
   ): Promise<Post | unknown> {
     try {
+      let bookshelf;
+      if (req.body?.addToBookshelf) {
+        const { author, ShelfDescription, bookName, limit, location } =
+          req.body;
+
+        bookshelf = await BookshelfModel.findOneAndUpdate(
+          { userId: new ObjectId(id) },
+          {
+            $push: {
+              shelf: {
+                author: author,
+                bookName: bookName,
+                description: ShelfDescription,
+                imageUrl: images[0],
+                limit: limit,
+                location: location,
+              },
+            },
+          },
+          { upsert: true, new: true }
+        );
+      }
+      const lastAddedBookId = bookshelf?.shelf[bookshelf.shelf.length - 1]
+        ?._id as string;
       const savedPost = await postModel.create({
         userId: new ObjectId(id),
         description,
         imageUrls: images,
+        isAddedToBookShelf: req.body?.addToBookshelf
+          ? new ObjectId(lastAddedBookId)
+          : false,
       });
+
       if (savedPost) {
         return savedPost;
       }
@@ -86,9 +117,14 @@ class UserRepository implements IUserRepository {
       console.log(error);
     }
   }
+
   async getPost(id: string): Promise<[] | null> {
     try {
-      const post = (await postModel.find({ userId: new ObjectId(id) })) as [];
+      const post = (await postModel.find({
+        userId: new ObjectId(id),
+        isDeleted: false,
+        isRemoved: false,
+      })) as [];
       if (post) return post;
       else return null;
     } catch (error) {
@@ -250,7 +286,7 @@ class UserRepository implements IUserRepository {
       );
       const userIds = [...new Set([...followerIds, ...followingIds, user._id])];
       const posts = await postModel
-        .find({ userId: { $in: userIds } })
+        .find({ userId: { $in: userIds }, isDeleted: false, isRemoved: false })
         .populate("userId", "userName email profileUrl")
         .populate("likes", "userName")
         .populate("comments.author", "userName  profileUrl")
@@ -484,6 +520,150 @@ class UserRepository implements IUserRepository {
       return false;
     } catch (error) {
       console.log(error);
+      return false;
+    }
+  }
+  async getBookshelf(userId: string): Promise<IBookShelf | null> {
+    try {
+      const bookshelf = await BookshelfModel.aggregate([
+        {
+          $match: {
+            userId: new ObjectId(userId),
+          },
+        },
+        {
+          $project: {
+            shelf: {
+              $filter: {
+                input: "$shelf",
+                as: "item",
+                cond: {
+                  $and: [
+                    { $eq: ["$$item.isRemoved", false] },
+                    { $eq: ["$$item.isDeleted", false] },
+                  ],
+                },
+              },
+            },
+            userId: 1,
+          },
+        },
+      ]);
+
+      if (bookshelf.length) {
+        return bookshelf[0];
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async getOneBook(bookId: string, userId: string): Promise<IShelf | null> {
+    try {
+      const userObjectId = new ObjectId(userId);
+      const bookObjectId = new ObjectId(bookId);
+
+      const result = await BookshelfModel.aggregate([
+        {
+          $match: {
+            userId: userObjectId,
+            "shelf._id": bookObjectId,
+          },
+        },
+        {
+          $project: {
+            shelf: {
+              $filter: {
+                input: "$shelf",
+                as: "item",
+                cond: { $eq: ["$$item._id", bookObjectId] },
+              },
+            },
+          },
+        },
+      ]);
+      if (result[0].shelf) return result[0].shelf[0];
+      else return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  async editBook(req: Request): Promise<boolean> {
+    try {
+      const {
+        bookName,
+        author,
+        description,
+        location,
+        limit,
+        ID,
+        userId,
+        _id,
+      } = req.body;
+
+      const editedShelf = await BookshelfModel.findOneAndUpdate(
+        {
+          userId: new ObjectId(userId),
+          "shelf._id": new ObjectId(_id),
+        },
+        {
+          $set: {
+            "shelf.$.bookName": bookName,
+            "shelf.$.author": author,
+            "shelf.$.location": location,
+            "shelf.$.description": description,
+            "shelf.$.limit": limit,
+          },
+        },
+        { new: true }
+      );
+
+      if (editedShelf) {
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+  async removeBook(req: Request): Promise<boolean> {
+    try {
+      const { shelfId, userId } = req.body;
+
+      const updatedBookshelf = await BookshelfModel.findOneAndUpdate(
+        {
+          userId: new ObjectId(userId),
+          "shelf._id": new ObjectId(shelfId),
+        },
+        {
+          $set: { "shelf.$.isDeleted": true },
+        },
+        { new: true }
+      );
+
+      const updatedPost = await postModel.findOneAndUpdate(
+        {
+          isAddedToBookShelf: new ObjectId(shelfId),
+          userId: new ObjectId(userId),
+        },
+        { $set: { isAddedToBookShelf: null } },
+        { new: true }
+      );
+
+      if (updatedBookshelf && updatedPost) {
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.log(error);
+
       return false;
     }
   }

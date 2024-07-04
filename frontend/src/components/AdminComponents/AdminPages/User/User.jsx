@@ -21,6 +21,7 @@ import { useConfirmationModal } from "../../../Modal/ModalContext";
 
 export default function User() {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   //state  for modal
 
@@ -35,10 +36,10 @@ export default function User() {
     async function fetchUser() {
       const response = await getAllusers({ fetch: filterState, page: pageNo });
       if (response) {
-        console.log(response);
         setData(response.user);
         setTotal(response.totalPage);
       }
+      setLoading(false);
     }
     fetchUser();
   }, [pageNo, filterState]);
@@ -132,7 +133,7 @@ export default function User() {
                   <tr className="grid-cols-10 border h-12   text-center ">
                     <td>{userItem.name}</td>
                     <td className="flex justify-center items-center">
-                      <div className="w-10 flex justify-center items-center ">
+                      <div className="w-10 flex rounded-full overflow-hidden justify-center items-center ">
                         <React.Suspense
                           fallback={
                             <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
@@ -150,7 +151,7 @@ export default function User() {
                     <td>{userItem.isSubscribed ? "Premium" : "Regular"}</td>
                     <td>{userItem.badge == "No badge" ? "0" : ""}</td>
                     <td>{userItem.privacy ? "Private" : "Public"}</td>
-                    <td>{userItem.reportCount}</td>
+                    <td>{userItem.reportCount.length}</td>
                     <td>{userItem.isBlocked ? "Blocked" : "Active"}</td>
                     <td>
                       <div className="text-xl ">
@@ -180,7 +181,11 @@ export default function User() {
             ) : (
               <tbody className="relative ">
                 <tr className="absolute right-[50%] top-16">
-                  <td className="text-xl text-gray-400">No user found!</td>
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#512da8]"></div>
+                  ) : (
+                    <td className="text-xl text-gray-400">No user found!</td>
+                  )}
                 </tr>
               </tbody>
             )}

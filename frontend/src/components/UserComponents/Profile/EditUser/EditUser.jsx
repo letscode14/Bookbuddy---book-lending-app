@@ -307,6 +307,8 @@ export default function EditUser({ userInfo, onClose }) {
       const errorIndices = [];
       const key = Object.keys(userData);
       key.forEach((key, index) => {
+        console.log(userData);
+        console.log(key);
         if (key !== "newProfile") {
           if (userData[key] === "") {
             errorIndices.push(index + 1);

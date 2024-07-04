@@ -121,6 +121,72 @@ class AdminUseCase {
       };
     }
   }
+
+  async getAllPost(req: Request): Promise<ResponseType> {
+    try {
+      const post = await this.iAdminRepository.getAllPost(req);
+
+      if (post) {
+        return {
+          statusCode: 200,
+          ...post,
+        };
+      }
+
+      return {
+        statusCode: 409,
+        message: "Unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+  async getPostReports(req: Request): Promise<ResponseType> {
+    try {
+      const response = await this.iAdminRepository.getPostReports(req);
+      if (response) {
+        return {
+          statusCode: 200,
+          result: response,
+        };
+      }
+      return {
+        statusCode: 409,
+        message: "unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+  async removeReport(req: Request): Promise<ResponseType> {
+    try {
+      const response = await this.iAdminRepository.removeReport(req);
+      if (response) {
+        return {
+          statusCode: 200,
+          message: "report removed",
+        };
+      }
+      return {
+        statusCode: 409,
+        message: "unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
 }
 
 export default AdminUseCase;

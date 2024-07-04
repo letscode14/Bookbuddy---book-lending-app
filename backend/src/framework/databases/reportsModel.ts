@@ -6,8 +6,9 @@ export interface IReport extends Document {
   targetId: mongoose.Types.ObjectId;
   reason: string;
   reportedOn: Date;
-  status: "Pending" | "Reviewed" | "Resolved";
+  status: "Pending" | "Reviewed" | "Resolved" | "Removed";
   resolution?: string;
+  isRemoved: boolean;
 }
 
 const reportSchema: Schema<IReport> = new Schema({
@@ -26,6 +27,10 @@ const reportSchema: Schema<IReport> = new Schema({
     required: true,
     refPath: "targetType",
   },
+  isRemoved: {
+    type: Boolean,
+    default: false,
+  },
   reason: {
     type: String,
     required: true,
@@ -36,7 +41,7 @@ const reportSchema: Schema<IReport> = new Schema({
   },
   status: {
     type: String,
-    enum: ["Pending", "Reviewed", "Resolved"],
+    enum: ["Pending", "Reviewed", "Resolved", "Removed"],
     default: "Pending",
   },
 

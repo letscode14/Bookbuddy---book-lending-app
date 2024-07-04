@@ -424,7 +424,8 @@ class UserUseCase {
         const post = await this.iUserRepository.addPost(
           id,
           description,
-          imageUrlArray as []
+          imageUrlArray as [{ secure_url: string; publicId: string }],
+          req
         );
 
         if (post) {
@@ -447,7 +448,8 @@ class UserUseCase {
         const post = await this.iUserRepository.addPost(
           id,
           description,
-          imageUrlArray as []
+          imageUrlArray as [{ secure_url: string; publicId: string }],
+          req
         );
         if (post) {
           return {
@@ -872,6 +874,99 @@ class UserUseCase {
       };
     }
   }
+  async getBookshelf(userId: string): Promise<ResponseType> {
+    try {
+      const data = await this.iUserRepository.getBookshelf(userId);
+      if (data) {
+        return {
+          statusCode: 200,
+          result: data,
+        };
+      }
+
+      return {
+        statusCode: 409,
+        message: "unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+
+  async viewBook(bookId: string, userId: string): Promise<ResponseType> {
+    try {
+      const book = await this.iUserRepository.getOneBook(bookId, userId);
+
+      if (book) {
+        return {
+          statusCode: 200,
+          result: book,
+        };
+      }
+
+      return {
+        statusCode: 409,
+        message: "unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+
+  async editBook(req: Request): Promise<ResponseType> {
+    try {
+      const response = await this.iUserRepository.editBook(req);
+      if (response) {
+        return {
+          statusCode: 200,
+          message: "Bookshelf edited successfully",
+        };
+      }
+
+      return {
+        statusCode: 409,
+        message: "unexpected error occured",
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+
+  async removeBook(req: Request): Promise<ResponseType> {
+    try {
+      const response = await this.iUserRepository.removeBook(req);
+      if (response) {
+        return {
+          statusCode: 200,
+          message: "Removed success fully",
+        };
+      } else {
+        return {
+          statusCode: 409,
+          message: "unexpected error occured",
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      return {
+        statusCode: 500,
+        message: "Internal server error",
+      };
+    }
+  }
+  
 }
 
 export default UserUseCase;

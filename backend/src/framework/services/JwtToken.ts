@@ -2,7 +2,6 @@ import jwt, { JwtPayload, Secret, TokenExpiredError } from "jsonwebtoken";
 import IJwtToken from "../../usecases/interface/IJwtToken";
 import User from "../../entity/userEntity";
 import { Request } from "express";
-import Admin from "../../entity/adminEntity";
 
 interface Response {
   statusCode: number;

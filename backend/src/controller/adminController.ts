@@ -57,6 +57,34 @@ class AdminController {
       console.log(error);
     }
   }
+
+  async getAllPost(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.adminCase.getAllPost(req);
+      res.status(response.statusCode).json({ ...response });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async getPostReports(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.adminCase.getPostReports(req);
+      res.status(response.statusCode).json({ ...response });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async removeReport(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.adminCase.removeReport(req);
+      res.status(response.statusCode).json({ ...response });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
 }
 
 export default AdminController;

@@ -25,6 +25,7 @@ interface IUser extends Document {
   contact: string;
   badge: string | mongoose.Types.ObjectId;
   isBlocked: boolean;
+
   isDeleted: boolean;
   isSubscribed: boolean;
   role: string;

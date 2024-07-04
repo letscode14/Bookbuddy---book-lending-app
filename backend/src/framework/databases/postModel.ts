@@ -26,9 +26,11 @@ export interface IPost extends Document {
   description: string;
   imageUrls: ImageUrl[];
   updatedAt: Date;
-  isAddedToBookShelf: boolean;
+  isAddedToBookShelf: null | mongoose.Schema.Types.ObjectId;
   comments: IComment[];
   likes: [];
+  isDeleted: boolean;
+  isRemoved: boolean;
 }
 
 const ReplySchema: Schema<IReply> = new mongoose.Schema({
@@ -85,12 +87,22 @@ const postSchema: Schema<IPost> = new mongoose.Schema({
     },
   ],
   isAddedToBookShelf: {
-    type: Boolean,
-    default: false,
+    type: mongoose.Schema.Types.ObjectId,
+    default: null,
+    ref: "BookShelf",
   },
+
   comments: {
     type: [CommentSchema],
     default: [],
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  isRemoved: {
+    type: Boolean,
+    default: false,
   },
 });
 

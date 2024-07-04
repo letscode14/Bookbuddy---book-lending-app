@@ -3,6 +3,7 @@ import User from "../../entity/userEntity";
 import { Request } from "express";
 import { IComment, IPost, IReply } from "../../framework/databases/postModel";
 import { IFollower } from "../../framework/databases/userModel";
+import { IBookShelf, IShelf } from "../../entity/bookShelfEntity";
 
 interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
@@ -11,7 +12,12 @@ interface IUserRepository {
   googleSignup(user: User): Promise<User | null>;
   loginUser(hashPass: string, password: string): Promise<boolean>;
 
-  addPost(id: string, description: string, images: []): Promise<Post | unknown>;
+  addPost(
+    id: string,
+    description: string,
+    images: [{ secure_url: string; publicId: string }],
+    req: Request
+  ): Promise<Post | unknown>;
   getPost(id: string): Promise<[] | null>;
   getUser(id: string): Promise<{} | null>;
 
@@ -27,6 +33,10 @@ interface IUserRepository {
   addReply(req: Request): Promise<IReply | null>;
   getF(req: Request): Promise<User | null>;
   postReport(req: Request): Promise<boolean | null>;
+  getBookshelf(userId: string): Promise<IBookShelf | null>;
+  getOneBook(bookId: string, userId: string): Promise<IShelf | null>;
+  editBook(req: Request): Promise<boolean>;
+  removeBook(req: Request): Promise<boolean>;
 }
 
 export default IUserRepository;

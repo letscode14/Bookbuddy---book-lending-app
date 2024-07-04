@@ -208,7 +208,7 @@ class UserController {
       res.status(user.statusCode).json({ users: user.result });
     } catch (error) {
       console.log(error);
-      next();
+      next(error);
     }
   }
 
@@ -216,7 +216,7 @@ class UserController {
     try {
     } catch (error) {
       console.log(error);
-      next();
+      next(error);
     }
   }
 
@@ -226,7 +226,7 @@ class UserController {
       res.status(response.statusCode).json({ response });
     } catch (error) {
       console.log(error);
-      next();
+      next(error);
     }
   }
   async unFollowUser(req: Request, res: Response, next: NextFunction) {
@@ -235,7 +235,7 @@ class UserController {
       res.status(response.statusCode).json({ response });
     } catch (error) {
       console.log(error);
-      next();
+      next(error);
     }
   }
 
@@ -247,6 +247,7 @@ class UserController {
       res.status(response.statusCode).json({ ...response });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -256,6 +257,7 @@ class UserController {
       res.status(response.statusCode).json({ ...response });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -267,6 +269,7 @@ class UserController {
       res.status(response.statusCode).json({ ...response });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -282,6 +285,7 @@ class UserController {
       res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -295,6 +299,7 @@ class UserController {
       res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -304,6 +309,7 @@ class UserController {
       res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -313,6 +319,7 @@ class UserController {
       res.status(200).json({ ...result });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -322,6 +329,7 @@ class UserController {
       res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
   async addReply(req: Request, res: Response, next: NextFunction) {
@@ -330,6 +338,7 @@ class UserController {
       res.status(response.statusCode).json({ ...reponse });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -339,6 +348,7 @@ class UserController {
       res.status(response.statusCode).json({ ...reponse });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
 
@@ -348,8 +358,58 @@ class UserController {
       res.status(result.statusCode).json({ ...result });
     } catch (error) {
       console.log(error);
+      next(error);
     }
   }
+
+  async getBookshelf(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.query.userId as string;
+      const result = await this.userCase.getBookshelf(userId);
+
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async viewBook(req: Request, res: Response, next: NextFunction) {
+    try {
+      const bookId = req.query.bookId as string;
+      const userId = req.query.userId as string;
+
+      const result = await this.userCase.viewBook(bookId, userId);
+
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+  async editBook(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.editBook(req);
+
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+  async removeBook(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.removeBook(req);
+
+      res.status(result.statusCode).json({ ...result });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+
+ 
 }
 
 export default UserController;

@@ -12,13 +12,15 @@ import {
   faPeopleGroup,
   faBars,
 } from "@fortawesome/free-solid-svg-icons";
-import ProfileAlt from "/images/Profile-alt.png";
 
 import "./Navbar.css";
+import { selecUser } from "../../../store/slice/userAuth";
+import { useSelector } from "react-redux";
 
 export default function Navbar() {
-  const profile = false;
   const { pathname } = useLocation();
+  const { userDetails } = useSelector(selecUser);
+
   const [menu, setMenu] = useState(0);
   const navigate = useNavigate();
 
@@ -143,14 +145,16 @@ export default function Navbar() {
           onClick={() => {
             setMenu(7), navigate("/user/profile");
           }}
-          className={`flex items-baseline  ${
+          className={`flex items-center   ${
             menu == 7 ? "text-[#000000]" : "text-[#ffffff]"
           }  font-bold `}
         >
-          <div className="rounded-full z-20  bg-[#ffffff] h-7 w-7 me-2">
-            <img src={profile ? "" : ProfileAlt} alt="" />
+          <div className="rounded-full z-20  overflow-hidden bg-[#ffffff] h-7 w-7 me-2">
+            <img src={userDetails.profileUrl} alt="" />
           </div>
-          <label className=" z-20">Profile</label>
+          <div className="z-20 ">
+            <label className=" ">Profile</label>
+          </div>
         </div>
       </div>
       <div

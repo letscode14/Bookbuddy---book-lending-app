@@ -37,6 +37,11 @@ export default function AdminNavbar() {
         break;
       case "/admin/dashboard":
         menu.current.style.left = "-16px";
+        break;
+
+      case "/admin/post/management":
+        menu.current.style.left = "335px";
+        break;
     }
   }, [pathname]);
   const navigate = useNavigate();
@@ -103,7 +108,8 @@ export default function AdminNavbar() {
           />
           <FontAwesomeIcon
             onClick={() => {
-              (menu.current.style.left = "335px"), navigate();
+              (menu.current.style.left = "335px"),
+                navigate("/admin/post/management");
             }}
             className="navbar-icon"
             icon={faPhotoFilm}

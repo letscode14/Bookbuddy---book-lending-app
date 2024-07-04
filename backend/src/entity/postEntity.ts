@@ -7,7 +7,7 @@ interface Post {
   description: string;
   imageUrls: [{ publicId: mongoose.Types.ObjectId; secure_url: string }];
   updatedAt: Date;
-  isAddedToBookShelf: boolean;
+  isAddedToBookShelf: null | mongoose.Types.ObjectId;
   likes: [];
   comments: [];
 }

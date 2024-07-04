@@ -34,11 +34,13 @@ const ImageComponent = React.lazy(() =>
 export default function Home() {
   const { user } = useSelector(selecUser);
   const [emblaRef, emblaApi] = useEmblaCarousel();
+  const [sLoading, setSloading] = useState(true);
+  const [sBLoading, setSButtonLoading] = useState(true);
 
   const contentPage = useRef(null);
   const { pathname } = useLocation();
   const [userData, setUser] = useState({});
-  const [sugggestions, setSuggestion] = useState([]);
+  const [suggestions, setSuggestion] = useState([]);
   const [followersId, setFollowersId] = useState([]);
   const [followingId, setFollowingId] = useState([]);
   const [post, setPost] = useState([]);
@@ -83,7 +85,9 @@ export default function Home() {
         const initialReportBox = {};
         response.forEach((post) => {
           initialShowComments[post._id] = false;
+
           initialReportBox[post._id] = false;
+
           post.comments.forEach((com) => {
             initialReplyCommentsShow[com._id] = false;
           });
@@ -99,6 +103,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchSuggestions() {
       const response = await getSuggestion(user);
+
       if (response) {
         setSuggestion(response);
         const initialFollowStatus = {};
@@ -112,13 +117,15 @@ export default function Home() {
             initialFollowStatus[suggestion._id] = "followed";
           }
         });
-
+        setSloading(false);
         setFollowingStatus(initialFollowStatus);
+
+        setSButtonLoading(false);
       }
     }
 
     fetchSuggestions();
-  }, [followersId]);
+  }, [followingId]);
 
   const handleFollow = async (userId, target) => {
     try {
@@ -305,7 +312,7 @@ export default function Home() {
 
           <div className="others-story"> </div>
         </div>
-        <div className="flex  justify-center">
+        <div className="flex   justify-center">
           <div className="post-container mt-3  ">
             {post.map((post, index) => {
               return (
@@ -346,7 +353,10 @@ export default function Home() {
                       />
                       <div
                         className={`text-box ${
-                          reportBox[post._id] ? "w-20" : "w-0"
+                          reportBox[post._id] &&
+                          post.userId._id !== userData._id
+                            ? "w-20"
+                            : "w-0"
                         }  overflow-hidden flex justify-center items-center absolute bg-[#512da8]   left-3`}
                       >
                         <span
@@ -811,62 +821,71 @@ export default function Home() {
       <div className="pt-28 sticky top-0 right-container-home ">
         <div className="ms-6">
           <div className="text-xl font-[600] mb-6">Suggestions for you</div>
-          {sugggestions.length > 0 ? (
-            sugggestions.map((u, index) => {
-              return (
-                <div
-                  key={index}
-                  className="one-suggestion mt-4 flex justify-between items-center"
-                >
-                  <div className="flex items-center">
-                    <div className="rounded-full flex items-center justify-center w-10   overflow-hidden">
-                      <React.Suspense
-                        fallback={
-                          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
-                        }
-                      >
-                        <ImageComponent src={u.profileUrl} />
-                      </React.Suspense>
-                    </div>
-                    <div className="ms-3">
-                      <div className="font-semibold">{u.userName}</div>
-                      <div className="text-gray-600 text-xs">
-                        {findFollowedByCurrentUser(userData, u).length > 0 ? (
-                          findFollowedByCurrentUser(userData, u).map(
-                            (username) => (
-                              <div key={username}>Followed by {username}</div>
-                            )
+          {sLoading ? (
+            <div className=" flex ">
+              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500"></div>
+              <span className="ms-2 text-gray-500">loading... </span>
+            </div>
+          ) : suggestions.length > 0 ? (
+            suggestions.map((u, index) => (
+              <div
+                key={index}
+                className="one-suggestion mt-4 flex justify-between items-center"
+              >
+                <div className="flex items-center">
+                  <div className="rounded-full flex items-center justify-center w-10 overflow-hidden">
+                    <React.Suspense
+                      fallback={
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-[#512da8]"></div>
+                      }
+                    >
+                      <ImageComponent src={u.profileUrl} />
+                    </React.Suspense>
+                  </div>
+                  <div className="ms-3">
+                    <div className="font-semibold">{u.userName}</div>
+                    <div className="text-gray-600 text-xs">
+                      {findFollowedByCurrentUser(userData, u).length > 0 ? (
+                        findFollowedByCurrentUser(userData, u).map(
+                          (username) => (
+                            <div key={username}>Followed by {username}</div>
                           )
-                        ) : (
-                          <div>suggestions for you.</div>
-                        )}
-                      </div>
+                        )
+                      ) : (
+                        <div>Suggestions for you.</div>
+                      )}
                     </div>
                   </div>
-                  {(followingStatus[u._id] &&
-                    followingStatus[u._id] !== "follows you") ||
-                  followingStatus[u._id] == "followed" ? (
+                </div>
+
+                <div>
+                  {sBLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500"></div>
+                  ) : (followingStatus[u._id] &&
+                      Object.keys(followingStatus).length > 0 &&
+                      followingStatus[u._id] !== "follows you") ||
+                    followingStatus[u._id] === "followed" ? (
                     <button
                       className="unfollow-small-button"
                       onClick={() => handleUnFollow(user, u._id)}
                     >
-                      UnFollow
+                      Unfollow
                     </button>
                   ) : (
                     <button
                       className="follow-small-button"
                       onClick={() => handleFollow(user, u._id)}
                     >
-                      {followingStatus[u._id] == "follows you"
-                        ? "follow back  "
+                      {followingStatus[u._id] === "follows you"
+                        ? "Follow back"
                         : "Follow"}
                     </button>
                   )}
                 </div>
-              );
-            })
+              </div>
+            ))
           ) : (
-            <div className="text-gray-400">No suggestions !</div>
+            <div className="text-gray-400">No suggestions!</div>
           )}
         </div>
       </div>

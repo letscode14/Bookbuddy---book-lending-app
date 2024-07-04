@@ -4,10 +4,8 @@ import { useRef, useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload, faXmark } from "@fortawesome/free-solid-svg-icons";
 
-//creating uuid to understand the images that to be deleted when the multiple images
 import { v4 as uuid } from "uuid";
 
-//cropper libraries
 import Cropper from "react-easy-crop";
 import getCroppedImg from "../../../../helpers/ValidationHelpers/CropImage/CropImage";
 import { showErrorToast, showSuccessToast } from "../../../utils/toast";
@@ -29,10 +27,19 @@ export default function CreatePost() {
   const [imageId, setImage] = useState("");
   let [descLength, setDescLength] = useState(150);
   const [readOnly, setReadOnly] = useState(false);
+
   const contentPage = useRef(null);
   const imageInput = useRef(null);
   const { pathname } = useLocation();
   const { user } = useSelector(selecUser);
+  const [booshelfAdds, setBookshelfAdds] = useState({
+    bookName: "",
+    author: "",
+    desc: "",
+    location: "",
+    limit: "",
+  });
+  const [error, setError] = useState([]);
   const dispatch = useDispatch();
 
   //crop
@@ -48,6 +55,14 @@ export default function CreatePost() {
   }, [pathname]);
 
   const handleClick = () => {
+    setError([]);
+    setBookshelfAdds({
+      bookName: "",
+      author: "",
+      desc: "",
+      location: "",
+      limit: "",
+    });
     setIsRoundMoved(!isMoved);
   };
   const addDes = (e) => {
@@ -196,7 +211,7 @@ export default function CreatePost() {
     }
 
     if (!desc) {
-      showErrorToast("Add a description");
+      showErrorToast("Add image a description");
       return;
     }
     if (desc.length > 150) {
@@ -206,12 +221,37 @@ export default function CreatePost() {
 
     const files = croppedImages.map((file) => file.file);
     const formData = new FormData();
+
+    if (isMoved) {
+      const keys = Object.keys(booshelfAdds);
+      const errorIndices = [];
+      keys.forEach((key, index) => {
+        if (booshelfAdds[key].trim() == "") {
+          errorIndices.push(index + 1);
+        }
+      });
+
+      if (errorIndices.length > 0) {
+        setError(errorIndices);
+        return;
+      } else {
+        setError([]);
+        formData.append("addToBookshelf", true);
+        formData.append("author", booshelfAdds.author);
+        formData.append("ShelfDescription", booshelfAdds.desc);
+        formData.append("bookName", booshelfAdds.bookName);
+        formData.append("limit", booshelfAdds.limit);
+        formData.append("location", booshelfAdds.location);
+      }
+    }
+
     files.forEach((file) => {
       formData.append("images", file);
     });
     if (desc.length > 0) {
       formData.append("description", desc);
     }
+
     dispatch(startLoading());
 
     const response = await createPost(formData, user);
@@ -373,31 +413,115 @@ export default function CreatePost() {
           <div className="bookshelf-adds mt-2 flex justify-between">
             <div className="">
               <input
+                onChange={(e) =>
+                  setBookshelfAdds((prev) => ({
+                    ...prev,
+                    bookName: e.target.value,
+                  }))
+                }
                 className=" w-[290px] rounded-lg py-2 bookshelf-input"
                 placeholder="book name"
               />
-              <div className=" text-xs">this field id required</div>
+              <div
+                className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
+                  error.includes(1) ? "" : "opacity-0"
+                }`}
+              >
+                field is required
+              </div>
             </div>
             <div>
               <input
                 className="w-[290px] rounded-lg py-2 bookshelf-input"
                 placeholder="author"
+                onChange={(e) =>
+                  setBookshelfAdds((prev) => ({
+                    ...prev,
+                    author: e.target.value,
+                  }))
+                }
               />
-              <div className="text-xs">this field id required</div>
+              <div
+                className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
+                  error.includes(2) ? "" : "opacity-0"
+                }`}
+              >
+                field is required
+              </div>
             </div>
           </div>
           <textarea
+            onChange={(e) =>
+              setBookshelfAdds((prev) => ({
+                ...prev,
+                desc: e.target.value,
+              }))
+            }
             placeholder="description"
             className="mt-1 description"
           ></textarea>
-          <div className="text-xs">this field id required</div>
-          <div className="w-full">
-            <input
-              className="w-full + rounded-lg py-2 bookshelf-input"
-              placeholder="location"
-            />
+          <div
+            className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
+              error.includes(3) ? "" : "opacity-0"
+            }`}
+          >
+            field is required
           </div>
-          <div className="text-xs mt-1">this field id required</div>
+          <div className=" mt-2 flex justify-between gap-5">
+            <div className="w-full">
+              <input
+                className="w-full + rounded-lg py-2 bookshelf-input"
+                placeholder="location"
+                onChange={(e) =>
+                  setBookshelfAdds((prev) => ({
+                    ...prev,
+                    location: e.target.value,
+                  }))
+                }
+              />
+              <div
+                className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
+                  error.includes(4) ? "" : "opacity-0"
+                }`}
+              >
+                field is required
+              </div>
+            </div>
+
+            <div className="bookshelf-adds  ">
+              <select
+                onChange={(e) =>
+                  setBookshelfAdds((prev) => ({
+                    ...prev,
+                    limit: e.target.value,
+                  }))
+                }
+                style={{ border: "0.5px solid #7d7b7b", borderRadius: "8px" }}
+                className="py-2.5 text-sm text-gray-400  focus:text-black w-full"
+              >
+                <option value="">Select the period limit to lend </option>
+                <option value="1" className="text-black">
+                  1 day
+                </option>
+                <option value="7" className="text-black">
+                  7 days
+                </option>
+                <option value="15" className="text-black">
+                  15 days
+                </option>
+                <option value="30" className="text-black">
+                  30 days
+                </option>
+              </select>
+              <div
+                className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
+                  error.includes(5) ? "" : "opacity-0"
+                }`}
+              >
+                field is required
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex justify-center ">
           <button

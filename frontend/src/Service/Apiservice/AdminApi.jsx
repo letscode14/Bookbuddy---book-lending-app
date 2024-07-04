@@ -47,3 +47,44 @@ export const blockUser = async (query = { fetch: "all" }) => {
     console.log(error);
   }
 };
+
+export const getPost = async (query = { fetch: "all" }) => {
+  try {
+    updateAuthorizationHeader("admin");
+    const response = await axiosInstance.get("/admin/post", { params: query });
+    if (response.status == 200) {
+      return response.data;
+    }
+    return false;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getReports = async (targetId) => {
+  try {
+    updateAuthorizationHeader("admin");
+
+    const response = await axiosInstance.get("/admin/post/reports", {
+      params: { targetId: targetId },
+    });
+    if (response.status == 200) {
+      return response.data.result;
+    }
+    return false;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const removeReports = async (rId) => {
+  try {
+    const response = await axiosInstance.patch("/admin/remove/report", { rId });
+
+    if (response.status == 200) return true;
+    return false;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};

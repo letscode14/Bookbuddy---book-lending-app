@@ -32,4 +32,16 @@ adminRouter.patch("/user/block", adminAuthMiddleware, (req, res, next) => {
   controller.blockUser(req, res, next);
 });
 
+adminRouter.get("/post", adminAuthMiddleware, (req, res, next) => {
+  controller.getAllPost(req, res, next);
+});
+
+adminRouter.get("/post/reports", adminAuthMiddleware, (req, res, next) => {
+  controller.getPostReports(req, res, next);
+});
+
+adminRouter.patch("/remove/report", adminAuthMiddleware, (req, res, next) => {
+  controller.removeReport(req, res, next);
+});
+
 export default adminRouter;

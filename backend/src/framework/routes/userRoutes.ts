@@ -160,4 +160,20 @@ userRouter.post("/report", authMiddleware, (req, res, next) => {
   controller.report(req, res, next);
 });
 
+userRouter.get("/bookshelf", authMiddleware, (req, res, next) => {
+  controller.getBookshelf(req, res, next);
+});
+
+userRouter.get("/book", authMiddleware, (req, res, next) => {
+  controller.viewBook(req, res, next);
+});
+
+userRouter.patch("/edit/bookshelf", authMiddleware, (req, res, next) => {
+  controller.editBook(req, res, next);
+});
+
+userRouter.patch("/shelf/remove", authMiddleware, (req, res, next) => {
+  controller.removeBook(req, res, next);
+});
+
 export default userRouter;

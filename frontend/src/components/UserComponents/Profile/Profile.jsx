@@ -32,6 +32,8 @@ import EditUser from "./EditUser/EditUser";
 import { setVerifyFalse } from "../../../store/slice/VerifyEmailAuth";
 import FollowerList from "./FollowersList/FollowerList";
 import FollowingList from "./FollowingLIst/FollowingList";
+import Bookshelf from "./Bookshelf/Bookshelf";
+const ImageComponent = React.lazy(() => import("../../ImageComponent/Image"));
 export default function Search() {
   //modal state
 
@@ -130,17 +132,17 @@ export default function Search() {
       >
         <div className="w-[65%] pt-10  ">
           <div className="flex">
-            <div className="relative profile-photo  flex  flex-col  ">
-              <React.Suspense
-                fallback={
-                  <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
-                }
-              >
-                <img
-                  className="rounded-full object-contain"
-                  src={userDetails?.profileUrl}
-                />
-              </React.Suspense>
+            <div className="relative   flex  flex-col  ">
+              <div className="rounded-full  overflow-hidden profile-photo">
+                <React.Suspense
+                  fallback={
+                    <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
+                  }
+                >
+                  <ImageComponent src={userData?.profileUrl} />
+                </React.Suspense>
+              </div>
+
               <div className="mt-3 grid gap-y-2 grid-cols-2">
                 <div className="grid gap-y-2">
                   <div className="font-bold text-2xl">
@@ -253,39 +255,39 @@ export default function Search() {
             <div ref={lineMenu} className="absolute line-menu"></div>
           </div>
 
-          <div className="flex gap-7 mt-2 justify-center  menu-profile">
+          <div className="flex  gap-7 mt-2 justify-center  menu-profile">
             <div
               onClick={() => setMenu(0)}
               className={menu == 0 ? "" : "text-gray-400"}
             >
               <FontAwesomeIcon icon={faImages} className="me-1" />
-              <span className="font-semibold">POSTS</span>
+              <span className="cursor-pointer font-semibold">POSTS</span>
             </div>
             <div
               onClick={() => setMenu(1)}
               className={menu == 1 ? "" : "text-gray-400"}
             >
               <FontAwesomeIcon icon={faBook} className="me-1" />
-              <span className="font-semibold">BOOKSHELF</span>
+              <span className="cursor-pointer font-semibold">BOOKSHELF</span>
             </div>
             <div
               onClick={() => setMenu(2)}
               className={menu == 2 ? "" : "text-gray-400"}
             >
               <FontAwesomeIcon icon={faHandshake} className="me-1" />
-              <span className="font-semibold">BORROWED</span>
+              <span className="cursor-pointer font-semibold">BORROWED</span>
             </div>
             <div
               onClick={() => setMenu(3)}
               className={menu == 3 ? "" : "text-gray-400"}
             >
               <FontAwesomeIcon icon={faCalendar} className="me-1" />
-              <span className="font-semibold">LENDED</span>
+              <span className="cursor-pointer font-semibold">LENDED</span>
             </div>
           </div>
-          <div className="post-list mt-4 pb-10 grid grid-cols-4 gap-4  mx-20">
-            {menu == 0 && <Post />}
-          </div>
+
+          {menu == 0 && <Post />}
+          {menu == 1 && <Bookshelf userId={userData._id} />}
         </div>
         <div className="">
           <div className="fixed  ms-1 border-line-vertical"></div>

@@ -83,7 +83,7 @@ export default function SignupForm() {
     const keys = Object.keys(userDetails);
 
     keys.forEach((key, index) => {
-      if (userDetails[key] === "") {
+      if (userDetails[key].trim() === "") {
         errorIndices.push(index + 1);
       }
     });
