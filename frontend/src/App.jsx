@@ -1,9 +1,10 @@
-import "./App.css";
-import Pages from "./Pages/Pages";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { ConfirmationModalProvider } from "./components/Modal/ModalContext";
-import { SocketProvider } from "./Socket/SocketContext";
+import './App.css'
+import Pages from './Pages/Pages'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { ConfirmationModalProvider } from './components/Modal/ModalContext'
+import { SocketProvider } from './Socket/SocketContext'
+import { MenuProvider } from './Context/Context'
 
 function App() {
   return (
@@ -12,11 +13,13 @@ function App() {
         <ToastContainer />
 
         <ConfirmationModalProvider>
-          <Pages />
+          <MenuProvider>
+            <Pages />
+          </MenuProvider>
         </ConfirmationModalProvider>
       </SocketProvider>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

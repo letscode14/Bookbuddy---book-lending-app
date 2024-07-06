@@ -1,105 +1,113 @@
-import { useCallback, useState } from "react";
-import React from "react";
-import "./PostView.css";
-import useEmblaCarousel from "embla-carousel-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useCallback, useState } from 'react'
+import React from 'react'
+import './PostView.css'
+import useEmblaCarousel from 'embla-carousel-react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faChevronLeft,
   faChevronRight,
   faEllipsis,
   faPaperPlane,
   faXmark,
-} from "@fortawesome/free-solid-svg-icons";
-import { faHeart } from "@fortawesome/free-regular-svg-icons";
-import { faHeart as SolidHeart } from "@fortawesome/free-solid-svg-icons";
+} from '@fortawesome/free-solid-svg-icons'
+import { faHeart } from '@fortawesome/free-regular-svg-icons'
+import { faHeart as SolidHeart } from '@fortawesome/free-solid-svg-icons'
 import {
   UnLikePost,
   addComment,
   addReply,
   likePost,
-} from "../../../../Service/Apiservice/UserApi";
+} from '../../../../Service/Apiservice/UserApi'
+import { useSelector } from 'react-redux'
+import { selecUser } from '../../../../store/slice/userAuth'
 
-const ImageComponent = React.lazy(() =>
-  import("../../../ImageComponent/PostImage")
-);
+const ImageComponent = React.lazy(
+  () => import('../../../ImageComponent/PostImage')
+)
 
 export default function PostView({ postData, user }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel();
-  const [comment, setComment] = useState({});
-  const [reply, setReply] = useState({});
+  const { userDetails } = useSelector(selecUser)
 
-  const [post, setPost] = useState(postData);
+  const [emblaRef, emblaApi] = useEmblaCarousel()
+  const [comment, setComment] = useState({})
+  const [reply, setReply] = useState({})
+
+  const [post, setPost] = useState(postData)
   const [showReply, setShowReply] = useState(
     postData.comments.reduce((acc, com) => {
-      acc[com._id] = false;
-      return acc;
+      acc[com._id] = false
+      return acc
     }, {})
-  );
+  )
 
   const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  });
+    if (emblaApi) emblaApi.scrollPrev()
+  })
 
   const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  });
-  const createdAt = new Date(post.createdAt).toDateString();
+    if (emblaApi) emblaApi.scrollNext()
+  })
+  const createdAt = new Date(post.createdAt).toDateString()
 
   const handleSendComment = async (postId, userId, content) => {
     try {
-      const response = await addComment(postId, userId, content);
+      const response = await addComment(postId, userId, content)
+      console.log(response)
       if (response) {
-        setComment((prev) => ({ ...prev, [postId]: "" }));
+        setComment((prev) => ({ ...prev, [postId]: '' }))
 
-        post.comments.unshift(response);
+        post.comments.unshift(response)
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
   const handleReplyComment = async (reply) => {
     try {
-      const response = await addReply(reply);
+      const response = await addReply(reply)
       if (response) {
         const updatedComments = post.comments.map((comment) =>
           comment._id === reply.commentId
             ? { ...comment, replies: [...comment.replies, response] }
             : comment
-        );
-        const updatedPost = { ...post, comments: updatedComments };
-        setPost(updatedPost);
-        setReply({});
+        )
+        const updatedPost = { ...post, comments: updatedComments }
+        setPost(updatedPost)
+        setReply({})
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
   const handleLike = async (postId, userId) => {
     try {
-      const response = await likePost(postId, userId);
+      const response = await likePost(postId, userId)
       if (response) {
         const updatedPost = {
           ...post,
-          likes: [...post.likes, { _id: userId, userName: user.userName }],
-        };
-        setPost(updatedPost);
+          likes: [
+            ...post.likes,
+            { _id: userId, userName: userDetails.userName },
+          ],
+        }
+        setPost(updatedPost)
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
   const handleUnlike = async (postId, userId) => {
     try {
-      const response = await UnLikePost(postId, userId);
+      const response = await UnLikePost(postId, userId)
       if (response) {
-        const filteredLikes = post.likes.filter((like) => like._id !== userId);
-        setPost({ ...post, likes: filteredLikes });
+        const filteredLikes = post.likes.filter((like) => like._id !== userId)
+        setPost({ ...post, likes: filteredLikes })
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
   return (
     <div className="  flex w-[80vh] h-[55vh]">
       <div className="  relative w-[50%] ">
@@ -158,7 +166,7 @@ export default function PostView({ postData, user }) {
         </div>
         <div className="border mt-2"></div>
         <div
-          style={{ scrollbarWidth: "none" }}
+          style={{ scrollbarWidth: 'none' }}
           className="pt-1 py-3 overflow-y-auto h-[330px]"
         >
           <>
@@ -176,7 +184,7 @@ export default function PostView({ postData, user }) {
                           >
                             <img
                               className="rounded-full object-contain"
-                              src={user.profileUrl}
+                              src={com.author.profileUrl}
                             />
                           </React.Suspense>
                         </div>
@@ -197,15 +205,15 @@ export default function PostView({ postData, user }) {
                     <div
                       className="text-gray-400 cursor-pointer  font-semibold"
                       onClick={() => {
-                        setComment((prev) => ({ ...prev, [post._id]: "" }));
+                        setComment((prev) => ({ ...prev, [post._id]: '' }))
                         setReply({
                           userName: com.author.userName,
-                          userId: user._id,
+                          userId: userDetails._id,
                           commentId: com._id,
                           placeholder: `Reply to ${com.author.userName}`,
-                          content: "",
+                          content: '',
                           postId: post._id,
-                        });
+                        })
                       }}
                     >
                       reply
@@ -281,7 +289,7 @@ export default function PostView({ postData, user }) {
                             />
                           </div>
                         </div>
-                      );
+                      )
                     })}
                 </div>
               ))
@@ -295,17 +303,17 @@ export default function PostView({ postData, user }) {
         <div className="border"></div>
         <div className="flex mt-1 mb-1 justify-between items-center">
           {post.likes.some((likes) => {
-            if (likes._id == user._id) return true;
+            if (likes._id == userDetails._id) return true
           }) ? (
             <FontAwesomeIcon
               className="me-4 text-xl text-red-400"
-              onClick={() => handleUnlike(post._id, user._id)}
+              onClick={() => handleUnlike(post._id, userDetails._id)}
               icon={SolidHeart}
             />
           ) : (
             <FontAwesomeIcon
               className="me-4 text-xl"
-              onClick={() => handleLike(post._id, user._id)}
+              onClick={() => handleLike(post._id, userDetails._id)}
               icon={faHeart}
             />
           )}
@@ -330,19 +338,19 @@ export default function PostView({ postData, user }) {
                 onFocus={() =>
                   setReply((prev) => ({
                     ...prev,
-                    content: "",
-                    placeholder: "",
+                    content: '',
+                    placeholder: '',
                   }))
                 }
                 onChange={(e) => {
                   setReply((prev) => ({
                     ...prev,
                     content: e.target.value,
-                  }));
+                  }))
                 }}
                 value={reply.content ? reply.content : reply.placeholder}
                 className={`add-comment relative  ${
-                  reply.content ? "" : "text-gray-400"
+                  reply.content ? '' : 'text-gray-400'
                 } text-sm   w-full mb-2`}
                 placeholder="add reply"
               />
@@ -365,14 +373,14 @@ export default function PostView({ postData, user }) {
           ) : (
             <div className="flex justify-between items-center w-full">
               <input
-                value={comment[post._id] || ""}
+                value={comment[post._id] || ''}
                 className="post-view-add-comment w-full"
                 placeholder="add comment"
                 onChange={(e) => {
                   setComment((prev) => ({
                     ...prev,
                     [post._id]: e.target.value,
-                  }));
+                  }))
                 }}
               />
               {comment[post._id]?.trim() && (
@@ -380,9 +388,9 @@ export default function PostView({ postData, user }) {
                   onClick={() => {
                     handleSendComment(
                       post._id,
-                      user._id,
+                      userDetails._id,
                       comment[post._id].trim()
-                    );
+                    )
                   }}
                   className="text-[#512da8]"
                   icon={faPaperPlane}
@@ -393,5 +401,5 @@ export default function PostView({ postData, user }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,35 +1,36 @@
-import mongoose, { Document, Model, Mongoose, Schema } from "mongoose";
-import bcrypt from "bcryptjs";
+import mongoose, { Document, Model, Mongoose, Schema } from 'mongoose'
+import bcrypt from 'bcryptjs'
 //
 export interface IFollower {
-  userId: mongoose.Types.ObjectId;
-  followedOn: Date;
+  userId: mongoose.Types.ObjectId
+  followedOn: Date
 }
 
 interface IUser extends Document {
-  userName: string;
-  name: string;
-  email: string;
-  password: string;
-  age: number;
-  reportCount: mongoose.Types.ObjectId[];
-  reportsMade: mongoose.Types.ObjectId[];
-  createdAt: Date;
-  updateAt: Date;
-  followers: IFollower[];
-  following: IFollower[];
-  gender: boolean | string;
-  profileUrl?: string;
-  privacy: boolean;
-  about: string;
-  contact: string;
-  badge: string | mongoose.Types.ObjectId;
-  isBlocked: boolean;
+  userName: string
+  name: string
+  email: string
+  password: string
+  age: number
+  reportCount: mongoose.Types.ObjectId[]
+  reportsMade: mongoose.Types.ObjectId[]
+  createdAt: Date
+  updateAt: Date
+  followers: IFollower[]
+  following: IFollower[]
+  gender: boolean | string
+  profileUrl?: string
+  privacy: boolean
+  about: string
+  contact: string
+  badge: string | mongoose.Types.ObjectId
+  isBlocked: boolean
 
-  isDeleted: boolean;
-  isSubscribed: boolean;
-  role: string;
-  isGoogleSignUp: boolean;
+  isDeleted: boolean
+  isSubscribed: boolean
+  cautionDeposit: number
+  role: string
+  isGoogleSignUp: boolean
 }
 const userSchema: Schema<IUser> = new mongoose.Schema({
   userName: {
@@ -56,7 +57,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   reportsMade: [
     {
       type: mongoose.Types.ObjectId,
-      ref: "Report",
+      ref: 'Report',
       default: [],
     },
   ],
@@ -64,10 +65,14 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   reportCount: [
     {
       type: mongoose.Types.ObjectId,
-      ref: "Report",
+      ref: 'Report',
       default: [],
     },
   ],
+  cautionDeposit: {
+    type: Number,
+    default: 0,
+  },
   isSubscribed: {
     type: Boolean,
     default: false,
@@ -85,7 +90,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
       {
         userId: {
           type: mongoose.Types.ObjectId,
-          ref: "User",
+          ref: 'User',
         },
         followedOn: {
           type: Date,
@@ -100,7 +105,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
       {
         userId: {
           type: mongoose.Types.ObjectId,
-          ref: "User",
+          ref: 'User',
         },
         followedOn: {
           type: Date,
@@ -112,13 +117,13 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   },
   gender: {
     type: String,
-    default: "",
+    default: '',
   },
   profileUrl: {
     type: String,
 
     default:
-      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+      'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
   },
   privacy: {
     type: Boolean,
@@ -126,15 +131,15 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   },
   about: {
     type: String,
-    default: "",
+    default: '',
   },
   contact: {
     type: String,
-    default: "",
+    default: '',
   },
   badge: {
     type: String || mongoose.Types.ObjectId,
-    default: "No Badge",
+    default: 'No Badge',
   },
   isBlocked: {
     type: Boolean,
@@ -147,21 +152,21 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   role: {
     type: String,
 
-    default: "user",
+    default: 'user',
   },
   isGoogleSignUp: {
     type: Boolean,
     default: false,
   },
-});
-userSchema.pre<IUser>("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
+})
+userSchema.pre<IUser>('save', async function (next) {
+  if (!this.isModified('password')) {
+    next()
   }
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
+  this.password = await bcrypt.hash(this.password, 10)
+  next()
+})
 
-const userModel: Model<IUser> = mongoose.model("User", userSchema);
+const userModel: Model<IUser> = mongoose.model('User', userSchema)
 
-export default userModel;
+export default userModel

@@ -1,19 +1,13 @@
 import React from 'react'
 
 import { useEffect, useRef, useState } from 'react'
-import {
-  removeUser,
-  saveUserDetails,
-  selecUser,
-} from '../../../store/slice/userAuth'
 
-import { useDispatch, useSelector } from 'react-redux'
-import { startLoading, stopLoading } from '../../../store/slice/loadinSlice'
-import { selectLoading } from '../../../store/slice/loadinSlice'
+import { useSelector } from 'react-redux'
+import { selectLoading } from '../../../../store/slice/loadinSlice'
 
-import './Profile.css'
-import { useLocation, useNavigate } from 'react-router-dom'
-import axiosInstance from '../../../Service/api'
+import '../Profile.css'
+import { useLocation, useParams } from 'react-router-dom'
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faBook,
@@ -21,21 +15,17 @@ import {
   faHandshake,
   faImages,
 } from '@fortawesome/free-solid-svg-icons'
-import { showSuccessToast } from '../../../utils/toast'
 
-import ContentModal from '../../Modal/ContentModal'
+import ContentModal from '../../../Modal/ContentModal'
 
-import Post from './Post/Post'
-import { useConfirmationModal } from '../../Modal/ModalContext'
-import { getUser } from '../../../Service/Apiservice/UserApi'
-import EditUser from './EditUser/EditUser'
-import { setVerifyFalse } from '../../../store/slice/VerifyEmailAuth'
-import FollowerList from './FollowersList/FollowerList'
-import FollowingList from './FollowingLIst/FollowingList'
-import Bookshelf from './Bookshelf/Bookshelf'
-const ImageComponent = React.lazy(() => import('../../ImageComponent/Image'))
-export default function Search() {
-  //modal state
+import Post from '../Post/Post'
+import { getUser } from '../../../../Service/Apiservice/UserApi'
+import FollowerList from '../FollowersList/FollowerList'
+import FollowingList from '../FollowingLIst/FollowingList'
+import Bookshelf from '../Bookshelf/Bookshelf'
+const ImageComponent = React.lazy(() => import('../../../ImageComponent/Image'))
+export default function OtherProfile() {
+  const { id } = useParams()
 
   const contentPage = useRef(null)
   const [bio, setBio] = useState(false)
@@ -44,47 +34,29 @@ export default function Search() {
   const [userDetails, setUserDetails] = useState({})
 
   const { isLoading } = useSelector(selectLoading)
-  const { user } = useSelector(selecUser)
   const { pathname } = useLocation()
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+
   const [userData, setUserData] = useState()
-  const { showModal } = useConfirmationModal()
   const [modalFor, setModaFor] = useState('')
   useEffect(() => {
     const element = contentPage.current
-    document.title = 'Profile'
+    document.title = `${id}`
     element.style.right = '12px'
   }, [pathname])
-  const logout = async () => {
-    dispatch(startLoading())
-    const response = await axiosInstance.post('/user/logout')
-    if (response.status === 200) {
-      dispatch(removeUser())
 
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      dispatch(stopLoading())
-      showSuccessToast('Logged out success fully')
-      navigate('/login')
-    }
-  }
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const handleContentModalClose = () => {
-    dispatch(setVerifyFalse())
     setUserData(userDetails)
     setIsModalOpen(false)
     setModaFor('')
-    dispatch(stopLoading())
   }
 
   useEffect(() => {
     async function fetchUser() {
-      const response = await getUser(user)
+      const response = await getUser(id)
 
       if (response) {
-        dispatch(saveUserDetails(response))
         setUserDetails(response)
         setUserData(response)
       }
@@ -112,7 +84,6 @@ export default function Search() {
         element.style.width = `96px`
         break
     }
-    dispatch(setVerifyFalse())
   }, [menu])
 
   return (
@@ -121,9 +92,6 @@ export default function Search() {
         isContentModalOpen={isModalOpen}
         onContentClose={handleContentModalClose}
       >
-        {modalFor == 'edituser' && (
-          <EditUser userInfo={userData} onClose={handleContentModalClose} />
-        )}
         {modalFor == 'followers' && <FollowerList user={userData} />}
         {modalFor == 'following' && <FollowingList user={userData} />}
       </ContentModal>
@@ -210,10 +178,6 @@ export default function Search() {
                 </div>
               </div>
               <div className="flex items-center gap-7 my-8 justify-center">
-                <div>
-                  <button className="subscribe-button">subscribe</button>
-                </div>
-
                 <div className="grid gap-y-2 text-center font-bold text-2xl">
                   <div>lend Score</div>
                   <div className="text-3xl">0</div>
@@ -223,11 +187,6 @@ export default function Search() {
               <div className="flex gap-3 justify-center mt-2 mb-5">
                 <button
                   disabled={isLoading}
-                  onClick={() =>
-                    showModal('Are you sure you need to logout', 'user', () =>
-                      logout()
-                    )
-                  }
                   className="log-out-button flex justify-center"
                 >
                   {isLoading ? (
@@ -236,17 +195,7 @@ export default function Search() {
                     'logout'
                   )}
                 </button>
-                <button
-                  onClick={() =>
-                    showModal('Do you wish to continue', 'user', () => {
-                      setIsModalOpen(true)
-                      setModaFor('edituser')
-                    })
-                  }
-                  className="edit-profile-button"
-                >
-                  edit profile
-                </button>
+                <button className="edit-profile-button">Message</button>
               </div>
             </div>
           </div>
@@ -287,8 +236,8 @@ export default function Search() {
             </div>
           </div>
 
-          {menu == 0 && userData && <Post user={userData._id} />}
-          {menu == 1 && <Bookshelf userId={userData._id} />}
+          {menu == 0 && userData && <Post user={id} />}
+          {menu == 1 && <Bookshelf userId={id} />}
         </div>
         <div className="">
           <div className="fixed  ms-1 border-line-vertical"></div>

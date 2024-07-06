@@ -1,51 +1,49 @@
-import React from "react";
-import "./Post.css";
+import React from 'react'
+import './Post.css'
 
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { selecUser } from "../../../../store/slice/userAuth";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faImages } from "@fortawesome/free-solid-svg-icons";
-import { fetchPost, getPost } from "../../../../Service/Apiservice/UserApi";
-import ContentModal from "../../../Modal/ContentModal";
-import PostView from "../PostView/PostView";
-const ImageComponent = React.lazy(() =>
-  import("../../../ImageComponent/Image")
-);
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selecUser } from '../../../../store/slice/userAuth'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faImages } from '@fortawesome/free-solid-svg-icons'
+import { fetchPost, getPost } from '../../../../Service/Apiservice/UserApi'
+import ContentModal from '../../../Modal/ContentModal'
+import PostView from '../PostView/PostView'
+const ImageComponent = React.lazy(() => import('../../../ImageComponent/Image'))
 
-export default function Post() {
-  const { user } = useSelector(selecUser);
-  const [post, setPost] = useState();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [postDetails, setPostDetails] = useState({});
-  const [loading, setLoading] = useState(true);
+export default function Post({ user }) {
+  const [post, setPost] = useState()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [postDetails, setPostDetails] = useState({})
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    (async function fetchPost() {
-      const response = await getPost(user);
+    async function fetchPost() {
+      const response = await getPost(user)
       if (response) {
-        setPost(response);
-        setLoading(false);
+        setPost(response)
+        setLoading(false)
       }
-    })();
-  }, []);
+    }
+    fetchPost()
+  }, [])
 
   const handleContentClose = () => {
-    setIsModalOpen(false);
-  };
+    setIsModalOpen(false)
+  }
 
   const getSinglePost = async (postId) => {
     try {
-      const response = await fetchPost({ postId });
+      const response = await fetchPost({ postId })
       if (response) {
-        console.log(response);
-        setPostDetails(response);
-        setIsModalOpen(true);
+        console.log(response)
+        setPostDetails(response)
+        setIsModalOpen(true)
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
   return (
     <>
@@ -94,5 +92,5 @@ export default function Post() {
         </>
       )}
     </>
-  );
+  )
 }

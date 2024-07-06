@@ -62,39 +62,47 @@ export default function Bookshelf({ userId }) {
         </div>
       ) : (
         <div className="post-list mt-4 pb-10 grid grid-cols-4 gap-4  mx-20">
-          {data.map((book, index) => (
-            <div
-              key={index}
-              onClick={() => viewBookshelf(book._id, userId)}
-              className="shelf shadow border rounded-lg"
-            >
-              <div className="w-full p-1 h-[60%] ">
-                <React.Suspense
-                  fallback={
-                    <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
-                  }
-                >
-                  <ImageComponent src={book.imageUrl.secure_url} />
-                </React.Suspense>
-              </div>
-              <div className="px-2 py-1">
-                <div className="text-md font-semibold ">{book.bookName} </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  <div>
-                    <span className="font-bold">ID:</span> {book.ID}
-                  </div>
-                  <div className="font-bold text-[#512da8]">{book.status}</div>
-                  <div>
-                    <FontAwesomeIcon
-                      className="text-red-600"
-                      icon={faLocationDot}
-                    />
-                    <span className="ms-2">{book.location}</span>
+          {data.length > 0 ? (
+            data.map((book, index) => (
+              <div
+                key={index}
+                onClick={() => viewBookshelf(book._id, userId)}
+                className="shelf shadow border rounded-lg"
+              >
+                <div className="w-full p-1 h-[60%] ">
+                  <React.Suspense
+                    fallback={
+                      <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
+                    }
+                  >
+                    <ImageComponent src={book.imageUrl.secure_url} />
+                  </React.Suspense>
+                </div>
+                <div className="px-2 py-1">
+                  <div className="text-md font-semibold ">{book.bookName} </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    <div>
+                      <span className="font-bold">ID:</span> {book.ID}
+                    </div>
+                    <div className="font-bold text-[#512da8]">
+                      {book.status}
+                    </div>
+                    <div>
+                      <FontAwesomeIcon
+                        className="text-red-600"
+                        icon={faLocationDot}
+                      />
+                      <span className="ms-2">{book.location}</span>
+                    </div>
                   </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="text-gray-400 absolute mt-36 top-[50%] left-[30%] text-2xl flex justify-center">
+              No Books yet!
             </div>
-          ))}
+          )}
         </div>
       )}
     </>

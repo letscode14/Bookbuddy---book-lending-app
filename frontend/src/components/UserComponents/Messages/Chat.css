@@ -1,0 +1,18 @@
+.chat-left-container {
+  width: 30%;
+}
+.chat-right-container {
+  width: 70%;
+}
+.chat-search {
+  border: 0.7px solid rgb(226, 225, 225);
+}
+.chat-search:focus {
+  outline: #512da8 solid 1px;
+}
+.chat-menu-line {
+  border: solid;
+
+  width: 54px;
+  transition: all 0.3s ease-in-out;
+}

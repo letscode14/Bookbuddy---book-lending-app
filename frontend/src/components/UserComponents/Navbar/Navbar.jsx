@@ -1,7 +1,7 @@
-import Logo from "/images/Logo2.png";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import Logo from '/images/Logo2.png'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useEffect, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   faSearch,
   faHome,
@@ -11,48 +11,55 @@ import {
   faPlus,
   faPeopleGroup,
   faBars,
-} from "@fortawesome/free-solid-svg-icons";
+} from '@fortawesome/free-solid-svg-icons'
 
-import "./Navbar.css";
-import { selecUser } from "../../../store/slice/userAuth";
-import { useSelector } from "react-redux";
+import './Navbar.css'
+import { selecUser } from '../../../store/slice/userAuth'
+import { useSelector } from 'react-redux'
+import { useMenuContext } from '../../../Context/Context'
 
 export default function Navbar() {
-  const { pathname } = useLocation();
-  const { userDetails } = useSelector(selecUser);
+  const { pathname } = useLocation()
+  const { userDetails } = useSelector(selecUser)
 
-  const [menu, setMenu] = useState(0);
-  const navigate = useNavigate();
+  const { menu, setMenu } = useMenuContext()
 
-  const menuHighlight = useRef(null);
+  const navigate = useNavigate()
+
+  const menuHighlight = useRef(null)
 
   useEffect(() => {
-    const element = menuHighlight.current;
+    const element = menuHighlight.current
     switch (pathname) {
-      case "/user/home":
-        element.style.top = `${0}px`;
-        setMenu(0);
+      case '/user/home':
+        element.style.top = `${0}px`
+        setMenu(0)
 
-        break;
-      case "/user/search":
-        element.style.top = `${52.5}px`;
-        setMenu(1);
-        break;
-      case "/user/profile":
-        element.style.top = `${365.5}px`;
-        setMenu(7);
-        break;
-      case "/user/create":
-        element.style.top = `${258.5}px`;
-        setMenu(5);
-        break;
+        break
+      case '/user/search':
+        element.style.top = `${52.5}px`
+        setMenu(1)
+        break
+      case '/user/messages':
+        element.style.top = `${101.5}px`
+        setMenu(2)
+        break
 
-      case "/user/notification":
-        element.style.top = "206px";
-        setMenu(4);
-        break;
+      case '/user/profile':
+        element.style.top = `${365.5}px`
+        setMenu(7)
+        break
+      case '/user/create':
+        element.style.top = `${258.5}px`
+        setMenu(5)
+        break
+
+      case '/user/notification':
+        element.style.top = '206px'
+        setMenu(4)
+        break
     }
-  }, [pathname]);
+  }, [pathname])
 
   return (
     <div className="h-24  menu-container pt-3 ">
@@ -60,16 +67,14 @@ export default function Navbar() {
       <div className="ps-8 py-2 relative navbar-menu text-[20px] mt-24">
         <div
           ref={menuHighlight}
-          className=" menu-highlight h-[48px] bg-[#FFFFFF] z-0 absolute left-3  w-[230px]"
-        >
-          {" "}
-        </div>
+          className={` menu-highlight h-[48px] bg-[#FFFFFF] z-0 absolute left-3  w-[230px]`}
+        ></div>
         <div
           onClick={() => {
-            setMenu(0), navigate("/user/home");
+            setMenu(0), navigate('/user/home')
           }}
           className={`flex items-baseline  ${
-            menu == 0 ? "text-[#000000]" : "text-[#ffffff]"
+            menu == 0 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold `}
         >
           <FontAwesomeIcon className="me-4 z-20 " icon={faHome} />
@@ -77,10 +82,10 @@ export default function Navbar() {
         </div>
         <div
           onClick={() => {
-            setMenu(1), navigate("/user/search");
+            setMenu(1), navigate('/user/search')
           }}
           className={`flex items-baseline  ${
-            menu == 1 ? "text-[#000000]" : "text-[#ffffff]"
+            menu == 1 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold `}
         >
           <FontAwesomeIcon className="me-4 z-20" icon={faSearch} />
@@ -88,10 +93,10 @@ export default function Navbar() {
         </div>
         <div
           onClick={() => {
-            setMenu(2), navigate("/home");
+            setMenu(2), navigate('/user/messages')
           }}
           className={`flex items-baseline  ${
-            menu == 2 ? "text-[#000000]" : "text-[#ffffff]"
+            menu == 2 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold `}
         >
           <FontAwesomeIcon className="me-4 z-20" icon={faMessage} />
@@ -99,10 +104,10 @@ export default function Navbar() {
         </div>
         <div
           onClick={() => {
-            setMenu(3), navigate("/home");
+            setMenu(3), navigate('/home')
           }}
           className={`flex items-baseline  ${
-            menu == 3 ? "text-[#000000]" : "text-[#ffffff]"
+            menu == 3 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold `}
         >
           <FontAwesomeIcon className="me-4 z-20" icon={faCompass} />
@@ -110,10 +115,10 @@ export default function Navbar() {
         </div>
         <div
           onClick={() => {
-            setMenu(4), navigate("/user/notification");
+            setMenu(4), navigate('/user/notification')
           }}
           className={`flex items-baseline  ${
-            menu == 4 ? "text-[#000000]" : "text-[#ffffff]"
+            menu == 4 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold `}
         >
           <FontAwesomeIcon className="me-4 z-20" icon={faBell} />
@@ -121,10 +126,10 @@ export default function Navbar() {
         </div>
         <div
           onClick={() => {
-            setMenu(5), navigate("/user/create");
+            setMenu(5), navigate('/user/create')
           }}
           className={`flex items-baseline  ${
-            menu == 5 ? "text-[#000000]" : "text-[#ffffff]"
+            menu == 5 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold `}
         >
           <FontAwesomeIcon className="me-4 z-20" icon={faPlus} />
@@ -132,10 +137,10 @@ export default function Navbar() {
         </div>
         <div
           onClick={() => {
-            setMenu(6), navigate("/home");
+            setMenu(6), navigate('/home')
           }}
           className={`flex items-baseline  ${
-            menu == 6 ? "text-[#000000]" : "text-[#ffffff]"
+            menu == 6 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold `}
         >
           <FontAwesomeIcon className="me-2 z-20" icon={faPeopleGroup} />
@@ -143,10 +148,10 @@ export default function Navbar() {
         </div>
         <div
           onClick={() => {
-            setMenu(7), navigate("/user/profile");
+            setMenu(7), navigate('/user/profile')
           }}
           className={`flex items-center   ${
-            menu == 7 ? "text-[#000000]" : "text-[#ffffff]"
+            menu == 7 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold `}
         >
           <div className="rounded-full z-20  overflow-hidden bg-[#ffffff] h-7 w-7 me-2">
@@ -165,5 +170,5 @@ export default function Navbar() {
         <label className=" z-20">More</label>
       </div>
     </div>
-  );
+  )
 }

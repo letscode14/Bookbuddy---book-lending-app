@@ -1,27 +1,27 @@
-import { useSelector } from "react-redux";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { selectPageLoading } from "../store/slice/pageLoadingSlice";
+import { useSelector } from 'react-redux'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { selectPageLoading } from '../store/slice/pageLoadingSlice'
 import {
   UserAccessRoutes,
   UserNotAccessRoutes,
-} from "../PrivateRoute/PrivateRoute";
-import LoadingPage from "../components/loadingpage/LoadingPage";
+} from '../PrivateRoute/PrivateRoute'
+import LoadingPage from '../components/loadingpage/LoadingPage'
 
-import ResetAuthState from "../components/resetAuthState/ResetAuthState";
-import Homepage from "../components/UserComponents/Homepage/Homepage";
-import Login from "../components/UserComponents/Login/Login";
-import { SubmitOtpPrivateRoute } from "../PrivateRoute/PrivateRoute";
-import ErrorPrivate from "../PrivateRoute/ErrorPrivate";
-import Page500 from "../components/errorPages/Page500";
-import Page404 from "../components/errorPages/Page404";
+import ResetAuthState from '../components/resetAuthState/ResetAuthState'
+import Homepage from '../components/UserComponents/Homepage/Homepage'
+import Login from '../components/UserComponents/Login/Login'
+import { SubmitOtpPrivateRoute } from '../PrivateRoute/PrivateRoute'
+import ErrorPrivate from '../PrivateRoute/ErrorPrivate'
+import Page500 from '../components/errorPages/Page500'
+import Page404 from '../components/errorPages/Page404'
 import {
   AdminAccessRoute,
   AdminNotAccessRoute,
-} from "../PrivateRoute/PrivateRoute";
-import AdminLogin from "../components/AdminComponents/AdminLogin/AdminLogin";
-import AdminPages from "../components/AdminComponents/AdminPages/AdminPages";
+} from '../PrivateRoute/PrivateRoute'
+import AdminLogin from '../components/AdminComponents/AdminLogin/AdminLogin'
+import AdminPages from '../components/AdminComponents/AdminPages/AdminPages'
 export default function Pages() {
-  const { pageLoading } = useSelector(selectPageLoading);
+  const { pageLoading } = useSelector(selectPageLoading)
   return (
     <>
       {pageLoading ? (
@@ -63,5 +63,5 @@ export default function Pages() {
         </BrowserRouter>
       )}
     </>
-  );
+  )
 }
