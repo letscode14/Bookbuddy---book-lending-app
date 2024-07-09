@@ -19,11 +19,11 @@ interface IUser extends Document {
   followers: IFollower[]
   following: IFollower[]
   gender: boolean | string
-  profileUrl?: string
+  profile?: { publicId: string; profileUrl: string }
   privacy: boolean
   about: string
   contact: string
-  badge: string | mongoose.Types.ObjectId
+  lendscore: null | mongoose.Types.ObjectId
   isBlocked: boolean
 
   isDeleted: boolean
@@ -119,11 +119,15 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: String,
     default: '',
   },
-  profileUrl: {
-    type: String,
-
-    default:
-      'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
+  profile: {
+    type: {
+      publicId: {
+        type: String,
+        default:
+          'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
+      },
+      profileUrl: String,
+    },
   },
   privacy: {
     type: Boolean,
@@ -137,9 +141,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: String,
     default: '',
   },
-  badge: {
-    type: String || mongoose.Types.ObjectId,
-    default: 'No Badge',
+  lendscore: {
+    type: null || mongoose.Types.ObjectId,
+    default: null,
+    ref: 'Lendscore',
   },
   isBlocked: {
     type: Boolean,

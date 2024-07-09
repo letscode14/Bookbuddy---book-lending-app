@@ -4,6 +4,8 @@ import {
   followUser,
   unfollowUser,
 } from '../../../../Service/Apiservice/UserApi'
+import { useSelector } from 'react-redux'
+import { selecUser } from '../../../../store/slice/userAuth'
 const ImageComponent = React.lazy(() => import('../../../ImageComponent/Image'))
 
 export default function FollowingList({ user }) {
@@ -13,21 +15,24 @@ export default function FollowingList({ user }) {
   const [loading, setLoading] = useState(true)
   const [totalPage, setTotalpage] = useState()
   const [loadMore, setLoadMore] = useState()
+  const u = useSelector(selecUser)
 
   const [pageNo, setPage] = useState(1)
 
   useEffect(() => {
-    console.log(pageNo)
-    console.log(totalPage)
     const fetchFollowingData = async () => {
       try {
         const response = await fetchF({
           userId: user._id,
           query: 'following',
           pageNo,
+          currentUser: u.user,
         })
         if (response) {
           setTotalpage(response.totalCount)
+          setFollowingId(response.followingMapCurrent)
+          setFollowersId(response.followersMapCurrent)
+          console.log(response)
           setFollowing((prev) => {
             const prevSet = new Set(prev.map((item) => item._id.toString()))
             const newItems = response.following.filter(
@@ -46,21 +51,6 @@ export default function FollowingList({ user }) {
 
     fetchFollowingData()
   }, [pageNo])
-
-  useEffect(() => {
-    const followingMap = {}
-    following.forEach((f) => {
-      followingMap[f.userId._id] = true
-    })
-    setFollowingId(followingMap)
-
-    const followersMap = {}
-
-    user.followers.forEach((follower) => {
-      followersMap[follower.userId] = true
-    })
-    setFollowersId(followersMap)
-  }, [pageNo, following, setFollowing])
 
   const handleFollow = async (userId, target) => {
     try {
@@ -105,7 +95,7 @@ export default function FollowingList({ user }) {
                         <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
                       }
                     >
-                      <ImageComponent src={f.userId.profileUrl} />
+                      <ImageComponent src={f.userId.profile.profileUrl} />
                     </React.Suspense>
                   </div>
                 </div>
@@ -115,16 +105,18 @@ export default function FollowingList({ user }) {
                 </div>
               </div>
               <div>
-                {followingIds[f?.userId?._id] ? (
+                {u.user == f.userId._id ? (
+                  ''
+                ) : followingIds[f?.userId?._id] ? (
                   <button
-                    onClick={() => handleUnFollow(user._id, f?.userId?._id)}
+                    onClick={() => handleUnFollow(u.user, f?.userId?._id)}
                     className="uppercase py-1 px-5 font-bold text-[#512da8] text-[11px] rounded-xl border-[#512da8] border"
                   >
                     Unfollow
                   </button>
                 ) : followersIds[f?.userId?._id] ? (
                   <button
-                    onClick={() => handleFollow(user._id, f.userId._id)}
+                    onClick={() => handleFollow(u.user, f.userId._id)}
                     className="uppercase py-1 px-5 font-bold text-[11px] rounded-xl text-[#ffffff] bg-[#512da8] border"
                   >
                     Follow Back
@@ -145,7 +137,7 @@ export default function FollowingList({ user }) {
               setLoadMore(true)
               setPage(pageNo + 1)
             }}
-            className="w-full  flex justify-center text-sm text-gray-500"
+            className="w-full cursor-pointer  flex justify-center text-sm text-gray-500"
           >
             {pageNo < totalPage ? (
               loadMore ? (

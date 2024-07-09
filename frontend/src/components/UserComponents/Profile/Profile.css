@@ -85,3 +85,16 @@
   cursor: pointer;
   width: 200px;
 }
+.rotating-image {
+  animation: rotate 5s linear infinite;
+  transform-origin: center center;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}

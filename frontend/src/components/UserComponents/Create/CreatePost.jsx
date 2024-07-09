@@ -1,271 +1,275 @@
-import { useLocation } from "react-router-dom";
-import "./CreatePost.css";
-import { useRef, useState, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUpload, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { useLocation } from 'react-router-dom'
+import './CreatePost.css'
+import { useRef, useState, useEffect } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faCircleExclamation,
+  faUpload,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons'
 
-import { v4 as uuid } from "uuid";
+import { v4 as uuid } from 'uuid'
 
-import Cropper from "react-easy-crop";
-import getCroppedImg from "../../../../helpers/ValidationHelpers/CropImage/CropImage";
-import { showErrorToast, showSuccessToast } from "../../../utils/toast";
-import { useDispatch, useSelector } from "react-redux";
-import { selecUser } from "../../../store/slice/userAuth";
-import { createPost } from "../../../Service/Apiservice/UserApi";
-import { startLoading, stopLoading } from "../../../store/slice/loadinSlice";
-import { selectLoading } from "../../../store/slice/loadinSlice";
-import { useConfirmationModal } from "../../Modal/ModalContext";
+import Cropper from 'react-easy-crop'
+import getCroppedImg from '../../../../helpers/ValidationHelpers/CropImage/CropImage'
+import { showErrorToast, showSuccessToast } from '../../../utils/toast'
+import { useDispatch, useSelector } from 'react-redux'
+import { selecUser } from '../../../store/slice/userAuth'
+import { createPost } from '../../../Service/Apiservice/UserApi'
+import { startLoading, stopLoading } from '../../../store/slice/loadinSlice'
+import { selectLoading } from '../../../store/slice/loadinSlice'
+import { useConfirmationModal } from '../../Modal/ModalContext'
 
 //
 
 export default function CreatePost() {
-  const { showModal } = useConfirmationModal();
-  const { isLoading } = useSelector(selectLoading);
-  const [isMoved, setIsRoundMoved] = useState(false);
-  const [desc, setDesc] = useState("");
-  const [imageUrl, setImageUrl] = useState([]);
-  const [imageId, setImage] = useState("");
-  let [descLength, setDescLength] = useState(150);
-  const [readOnly, setReadOnly] = useState(false);
+  const { showModal } = useConfirmationModal()
+  const { isLoading } = useSelector(selectLoading)
+  const [isMoved, setIsRoundMoved] = useState(false)
+  const [desc, setDesc] = useState('')
+  const [imageUrl, setImageUrl] = useState([])
+  const [imageId, setImage] = useState('')
+  let [descLength, setDescLength] = useState(150)
+  const [readOnly, setReadOnly] = useState(false)
 
-  const contentPage = useRef(null);
-  const imageInput = useRef(null);
-  const { pathname } = useLocation();
-  const { user } = useSelector(selecUser);
+  const contentPage = useRef(null)
+  const imageInput = useRef(null)
+  const { pathname } = useLocation()
+  const { user, userDetails } = useSelector(selecUser)
   const [booshelfAdds, setBookshelfAdds] = useState({
-    bookName: "",
-    author: "",
-    desc: "",
-    location: "",
-    limit: "",
-  });
-  const [error, setError] = useState([]);
-  const dispatch = useDispatch();
+    bookName: '',
+    author: '',
+    desc: '',
+    location: '',
+    limit: '',
+  })
+  const [error, setError] = useState([])
+  const dispatch = useDispatch()
 
   //crop
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [croppedImages, setCroppedImages] = useState([]);
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
+  const [croppedImages, setCroppedImages] = useState([])
 
   useEffect(() => {
-    const element = contentPage.current;
-    document.title = "Create post";
-    element.style.right = "12px";
-  }, [pathname]);
+    const element = contentPage.current
+    document.title = 'Create post'
+    element.style.right = '12px'
+  }, [pathname])
 
   const handleClick = () => {
-    setError([]);
+    setError([])
     setBookshelfAdds({
-      bookName: "",
-      author: "",
-      desc: "",
-      location: "",
-      limit: "",
-    });
-    setIsRoundMoved(!isMoved);
-  };
+      bookName: '',
+      author: '',
+      desc: '',
+      location: '',
+      limit: '',
+    })
+    setIsRoundMoved(!isMoved)
+  }
   const addDes = (e) => {
-    const value = e.target.value.replace(/\s+/g, " ");
-    setDesc(value);
-    setDescLength(150 - value.length);
+    const value = e.target.value.replace(/\s+/g, ' ')
+    setDesc(value)
+    setDescLength(150 - value.length)
 
     if (value.length >= 150) {
-      setReadOnly(true);
+      setReadOnly(true)
     } else {
-      setReadOnly(false);
+      setReadOnly(false)
     }
 
     if (value.length >= 150) {
-      e.preventDefault();
+      e.preventDefault()
     }
-  };
+  }
   const chooseImage = () => {
-    imageInput.current.click();
-  };
+    imageInput.current.click()
+  }
   const handleImageInput = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files)
 
     if (files.length > 5) {
-      return showErrorToast("Only 5 images allowed");
+      return showErrorToast('Only 5 images allowed')
     }
-    if (!files.length) return;
-    const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
+    if (!files.length) return
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp']
 
     const validFiles = files.filter((file) => {
-      const extension = file.name.split(".").pop().toLowerCase();
-      return allowedExtensions.includes(extension);
-    });
+      const extension = file.name.split('.').pop().toLowerCase()
+      return allowedExtensions.includes(extension)
+    })
 
     if (validFiles.length !== files.length) {
-      showErrorToast("!Invalid file extentiion only jpg,jpeg,png is allowed");
-      return;
+      showErrorToast('!Invalid file extentiion only jpg,jpeg,png is allowed')
+      return
     }
 
-    const newImageUrls = [];
-    let filesProcessed = 0;
+    const newImageUrls = []
+    let filesProcessed = 0
 
     files.forEach((file, index) => {
-      const reader = new FileReader();
+      const reader = new FileReader()
 
       reader.onload = () => {
         newImageUrls.push({
           id: uuid(),
           url: reader.result,
-        });
+        })
 
-        filesProcessed++;
+        filesProcessed++
 
-        setImage(newImageUrls[index].id);
+        setImage(newImageUrls[index].id)
         if (filesProcessed === files.length) {
-          setImageUrl((prevUrls) => [...prevUrls, ...newImageUrls]);
+          setImageUrl((prevUrls) => [...prevUrls, ...newImageUrls])
         }
-      };
+      }
 
-      reader.readAsDataURL(file);
-    });
-  };
+      reader.readAsDataURL(file)
+    })
+  }
 
   const handleKeyDown = (e) => {
-    if (e.key === "Backspace" || e.key === "Delete") {
-      setReadOnly(false);
-      return;
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      setReadOnly(false)
+      return
     }
 
     if (desc.length >= 150) {
-      e.preventDefault();
+      e.preventDefault()
     }
-  };
+  }
   ////
   const removeImage = (id, index) => {
     if (imageUrl.length === 1) {
-      setImage([]);
-      setImageUrl([]);
-      setCroppedImages([]);
-      return;
+      setImage([])
+      setImageUrl([])
+      setCroppedImages([])
+      return
     }
 
     if (index === 0) {
-      setImage(imageUrl[index + 1]?.id);
+      setImage(imageUrl[index + 1]?.id)
     } else {
-      setImage(imageUrl[index - 1]?.id);
+      setImage(imageUrl[index - 1]?.id)
     }
 
-    setImageUrl((prevImageUrl) => prevImageUrl.filter((img) => img.id !== id));
+    setImageUrl((prevImageUrl) => prevImageUrl.filter((img) => img.id !== id))
     setCroppedImages((prevCroppedImages) =>
       prevCroppedImages.filter((img) => img.id !== id)
-    );
-  };
+    )
+  }
 
   //crop image
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-    showCroppedImage();
-  };
+    setCroppedAreaPixels(croppedAreaPixels)
+    showCroppedImage()
+  }
   const showCroppedImage = async () => {
     if (croppedAreaPixels && imageUrl.find((img) => img.id === imageId)?.url) {
       try {
         const croppedImageBlobUrl = await getCroppedImg(
-          imageUrl.find((img) => img.id === imageId)?.url || "",
+          imageUrl.find((img) => img.id === imageId)?.url || '',
           croppedAreaPixels
-        );
+        )
 
-        const response = await fetch(croppedImageBlobUrl);
+        const response = await fetch(croppedImageBlobUrl)
 
-        const blob = await response.blob();
-        const file = new File([blob], "croppedImage.jpg", {
-          type: "image/jpeg",
-        });
+        const blob = await response.blob()
+        const file = new File([blob], 'croppedImage.jpg', {
+          type: 'image/jpeg',
+        })
 
         setCroppedImages((prevCroppedImages) => {
           const existingImageIndex = prevCroppedImages.findIndex(
             (img) => img.id === imageId
-          );
+          )
 
           if (existingImageIndex >= 0) {
-            const updatedImages = [...prevCroppedImages];
+            const updatedImages = [...prevCroppedImages]
             updatedImages[existingImageIndex] = {
               id: imageId,
               url: croppedImageBlobUrl,
               file,
-            };
-            return updatedImages;
+            }
+            return updatedImages
           } else {
             return [
               ...prevCroppedImages,
               { id: imageId, url: croppedImageBlobUrl, file },
-            ];
+            ]
           }
-        });
+        })
       } catch (e) {
-        console.error(e);
+        console.error(e)
       }
     }
-  };
+  }
 
   //submitting the form
   const handleSubmit = async () => {
     if (!imageUrl.length || !croppedImages.length) {
-      showErrorToast("Select images to proceed");
-      return;
+      showErrorToast('Select images to proceed')
+      return
     }
 
     if (!desc) {
-      showErrorToast("Add image a description");
-      return;
+      showErrorToast('Add image a description')
+      return
     }
     if (desc.length > 150) {
-      showErrorToast("Description length is too high");
-      return;
+      showErrorToast('Description length is too high')
+      return
     }
 
-    const files = croppedImages.map((file) => file.file);
-    const formData = new FormData();
+    const files = croppedImages.map((file) => file.file)
+    const formData = new FormData()
 
     if (isMoved) {
-      const keys = Object.keys(booshelfAdds);
-      const errorIndices = [];
+      const keys = Object.keys(booshelfAdds)
+      const errorIndices = []
       keys.forEach((key, index) => {
-        if (booshelfAdds[key].trim() == "") {
-          errorIndices.push(index + 1);
+        if (booshelfAdds[key].trim() == '') {
+          errorIndices.push(index + 1)
         }
-      });
+      })
 
       if (errorIndices.length > 0) {
-        setError(errorIndices);
-        return;
+        setError(errorIndices)
+        return
       } else {
-        setError([]);
-        formData.append("addToBookshelf", true);
-        formData.append("author", booshelfAdds.author);
-        formData.append("ShelfDescription", booshelfAdds.desc);
-        formData.append("bookName", booshelfAdds.bookName);
-        formData.append("limit", booshelfAdds.limit);
-        formData.append("location", booshelfAdds.location);
+        setError([])
+        formData.append('addToBookshelf', true)
+        formData.append('author', booshelfAdds.author)
+        formData.append('ShelfDescription', booshelfAdds.desc)
+        formData.append('bookName', booshelfAdds.bookName)
+        formData.append('limit', booshelfAdds.limit)
+        formData.append('location', booshelfAdds.location)
       }
     }
 
     files.forEach((file) => {
-      formData.append("images", file);
-    });
+      formData.append('images', file)
+    })
     if (desc.length > 0) {
-      formData.append("description", desc);
+      formData.append('description', desc)
     }
 
-    dispatch(startLoading());
+    dispatch(startLoading())
 
-    const response = await createPost(formData, user);
+    const response = await createPost(formData, user)
     if (response.status) {
-      showSuccessToast(response.message);
-      setImageUrl([]);
-      setDescLength(150);
-      setCroppedImages([]);
-      setDesc("");
-      dispatch(stopLoading());
+      showSuccessToast(response.message)
+      setImageUrl([])
+      setDescLength(150)
+      setCroppedImages([])
+      setDesc('')
+      dispatch(stopLoading())
     } else {
-      dispatch(stopLoading());
+      dispatch(stopLoading())
     }
-  };
+  }
 
   return (
     <div
@@ -280,7 +284,7 @@ export default function CreatePost() {
                 {imageUrl.length > 0 ? (
                   <Cropper
                     image={
-                      imageUrl.find((img) => img.id === imageId)?.url || ""
+                      imageUrl.find((img) => img.id === imageId)?.url || ''
                     }
                     crop={crop}
                     zoom={zoom}
@@ -290,7 +294,7 @@ export default function CreatePost() {
                     onZoomChange={setZoom}
                   />
                 ) : (
-                  ""
+                  ''
                 )}
               </div>
               {croppedImages.length > 0 ? (
@@ -305,7 +309,7 @@ export default function CreatePost() {
                   </div>
                 </div>
               ) : (
-                ""
+                ''
               )}
             </div>
             <div className="flex ms-2 justify-between  items-center ">
@@ -325,7 +329,7 @@ export default function CreatePost() {
                       className=" absolute text-lg bottom-[-4px] right-[-6px] text-red-600"
                       icon={faXmark}
                       onClick={() =>
-                        showModal("Are you sure to remove this ?", "user", () =>
+                        showModal('Are you sure to remove this ?', 'user', () =>
                           removeImage(images.id, index)
                         )
                       }
@@ -365,10 +369,10 @@ export default function CreatePost() {
               <div className="text-center">
                 <FontAwesomeIcon className="h-8" icon={faUpload} />
                 <div className="font-semibold text-xl">
-                  Select Files to uplaod{" "}
+                  Select Files to uplaod{' '}
                 </div>
                 <div className="text-xs text-slate-400">
-                  or drag and top your files here{" "}
+                  or drag and top your files here{' '}
                 </div>
                 <input
                   onChange={handleImageInput}
@@ -399,17 +403,37 @@ export default function CreatePost() {
           <div className="w-10 h-5 p-[2px] access-button">
             <div
               className={` h-full w-4 rounded-full border ${
-                isMoved ? "translate-x-full bg-[#512da8]" : "bg-slate-300"
+                isMoved
+                  ? 'translate-x-full bg-[#512da8]'
+                  : !userDetails.isSubscribed
+                    ? 'bg-slate-300'
+                    : 'bg-[#000000]'
               }`}
               style={{
-                transition: "transform 0.3s ease-in-out",
+                transition: 'transform 0.3s ease-in-out',
               }}
-              onMouseDown={handleClick}
+              onMouseDown={userDetails.isSubscribed ? handleClick : ''}
             ></div>
           </div>
-          <div className="ms-2 text-xs text-slate-400">Add to bookshelf</div>
+          <div className="ms-2 text-sm font-semibold text-slate-500">
+            Add to bookshelf
+          </div>
         </div>
-        <div className={isMoved ? "" : "hidden"}>
+        {!userDetails.isSubscribed && (
+          <div className="bg-[#ede9f7] shadow-lg mt-2 rounded-lg p-3">
+            <p className="text-sm text-wrap">
+              <FontAwesomeIcon
+                className="text-red-500 me-2"
+                icon={faCircleExclamation}
+              />
+              Access to the bookshelf feature and the ability to add books is
+              only available to subscribed users. Please subscribe to enjoy
+              these features
+            </p>
+          </div>
+        )}
+
+        <div className={isMoved ? '' : 'hidden'}>
           <div className="bookshelf-adds mt-2 flex justify-between">
             <div className="">
               <input
@@ -424,7 +448,7 @@ export default function CreatePost() {
               />
               <div
                 className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-                  error.includes(1) ? "" : "opacity-0"
+                  error.includes(1) ? '' : 'opacity-0'
                 }`}
               >
                 field is required
@@ -443,7 +467,7 @@ export default function CreatePost() {
               />
               <div
                 className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-                  error.includes(2) ? "" : "opacity-0"
+                  error.includes(2) ? '' : 'opacity-0'
                 }`}
               >
                 field is required
@@ -462,7 +486,7 @@ export default function CreatePost() {
           ></textarea>
           <div
             className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-              error.includes(3) ? "" : "opacity-0"
+              error.includes(3) ? '' : 'opacity-0'
             }`}
           >
             field is required
@@ -481,7 +505,7 @@ export default function CreatePost() {
               />
               <div
                 className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-                  error.includes(4) ? "" : "opacity-0"
+                  error.includes(4) ? '' : 'opacity-0'
                 }`}
               >
                 field is required
@@ -496,7 +520,7 @@ export default function CreatePost() {
                     limit: e.target.value,
                   }))
                 }
-                style={{ border: "0.5px solid #7d7b7b", borderRadius: "8px" }}
+                style={{ border: '0.5px solid #7d7b7b', borderRadius: '8px' }}
                 className="py-2.5 text-sm text-gray-400  focus:text-black w-full"
               >
                 <option value="">Select the period limit to lend </option>
@@ -515,7 +539,7 @@ export default function CreatePost() {
               </select>
               <div
                 className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-                  error.includes(5) ? "" : "opacity-0"
+                  error.includes(5) ? '' : 'opacity-0'
                 }`}
               >
                 field is required
@@ -532,11 +556,11 @@ export default function CreatePost() {
             {isLoading ? (
               <div className="animate-spin rounded-full h-4 w-4   border-t-2 border-b-2 border-white-900"></div>
             ) : (
-              "Upload"
+              'Upload'
             )}
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }

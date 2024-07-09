@@ -1,9 +1,10 @@
-import { Route, Routes } from "react-router-dom";
-import AdminNavbar from "../AdminNavbar/AdminNavbar";
-import User from "./User/User";
-import Page404 from "../../errorPages/Page404";
-import Dashboard from "./Dashboard/Dashboard";
-import Post from "./Post/Post";
+import { Route, Routes } from 'react-router-dom'
+import AdminNavbar from '../AdminNavbar/AdminNavbar'
+import User from './User/User'
+import Page404 from '../../errorPages/Page404'
+import Dashboard from './Dashboard/Dashboard'
+import Post from './Post/Post'
+import Badge from './Badge/Badge'
 export default function AdminPages() {
   return (
     <div className=" p-4 h-screen bg-[#51557e] ">
@@ -12,9 +13,10 @@ export default function AdminPages() {
         <Route path="/user/management" element={<User />}></Route>
         <Route path="/dashboard" element={<Dashboard />}></Route>
         <Route path="/post/management" element={<Post />}></Route>
+        <Route path="/badge/management" element={<Badge />} />
 
         <Route path="*" element={<Page404 />}></Route>
       </Routes>
     </div>
-  );
+  )
 }

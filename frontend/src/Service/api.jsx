@@ -77,6 +77,8 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
         return Promise.reject(error)
+      } else if (response.status == 415) {
+        showErrorToast(response.data.message)
       } else if (response.status == 401) {
         setResponseError(response.data.message)
       } else if (response.status == 409) {

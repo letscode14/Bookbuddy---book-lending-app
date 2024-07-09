@@ -10,13 +10,23 @@ import reportModel from '../databases/reportsModel'
 import BookshelfModel from '../databases/bookShelfModel'
 import { IBookShelf, IShelf } from '../../entity/bookShelfEntity'
 import { redis } from '../config/redis'
+import { IBadge, ILendscrore } from '../../entity/badgeEntity'
+import BadgeModel from '../databases/badgeModel'
+import LendScoreModel from '../databases/lendScoreModel'
+
+interface UserMaps {
+  userId: ObjectId
+  followersLength: number
+  followingLength: number
+  followersMap: { [key: string]: boolean }
+  followingMap: { [key: string]: boolean }
+}
 
 class UserRepository implements IUserRepository {
   async BlockedUser(): Promise<User[] | null> {
     try {
       const cacheKey = 'blockedUsers'
       const cachedData = await redis.get(cacheKey)
-      console.log(cachedData)
 
       if (cachedData) {
         return JSON.parse(cachedData)
@@ -27,7 +37,7 @@ class UserRepository implements IUserRepository {
         .select('_id')
         .lean()) as User[]
 
-      await redis.set(cacheKey, JSON.stringify(blockedUsers), 'EX', 3600)
+      await redis.set(cacheKey, JSON.stringify(blockedUsers), 'EX', 2592000)
       return blockedUsers
     } catch (error) {
       console.log(error)
@@ -35,7 +45,18 @@ class UserRepository implements IUserRepository {
     }
   }
   async findByEmail(email: string): Promise<User | null> {
-    return await userModel.findOne({ email }).select('+password')
+    const user = (await userModel
+      .findOne({ email })
+      .select('-followers -following')) as User
+    if (user) {
+      return user
+    } else {
+      return null
+    }
+  }
+
+  async findUserById(id: string): Promise<User | null> {
+    return await userModel.findById(id).select('-password')
   }
   async checkUsernameValid(username: string): Promise<User | null> {
     return await userModel.findOne({ userName: username })
@@ -75,7 +96,7 @@ class UserRepository implements IUserRepository {
         name,
         userName,
         email,
-        profileUrl,
+        profile: { profileUrl: profileUrl, publicId: '' },
         password: generatedPassword,
         isGoogleSignUp: true,
       })
@@ -119,6 +140,7 @@ class UserRepository implements IUserRepository {
           { upsert: true, new: true }
         )
       }
+
       const lastAddedBookId = bookshelf?.shelf[bookshelf.shelf.length - 1]
         ?._id as string
       const savedPost = await postModel.create({
@@ -154,11 +176,47 @@ class UserRepository implements IUserRepository {
       return null
     }
   }
-  async getUser(id: string): Promise<{} | null> {
+  async getUser(id: string, req: Request): Promise<{} | null> {
     try {
-      const user = await userModel.findById(id).select('-password')
+      const user = await userModel
+        .findById(id)
+        .populate({
+          path: 'lendscore',
+          select: 'lendScore badgeId',
+          populate: {
+            path: 'badgeId',
+            select: 'name iconUrl',
+            model: 'Badge',
+          },
+        })
+        .select('-password -reportsMade -reportCount')
+
       if (user) {
-        return user
+        const followersLength = user.followers.length
+        const followingLength = user.following.length
+
+        const followingMap: { [key: string]: boolean } = {}
+        const followersMap: { [key: string]: boolean } = {}
+
+        user.following.forEach((following) => {
+          followingMap[following.userId.toString()] = true
+        })
+
+        user.followers.forEach((follower) => {
+          followersMap[follower.userId.toString()] = true
+        })
+        const userObject = user.toObject()
+
+        delete (userObject as any).following
+        delete (userObject as any).followers
+
+        return {
+          user: userObject,
+          followersLength,
+          followingLength,
+          followingMap,
+          followersMap,
+        }
       }
       return null
     } catch (error) {
@@ -174,7 +232,7 @@ class UserRepository implements IUserRepository {
       const id = req.query.id as string
       const user = await userModel
         .findById(id)
-        .populate('following.userId', 'userName')
+        .populate('following.userId', 'userName ')
         .select('-password')
       if (!user) {
         return null
@@ -217,22 +275,22 @@ class UserRepository implements IUserRepository {
       if (secondDegreeFollowerIds.size == 0) {
         const followersId = user.followers.map((doc) => doc.userId)
 
-        const suggestions = (await userModel
-          .find({
-            _id: { $in: followersId },
-          })
-          .populate('followers.userId', 'userName')
-          .select('-password')) as User[]
+        const suggestions = (await userModel.find({
+          _id: { $in: followersId },
+        })) as User[]
 
         return suggestions
       }
 
       const suggestions = (await userModel
-        .find({
-          _id: { $in: Array.from(secondDegreeFollowerIds) },
-        })
-        .populate('followers.userId', 'userName')
-        .select('-password')) as User[]
+        .find(
+          {
+            _id: { $in: Array.from(secondDegreeFollowerIds) },
+          },
+          { isSubscribed: 1, userName: 1, profile: 1, name: 1, _id: 1 }
+        )
+        .populate('followers.userId', 'userName isSubscribed')
+        .select('-password -followers -following')) as User[]
 
       if (suggestions) {
         return suggestions
@@ -247,7 +305,6 @@ class UserRepository implements IUserRepository {
   async followUser(req: Request): Promise<boolean> {
     try {
       const { userId, target } = req.body
-      console.log(req.body)
 
       if (!userId || !target) {
         return false
@@ -274,8 +331,6 @@ class UserRepository implements IUserRepository {
       return false
     }
 
-    console.log(req.body)
-
     try {
       await userModel.findByIdAndUpdate(userId, {
         $pull: { following: { userId: new ObjectId(target) } },
@@ -292,8 +347,16 @@ class UserRepository implements IUserRepository {
     }
   }
 
-  async fetchPostData(id: string): Promise<[] | null> {
+  async fetchPostData(
+    req: Request,
+    id: string
+  ): Promise<{ post: []; hasMore: boolean } | null> {
     try {
+      const { pageNo } = req.query
+      const limit: number = 2
+
+      const skip: number = (Number(pageNo) - 1) * limit
+
       if (!id) {
         throw new Error('User ID is required')
       }
@@ -309,16 +372,31 @@ class UserRepository implements IUserRepository {
         (following) => following.userId._id
       )
       const userIds = [...new Set([...followerIds, ...followingIds, user._id])]
+      const totalCount = await postModel.countDocuments({
+        userId: { $in: userIds },
+        isDeleted: false,
+        isRemoved: false,
+      })
+
       const posts = await postModel
         .find({ userId: { $in: userIds }, isDeleted: false, isRemoved: false })
-        .populate('userId', 'userName email profileUrl')
+        .populate('userId', 'userName email profile isSubscribed')
         .populate('likes', 'userName')
-        .populate('comments.author', 'userName  profileUrl')
-        .populate('comments.replies.author', 'userName profileUrl')
+        .populate('comments.author', 'userName  profile isSubscribed')
+        .populate('comments.replies.author', 'userName profile isSubscribed')
         .sort({ createdAt: -1 })
+        .limit(limit)
+        .skip(skip)
         .exec()
 
-      return posts.length > 0 ? (posts as []) : null
+      const totalPage = Math.ceil(totalCount / limit)
+
+      return posts.length > 0
+        ? {
+            post: posts as [],
+            hasMore: Number(pageNo) == totalPage ? false : true,
+          }
+        : null
     } catch (error) {
       console.log(error)
       return null
@@ -328,7 +406,6 @@ class UserRepository implements IUserRepository {
   async likePost(req: Request): Promise<boolean> {
     try {
       const { postId, userId } = req.body
-      console.log(req.body)
 
       const result = await postModel.findByIdAndUpdate(
         postId,
@@ -350,7 +427,6 @@ class UserRepository implements IUserRepository {
   async unlikePost(req: Request): Promise<boolean> {
     try {
       const { postId, userId } = req.body
-      console.log(req.body)
 
       const result = await postModel.findByIdAndUpdate(
         postId,
@@ -371,24 +447,63 @@ class UserRepository implements IUserRepository {
 
   async updateUserDetails(
     req: Request,
-    cloudRes: { secure_url: string }
+    cloudRes: { secure_url: string; public_id: string }
   ): Promise<boolean | null> {
     try {
-      const { age, contact, email, gender, name, privacy, userName, userId } =
-        req.body
-      const profileUrl = cloudRes.secure_url
-        ? cloudRes.secure_url
-        : 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
-      const updatedUser = await userModel.findByIdAndUpdate(userId, {
+      const {
         age,
         contact,
+        newAdded,
         email,
         gender,
         name,
-        privacy: privacy == 'public' ? false : true,
+        privacy,
+        userName,
+        userId,
         profileUrl,
-      })
+        publicId,
+      } = req.body
+      const defualt =
+        'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png'
+
+      let profile
+      if (newAdded == 'true') {
+        profile = {
+          profileUrl: cloudRes.secure_url,
+          publicId: cloudRes.public_id,
+        }
+      } else if (profileUrl == '') {
+        profile = {
+          profileUrl: defualt,
+          publicId: '',
+        }
+      } else {
+        profile = {
+          profileUrl: profileUrl,
+          publicId: publicId,
+        }
+      }
+
+      const updatedUser = await userModel
+        .findByIdAndUpdate(
+          userId,
+          {
+            age,
+            contact,
+            userName,
+            email,
+            gender,
+            name,
+            privacy: privacy == 'public' ? false : true,
+            profile,
+          },
+          { new: true }
+        )
+        .select('-password -followers -following')
+
       if (updatedUser) {
+        redis.set(`user:${updatedUser._id}`, JSON.stringify(updatedUser))
+
         return true
       }
       return null
@@ -404,9 +519,9 @@ class UserRepository implements IUserRepository {
       const post = await postModel
         .findById(postId)
         .populate<{ likes: User[] }>('likes', 'userName')
-        .populate('userId', 'profileUrl userName')
-        .populate('comments.author', 'profileUrl userName')
-        .populate('comments.replies.author', 'profileUrl userName')
+        .populate('userId', 'profile userName')
+        .populate('comments.author', 'profile userName')
+        .populate('comments.replies.author', 'profile userName')
         .lean<Post>()
       if (post) {
         return post
@@ -431,7 +546,7 @@ class UserRepository implements IUserRepository {
       )) as IPost | null
 
       if (post) {
-        await post.populate('comments.author', 'userName profileUrl')
+        await post.populate('comments.author', 'userName profile isSubscribed')
         const newComment = post.comments[post.comments.length - 1]
         return newComment
       } else {
@@ -463,7 +578,7 @@ class UserRepository implements IUserRepository {
           },
           { new: true }
         )
-        .populate('comments.replies.author', 'userName profileUrl')
+        .populate('comments.replies.author', 'userName profile isSubscribed')
 
       if (post) {
         const updatedComment = post.comments.find((comment) => {
@@ -486,9 +601,25 @@ class UserRepository implements IUserRepository {
   }
   async getF(req: Request): Promise<User | null> {
     try {
-      const { userId, query, pageNo } = req.query
+      const { userId, query, pageNo, currentUser } = req.query
       const limit = 1
       const skip = (Number(pageNo) - 1) * limit
+
+      const data = await userModel.findById(currentUser, {
+        _id: 1,
+        followers: 1,
+        following: 1,
+      })
+
+      const followersMapCurrent: { [key: string]: boolean } = {}
+      data?.followers.map((followers: IFollower) => {
+        followersMapCurrent[followers.userId.toString()] = true
+      })
+      const followingMap: { [key: string]: boolean } = {}
+
+      data?.following.map((following: IFollower) => {
+        followingMap[following.userId.toString()] = true
+      })
 
       let response
       if (query == 'followers') {
@@ -505,7 +636,7 @@ class UserRepository implements IUserRepository {
                 {
                   $project: {
                     _id: 1,
-                    profileUrl: 1,
+                    profile: 1,
                     name: 1,
                     userName: 1,
                   },
@@ -536,6 +667,8 @@ class UserRepository implements IUserRepository {
 
         response = followers[0]
         response.totalCount = Math.ceil(response?.totalCount / limit)
+        response.followingMapCurrent = followingMap
+        response.followersMapCurrent = followersMapCurrent
       } else {
         const followers = await userModel.aggregate([
           { $match: { _id: new ObjectId(userId as string) } },
@@ -550,7 +683,7 @@ class UserRepository implements IUserRepository {
                 {
                   $project: {
                     _id: 1,
-                    profileUrl: 1,
+                    profile: 1,
                     name: 1,
                     userName: 1,
                   },
@@ -582,6 +715,8 @@ class UserRepository implements IUserRepository {
         response = followers[0]
 
         response.totalCount = Math.ceil(response.totalCount / limit)
+        response.followingMapCurrent = followingMap
+        response.followersMapCurrent = followersMapCurrent
       }
 
       if (response) {
@@ -775,6 +910,54 @@ class UserRepository implements IUserRepository {
       console.log(error)
 
       return false
+    }
+  }
+
+  async checkIsSubscribed(userId: string): Promise<boolean | null> {
+    try {
+      const user = await userModel.findOne({
+        _id: new ObjectId(userId),
+        isSubscribed: true,
+      })
+
+      if (user) {
+        return true
+      }
+
+      return false
+    } catch (error) {
+      return false
+    }
+  }
+  async makeUserSubscribed(
+    userId: string
+  ): Promise<{ badge: string; lendScore: ILendscrore } | null> {
+    try {
+      const badge = await BadgeModel.findOne({ minScore: { $gte: 10 } })
+      if (badge) {
+        const lendScore = await LendScoreModel.create({
+          badgeId: new ObjectId(badge._id),
+          userId: new ObjectId(userId),
+          lendScore: 10,
+        })
+        await lendScore.populate('badgeId', 'iconUrl name')
+
+        await userModel.findByIdAndUpdate(userId, {
+          $set: {
+            isSubscribed: true,
+            lendscore: new ObjectId(lendScore._id),
+            cautionDeposit: 1000,
+          },
+        })
+        return {
+          badge: badge.iconUrl.secureUrl,
+          lendScore: lendScore,
+        }
+      }
+      return null
+    } catch (error) {
+      console.log(error)
+      return null
     }
   }
 }

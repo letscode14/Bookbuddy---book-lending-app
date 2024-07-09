@@ -152,7 +152,7 @@ export default function PostView({ postData, user }) {
               >
                 <img
                   className="rounded-full object-contain"
-                  src={user.profileUrl}
+                  src={user.profile.profileUrl}
                 />
               </React.Suspense>
             </div>
@@ -184,7 +184,7 @@ export default function PostView({ postData, user }) {
                           >
                             <img
                               className="rounded-full object-contain"
-                              src={com.author.profileUrl}
+                              src={com.author.profile.profileUrl}
                             />
                           </React.Suspense>
                         </div>
@@ -267,7 +267,7 @@ export default function PostView({ postData, user }) {
                                 >
                                   <img
                                     className="rounded-full object-contain"
-                                    src={rep.author.profileUrl}
+                                    src={rep.author.profile.profileUrl}
                                   />
                                 </React.Suspense>
                               </div>

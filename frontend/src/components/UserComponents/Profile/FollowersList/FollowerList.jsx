@@ -4,6 +4,8 @@ import {
   followUser,
   unfollowUser,
 } from '../../../../Service/Apiservice/UserApi'
+import { useSelector } from 'react-redux'
+import { selecUser } from '../../../../store/slice/userAuth'
 
 export default function FollowerList({ user }) {
   const [followingIds, setFollowingId] = useState({})
@@ -13,24 +15,22 @@ export default function FollowerList({ user }) {
   const [pageNo, setPage] = useState(1)
   const [totalPage, setTotalpage] = useState()
   const [loadMore, setLoadMore] = useState()
+  const u = useSelector(selecUser)
 
   useEffect(() => {
-    const followingMap = {}
-    user.following.forEach((p) => {
-      followingMap[p.userId] = true
-    })
-    setFollowingId(followingMap)
-
     const fetchFollowers = async () => {
       try {
         const response = await fetchF({
           userId: user._id,
           query: 'followers',
           pageNo,
+          currentUser: u.user,
         })
         console.log(response)
         if (response) {
           setTotalpage(response.totalCount)
+          setFollowingId(response.followingMapCurrent)
+          setFollowersId(response.followersMapCurrent)
           setFollowers((prev) => {
             const prevSet = new Set(prev.map((item) => item._id.toString()))
             const newItems = response.followers.filter(
@@ -48,12 +48,6 @@ export default function FollowerList({ user }) {
       }
     }
     fetchFollowers()
-
-    const followersMap = {}
-    user.followers.forEach((follower) => {
-      followersMap[follower.userId] = true
-    })
-    setFollowersId(followersMap)
   }, [pageNo])
 
   const handleFollow = async (userId, target) => {
@@ -102,7 +96,7 @@ export default function FollowerList({ user }) {
                         <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
                       }
                     >
-                      <ImageComponent src={f?.userId?.profileUrl} />
+                      <ImageComponent src={f?.userId?.profile?.profileUrl} />
                     </React.Suspense>
                   </div>
                 </div>
@@ -112,20 +106,21 @@ export default function FollowerList({ user }) {
                 </div>
               </div>
               <div>
-                {followersIds[f?.userId?._id] &&
-                followingIds[f?.userId?._id] ? (
+                {f.userId._id == u.user ? (
+                  ''
+                ) : followingIds[f?.userId?._id] ? (
                   <button
-                    onClick={() => handleUnFollow(user._id, f?.userId?._id)}
+                    onClick={() => handleUnFollow(u.user, f?.userId?._id)}
                     className="uppercase py-1 font-bold px-5 text-[#512da8] text-[11px] rounded-xl border-[#512da8] border"
                   >
                     Unfollow
                   </button>
                 ) : (
                   <button
-                    onClick={() => handleFollow(user._id, f.userId._id)}
+                    onClick={() => handleFollow(u.user, f.userId._id)}
                     className="uppercase py-1 font-bold px-5 text-[11px] rounded-xl text-[#ffffff] bg-[#512da8] border"
                   >
-                    follow back
+                    {followersIds[f.userId._id] ? 'follow back' : 'follow'}
                   </button>
                 )}
               </div>
@@ -136,7 +131,7 @@ export default function FollowerList({ user }) {
               setLoadMore(true)
               setPage(pageNo + 1)
             }}
-            className="w-full  flex justify-center text-sm text-gray-500"
+            className="w-full cursor-pointer  flex justify-center text-sm text-gray-500"
           >
             {pageNo < totalPage ? (
               loadMore ? (

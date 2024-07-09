@@ -1,15 +1,15 @@
 import {
   faLocationDot,
   faTriangleExclamation,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
-import ChildModal from "../../../../Modal/ChildModal";
-import EditShelf from "../EditShelf/EditShelf";
-import RemoveBook from "../RemoveBook/RemoveBook";
-const ImageComponent = React.lazy(() =>
-  import("../../../../ImageComponent/Image")
-);
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React, { useState } from 'react'
+import ChildModal from '../../../../Modal/ChildModal'
+import EditShelf from '../EditShelf/EditShelf'
+import RemoveBook from '../RemoveBook/RemoveBook'
+const ImageComponent = React.lazy(
+  () => import('../../../../ImageComponent/Image')
+)
 
 export default function ViewBook({
   book,
@@ -17,45 +17,46 @@ export default function ViewBook({
   userId,
   handleContentClose,
 }) {
-  const [isChildOpen, setChildOpen] = useState(false);
-  const [modalFor, setModalFor] = useState("");
-  const [action, setAction] = useState("");
+  const [isChildOpen, setChildOpen] = useState(false)
+  const [modalFor, setModalFor] = useState('')
+  const [action, setAction] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  book.addedOn = new Date(book.addedOn).toDateString();
+  book.addedOn = new Date(book.addedOn).toDateString()
 
   const handleChildClose = () => {
-    setChildOpen(false);
-    setModalFor("");
-    setAction("");
-  };
+    setChildOpen(false)
+    setModalFor('')
+    setAction('')
+  }
 
   const confirmEdit = () => {
-    setModalFor("Confirm");
-    setChildOpen(true);
-    setAction("Edit");
-  };
+    setModalFor('Confirm')
+    setChildOpen(true)
+    setAction('Edit')
+  }
 
   const confirmRemove = () => {
-    setModalFor("Confirm");
-    setChildOpen(true);
-    setAction("Remove");
-  };
+    setModalFor('Confirm')
+    setChildOpen(true)
+    setAction('Remove')
+  }
 
   const handleConfirm = () => {
-    if (action == "Edit") return setModalFor("Edit");
-    if (action == "Remove") return setModalFor("Remove");
-  };
+    if (action == 'Edit') return setModalFor('Edit')
+    if (action == 'Remove') return setModalFor('Remove')
+  }
 
   const handleClose = () => {
-    handleContentClose();
-    setModalFor("");
-    setAction("");
-  };
+    handleContentClose()
+    setModalFor('')
+    setAction('')
+  }
 
   return (
     <>
       <ChildModal isOpen={isChildOpen} onClose={handleChildClose}>
-        {modalFor == "Confirm" && (
+        {modalFor == 'Confirm' && (
           <div className="w-[500px] py-6 px-10">
             <div>
               <span>
@@ -70,7 +71,7 @@ export default function ViewBook({
               <div>
                 <button
                   onClick={() => {
-                    handleChildClose();
+                    handleChildClose()
                   }}
                   className="me-3 py-1 bg-[#512da8] text-[#ffffff] font-semibold uppercase px-5 text-xs border rounded-lg"
                 >
@@ -87,10 +88,10 @@ export default function ViewBook({
             </div>
           </div>
         )}
-        {modalFor == "Edit" && (
+        {modalFor == 'Edit' && (
           <EditShelf book={book} userId={userId} handleClose={handleClose} />
         )}
-        {modalFor == "Remove" && (
+        {modalFor == 'Remove' && (
           <RemoveBook
             bookId={book.ID}
             _id={book._id}
@@ -154,28 +155,46 @@ export default function ViewBook({
           </div>
         </div>
         <div
-          style={{ scrollbarWidth: "none" }}
+          style={{ scrollbarWidth: 'none' }}
           className="mb-5 h-16 max-h-16 overflow-auto  font-medium text-[#000000]"
         >
           <p className="text-wrap w-50">{book.description}</p>
         </div>
         <div className="  w-full  flex gap-3 justify-center font-medium text-[#000000]">
-          <button
-            onClick={() => {
-              confirmEdit();
-            }}
-            className="border  bg-[#512da8] font-semibold text-[#ffffff] w-28 text-xs py-2 rounded-lg uppercase"
-          >
-            Edit
-          </button>
-          <button
-            onClick={confirmRemove}
-            className="border border-[#512da8] text-[#512da8] text-xs font-semibold   w-28 text-sm py-1 rounded-lg uppercase"
-          >
-            remove
-          </button>
+          {isOwned ? (
+            <>
+              {' '}
+              <button
+                onClick={() => {
+                  confirmEdit()
+                }}
+                className="border  bg-[#512da8] font-semibold text-[#ffffff] w-28 text-xs py-2 rounded-lg uppercase"
+              >
+                Edit
+              </button>
+              <button
+                onClick={confirmRemove}
+                className="border border-[#512da8] text-[#512da8] text-xs font-semibold   w-28 text-sm py-1 rounded-lg uppercase"
+              >
+                remove
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => {
+                alert('request book')
+              }}
+              className="border  bg-[#512da8] w-40 flex justify-center items-center font-semibold text-[#ffffff] w-28 text-xs py-2 rounded-lg uppercase"
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
+              ) : (
+                'request book'
+              )}
+            </button>
+          )}
         </div>
       </div>
     </>
-  );
+  )
 }

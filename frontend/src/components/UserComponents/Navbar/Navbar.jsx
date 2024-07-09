@@ -30,6 +30,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const element = menuHighlight.current
+
     switch (pathname) {
       case '/user/home':
         element.style.top = `${0}px`
@@ -58,6 +59,8 @@ export default function Navbar() {
         element.style.top = '206px'
         setMenu(4)
         break
+      default:
+        element.style.top = '0px'
     }
   }, [pathname])
 

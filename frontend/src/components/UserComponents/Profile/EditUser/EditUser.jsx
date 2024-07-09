@@ -1,112 +1,109 @@
-import React, { useState, useEffect, useRef } from "react";
-import "react-phone-number-input/style.css";
-import PhoneInput from "react-phone-number-input";
-import ChildModal from "../../../Modal/ChildModal";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useState, useEffect, useRef } from 'react'
+import 'react-phone-number-input/style.css'
+import PhoneInput from 'react-phone-number-input'
+import ChildModal from '../../../Modal/ChildModal'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faXmark,
   faPen,
   faTriangleExclamation,
   faCheck,
-} from "@fortawesome/free-solid-svg-icons";
-import { parsePhoneNumberFromString } from "libphonenumber-js";
-import { validateEmail } from "../../../../../helpers/ValidationHelpers/ValidationHelper";
+} from '@fortawesome/free-solid-svg-icons'
+import { parsePhoneNumberFromString } from 'libphonenumber-js'
+import { validateEmail } from '../../../../../helpers/ValidationHelpers/ValidationHelper'
 import {
   checkUserName,
   editUserDetails,
   resendOtp,
   sendVerifyEmail,
   submitEmailVerifyOtp,
-} from "../../../../Service/Apiservice/UserApi";
-import { showErrorToast, showSuccessToast } from "../../../../utils/toast";
-import "./EditUser.css";
+} from '../../../../Service/Apiservice/UserApi'
+import { showErrorToast, showSuccessToast } from '../../../../utils/toast'
+import './EditUser.css'
 
 //cropping images
-import Cropper from "react-easy-crop";
-import getCroppedImg from "../../../../../helpers/ValidationHelpers/CropImage/CropImage";
-import { useSelector, useDispatch } from "react-redux";
+import Cropper from 'react-easy-crop'
+import getCroppedImg from '../../../../../helpers/ValidationHelpers/CropImage/CropImage'
+import { useSelector, useDispatch } from 'react-redux'
 import {
   decrementOtpCounter,
   resetOtpCounter,
-} from "../../../../store/slice/authSlice";
+} from '../../../../store/slice/authSlice'
 import {
   selectEditState,
   setVerify,
-} from "../../../../store/slice/VerifyEmailAuth";
+} from '../../../../store/slice/VerifyEmailAuth'
 import {
   selectLoading,
   startLoading,
   stopLoading,
-} from "../../../../store/slice/loadinSlice";
-import {
-  selectError,
-  setCustomError,
-} from "../../../../store/slice/errorSlice";
-import { selectUserDetails } from "../../../../store/slice/userAuth";
+} from '../../../../store/slice/loadinSlice'
+import { selectError, setCustomError } from '../../../../store/slice/errorSlice'
+import { selectUserDetails } from '../../../../store/slice/userAuth'
 
 export default function EditUser({ userInfo, onClose }) {
-  const dispatch = useDispatch();
-  const profileInput = useRef(null);
-  const [currentEmail, setCurrent] = useState("");
-  const [currentUsername, setCurrentUsername] = useState("");
-  const [modalFor, setModalFor] = useState("");
-  const [usernameError, setUserNameError] = useState(false);
-  const [emailValid, setEmailValid] = useState(true);
+  const dispatch = useDispatch()
+  const profileInput = useRef(null)
+  const [currentEmail, setCurrent] = useState('')
+  const [currentUsername, setCurrentUsername] = useState('')
+  const [modalFor, setModalFor] = useState('')
+  const [usernameError, setUserNameError] = useState(false)
+  const [emailValid, setEmailValid] = useState(true)
   //cropping image states
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
 
-  const [newProfile, setNewProfile] = useState("");
+  const [newProfile, setNewProfile] = useState('')
 
-  const [isChildOpen, setChildOpen] = useState(false);
-  const [croppedProfile, setProfile] = useState({});
+  const [isChildOpen, setChildOpen] = useState(false)
+  const [croppedProfile, setProfile] = useState({})
 
   //set for otp count
-  const [intervalId, setIntervalId] = useState();
-  const [otp, setOtp] = useState("");
+  const [intervalId, setIntervalId] = useState()
+  const [otp, setOtp] = useState('')
   //
   //action to store the modal
-  const [action, setAction] = useState("");
+  const [action, setAction] = useState('')
 
   //loadin stae
-  const { isLoading } = useSelector(selectLoading);
+  const { isLoading } = useSelector(selectLoading)
 
   //custom error
-  const { customError } = useSelector(selectError);
+  const { customError } = useSelector(selectError)
   //get user id from redux
 
-  const { user } = useSelector(selectUserDetails);
+  const { user } = useSelector(selectUserDetails)
 
   //state to chek if the email is verified or not
-  const { isVerified } = useSelector(selectEditState);
+  const { isVerified } = useSelector(selectEditState)
 
-  const [error, setError] = useState([]);
+  const [error, setError] = useState([])
   const [errorMsg, setErrorMsg] = useState({
-    emailError: "",
-    usernameMsg: "",
-    contactError: "",
-  });
+    emailError: '',
+    usernameMsg: '',
+    contactError: '',
+  })
   const [userData, setUserData] = useState({
-    name: "",
-    userName: "",
-    email: "",
-    age: "",
-    privacy: "",
-    contact: "",
-    gender: "",
-    profileUrl: "",
-    newProfile: "",
-  });
+    name: '',
+    userName: '',
+    email: '',
+    age: '',
+    privacy: '',
+    contact: '',
+    gender: '',
+    profileUrl: '',
+    newProfile: '',
+  })
 
   const resetError = () => {
     setTimeout(() => {
-      setError([]);
+      setError([])
       setTimeout(() => {
-        setErrorMsg({ emailError: "", usernameMsg: "", contactError: "" });
-      }, 250);
-    }, 2000);
-  };
+        setErrorMsg({ emailError: '', usernameMsg: '', contactError: '' })
+      }, 250)
+    }, 2000)
+  }
 
   useEffect(() => {
     if (userInfo) {
@@ -118,300 +115,298 @@ export default function EditUser({ userInfo, onClose }) {
         age: userInfo.age || prevData.age,
         gender: userInfo.gender || prevData.gender,
         contact: userInfo.contact || prevData.contact,
-        privacy: userInfo.privacy ? "private" : "public",
+        privacy: userInfo.privacy ? 'private' : 'public',
 
-        profileUrl: userInfo.profileUrl || prevData.profileUrl,
-      }));
-      setCurrent(userInfo.email);
-      setCurrentUsername(userInfo.userName);
+        profileUrl: userInfo.profile.profileUrl || prevData.profileUrl,
+      }))
+      setCurrent(userInfo.email)
+      setCurrentUsername(userInfo.userName)
     }
-  }, [userInfo]);
+  }, [userInfo])
 
   const handleProfileInput = () => {
-    profileInput.current.click();
-  };
+    profileInput.current.click()
+  }
 
   const isUsername = async (username) => {
-    if (!username) return;
-    if (username == currentUsername) return;
-    const isValid = await checkUserName(username);
+    if (!username) return
+    if (username == currentUsername) return
+    const isValid = await checkUserName(username)
     if (!isValid) {
-      setError([2]);
-      setUserNameError(true);
+      setError([2])
+      setUserNameError(true)
 
-      resetError();
-      return;
+      resetError()
+      return
     }
-    setUserNameError(false);
-  };
+    setUserNameError(false)
+  }
 
   //to set profile image and cropping
   const handleProfileImageInput = (e) => {
     try {
-      const file = e.target.files[0];
+      const file = e.target.files[0]
       if (file) {
-        const fileNameParts = file.name.split(".");
+        const fileNameParts = file.name.split('.')
         const fileExtension =
-          fileNameParts[fileNameParts.length - 1].toLowerCase();
+          fileNameParts[fileNameParts.length - 1].toLowerCase()
 
-        const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
+        const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp']
         if (!allowedExtensions.includes(fileExtension)) {
-          showErrorToast(
-            "Invalid file extension only jpg,jpeg,webp is allowed"
-          );
-          return;
+          showErrorToast('Invalid file extension only jpg,jpeg,webp is allowed')
+          return
         }
 
-        const reader = new FileReader();
+        const reader = new FileReader()
 
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(file)
 
         reader.onload = () => {
-          setNewProfile(reader.result);
-          setModalFor("crop");
-          setChildOpen(true);
-          e.target.value = null;
-        };
+          setNewProfile(reader.result)
+          setModalFor('crop')
+          setChildOpen(true)
+          e.target.value = null
+        }
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
   const handleCloseChild = () => {
-    clearInterval(intervalId);
-    setChildOpen(false);
-    setOtp("");
-  };
+    clearInterval(intervalId)
+    setChildOpen(false)
+    setOtp('')
+  }
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-    showCroppedImage();
-  };
+    setCroppedAreaPixels(croppedAreaPixels)
+    showCroppedImage()
+  }
   const showCroppedImage = async () => {
     try {
       if (!newProfile || !croppedAreaPixels) {
-        return;
+        return
       }
       const croppedImageBlobUrl = await getCroppedImg(
         newProfile,
         croppedAreaPixels
-      );
+      )
 
-      const response = await fetch(croppedImageBlobUrl);
+      const response = await fetch(croppedImageBlobUrl)
 
-      const blob = await response.blob();
-      const file = new File([blob], "croppedImage.jpg", {
-        type: "image/jpeg",
-      });
-      setProfile({ url: croppedImageBlobUrl, file });
-      setUserData((prev) => ({ ...prev, newProfile: file }));
+      const blob = await response.blob()
+      const file = new File([blob], 'croppedImage.jpg', {
+        type: 'image/jpeg',
+      })
+      setProfile({ url: croppedImageBlobUrl, file })
+      setUserData((prev) => ({ ...prev, newProfile: file }))
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
-  const otpCounter = useSelector((state) => state.otpAuth.otpCounter);
+  const otpCounter = useSelector((state) => state.otpAuth.otpCounter)
 
   const handleConfirm = async () => {
-    if (action == "removeprofile") {
+    if (action == 'removeprofile') {
       setUserData((prevUserData) => ({
         ...prevUserData,
-        profileUrl:
-          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
-        newProfile: "",
-      }));
-      handleCloseChild();
-      setProfile({});
+        profileUrl: '',
+        newProfile: '',
+      }))
+      handleCloseChild()
+      setProfile({})
     }
-    if (action == "updateprofile") {
-      console.log("profile");
-      handleProfileInput();
+    if (action == 'updateprofile') {
+      handleProfileInput()
     }
-  };
+  }
   useEffect(() => {
     if (otpCounter > 0) {
       const interval = setInterval(() => {
-        dispatch(decrementOtpCounter());
-      }, 1000);
+        dispatch(decrementOtpCounter())
+      }, 1000)
 
-      setIntervalId(interval);
+      setIntervalId(interval)
 
-      return () => clearInterval(interval);
+      return () => clearInterval(interval)
     }
-  }, [dispatch, otpCounter]);
+  }, [dispatch, otpCounter])
 
   const handleVerify = async () => {
-    dispatch(startLoading());
+    dispatch(startLoading())
 
-    const response = await sendVerifyEmail(userData.email, userData._id);
+    const response = await sendVerifyEmail(userData.email, userData._id)
 
     if (response) {
-      setChildOpen(true);
-      setModalFor("otp");
-      dispatch(stopLoading());
-      dispatch(resetOtpCounter());
-      dispatch(setCustomError(response.message));
+      setChildOpen(true)
+      setModalFor('otp')
+      dispatch(stopLoading())
+      dispatch(resetOtpCounter())
+      dispatch(setCustomError(response.message))
       setTimeout(() => {
-        dispatch(setCustomError(""));
-      }, 2000);
+        dispatch(setCustomError(''))
+      }, 2000)
     } else {
-      handleCloseChild();
+      handleCloseChild()
     }
-  };
+  }
   //to handle resend
   const handleResend = async () => {
-    dispatch(startLoading());
-    const response = await resendOtp();
+    dispatch(startLoading())
+    const response = await resendOtp()
     if (response.status) {
-      dispatch(setCustomError(response.message));
-      dispatch(resetOtpCounter());
-      dispatch(stopLoading());
+      dispatch(setCustomError(response.message))
+      dispatch(resetOtpCounter())
+      dispatch(stopLoading())
     }
-  };
+  }
 
   const handleOtpSubmit = async () => {
-    if (!otp && otp == "") {
-      setError([8]);
+    if (!otp && otp == '') {
+      setError([8])
       setTimeout(() => {
-        setError([]);
-      }, 2500);
-      return;
+        setError([])
+      }, 2500)
+      return
     }
     if (otpCounter == 0) {
-      setError([8]);
-      dispatch(setCustomError("Times up hit resend"));
+      setError([8])
+      dispatch(setCustomError('Times up hit resend'))
       setTimeout(() => {
-        setError([]);
+        setError([])
         setTimeout(() => {
-          dispatch(setCustomError(""));
-        }, 400);
-      }, 1600);
-      return;
+          dispatch(setCustomError(''))
+        }, 400)
+      }, 1600)
+      return
     }
-    dispatch(startLoading());
+    dispatch(startLoading())
 
-    const response = await submitEmailVerifyOtp(otp);
+    const response = await submitEmailVerifyOtp(otp)
     if (response) {
-      dispatch(stopLoading());
-      dispatch(setVerify());
-      handleCloseChild();
-      setEmailValid(true);
-      setCurrent(userData.email);
-      setError([]);
-      setErrorMsg((prev) => ({ ...prev, emailError: "" }));
+      dispatch(stopLoading())
+      dispatch(setVerify())
+      handleCloseChild()
+      setEmailValid(true)
+      setCurrent(userData.email)
+      setError([])
+      setErrorMsg((prev) => ({ ...prev, emailError: '' }))
     }
-  };
+  }
 
   const handleSubmit = async (e) => {
     try {
-      e.preventDefault();
-      const errorIndices = [];
-      const key = Object.keys(userData);
+      e.preventDefault()
+      const errorIndices = []
+      const key = Object.keys(userData)
       key.forEach((key, index) => {
-        console.log(userData);
-        console.log(key);
-        if (key !== "newProfile") {
-          if (userData[key] === "") {
-            errorIndices.push(index + 1);
+        console.log(userData)
+        console.log(key)
+        if (key !== 'newProfile' && key !== 'profileUrl') {
+          if (userData[key] === '') {
+            errorIndices.push(index + 1)
           }
         }
-      });
+      })
 
       if (errorIndices.length > 0) {
-        setError(errorIndices);
-        resetError();
-        return;
+        setError(errorIndices)
+        resetError()
+        return
       }
 
       if (!validateEmail(userData.email)) {
-        setError([3]);
-        setErrorMsg({ ...errorMsg, emailError: "Enter a valid email" });
-        resetError();
-        return;
+        setError([3])
+        setErrorMsg({ ...errorMsg, emailError: 'Enter a valid email' })
+        resetError()
+        return
       }
 
-      const phoneNumber = parsePhoneNumberFromString(userData.contact);
+      const phoneNumber = parsePhoneNumberFromString(userData.contact)
 
       if (!phoneNumber || !phoneNumber.isValid()) {
         setErrorMsg({
           ...errorMsg,
-          contactError: "Enter a valid Phone number",
-        });
-        setError([6]);
-        resetError();
-        return;
+          contactError: 'Enter a valid Phone number',
+        })
+        setError([6])
+        resetError()
+        return
       }
-      console.log("a");
+      console.log('a')
 
       if (usernameError) {
-        setError([3]);
-        resetError();
-        return;
+        setError([3])
+        resetError()
+        return
       }
 
       if (!emailValid) {
         setErrorMsg({
           ...errorMsg,
-          emailError: "Email changed needs to verify",
-        });
-        setError([3]);
-        resetError();
-        return;
+          emailError: 'Email changed needs to verify',
+        })
+        setError([3])
+        resetError()
+        return
       }
-      dispatch(startLoading());
-      const formData = new FormData();
-      formData.append("age", userData.age);
-      formData.append("contact", userData.contact);
-      formData.append("email", userData.email);
-      formData.append("gender", userData.gender);
-      formData.append("name", userData.name);
-      formData.append("privacy", userData.privacy);
-      formData.append("profileUrl", userData.profileUrl);
-      formData.append("userName", userData.userName);
-      formData.append("userId", user);
+      dispatch(startLoading())
+      const formData = new FormData()
+      formData.append('age', userData.age)
+      formData.append('contact', userData.contact)
+      formData.append('email', userData.email)
+      formData.append('gender', userData.gender)
+      formData.append('name', userData.name)
+      formData.append('privacy', userData.privacy)
+      formData.append('profileUrl', userData.profile.profileUrl)
+      formData.append('publicId', userInfo.profile.publicId)
+      formData.append('userName', userData.userName)
+      formData.append('userId', user)
 
       if (userData.newProfile) {
-        formData.append("newProfile", userData.newProfile);
+        formData.append('newAdded', true)
+        formData.append('newProfile', userData.newProfile)
       }
 
-      const response = await editUserDetails(formData, user);
+      const response = await editUserDetails(formData, user)
       if (response) {
-        showSuccessToast(response);
+        showSuccessToast(response)
 
-        onClose();
+        onClose()
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
   useEffect(() => {
     if (!validateEmail(userData.email)) {
-      setError([3]);
-      setErrorMsg({ ...errorMsg, emailError: "Enter a valid email" });
+      setError([3])
+      setErrorMsg({ ...errorMsg, emailError: 'Enter a valid email' })
 
-      return;
+      return
     }
 
     if (currentEmail !== userData.email) {
       setErrorMsg({
         ...errorMsg,
-        emailError: "Email changed needs to verify",
-      });
-      setError([3]);
-      setEmailValid(false);
-      return;
+        emailError: 'Email changed needs to verify',
+      })
+      setError([3])
+      setEmailValid(false)
+      return
     }
 
     if (userData.email == currentEmail && validateEmail(userData.email)) {
-      setEmailValid(true);
-      const updatedErrors = error.filter((error) => error !== 3);
-      setError(updatedErrors);
+      setEmailValid(true)
+      const updatedErrors = error.filter((error) => error !== 3)
+      setError(updatedErrors)
     }
-  }, [userData]);
+  }, [userData])
 
   return (
     <>
       <ChildModal isOpen={isChildOpen} onClose={handleCloseChild}>
-        {modalFor == "otp" && (
+        {modalFor == 'otp' && (
           <div className="w-[300px] p-5 text-center">
             <div className="text-start text-lg font-semibold = mb-2">
               <label htmlFor="">submit otp</label>
@@ -420,10 +415,10 @@ export default function EditUser({ userInfo, onClose }) {
               <div className="text-start  flex justify-between text-xs">
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
-                    customError ? "" : error.includes(8) ? " " : "opacity-0"
+                    customError ? '' : error.includes(8) ? ' ' : 'opacity-0'
                   }`}
                 >
-                  {customError ? customError : "field is required"}
+                  {customError ? customError : 'field is required'}
                 </div>
               </div>
               <input
@@ -441,7 +436,7 @@ export default function EditUser({ userInfo, onClose }) {
                 {isLoading ? (
                   <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
                 ) : (
-                  "resend"
+                  'resend'
                 )}
               </button>
             ) : (
@@ -452,13 +447,13 @@ export default function EditUser({ userInfo, onClose }) {
                 {isLoading ? (
                   <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
                 ) : (
-                  "Submit"
+                  'Submit'
                 )}
               </button>
             )}
           </div>
         )}
-        {modalFor == "confirm" && (
+        {modalFor == 'confirm' && (
           <div className="w-[500px] py-6 px-10">
             <div>
               <span>
@@ -473,8 +468,8 @@ export default function EditUser({ userInfo, onClose }) {
               <div>
                 <button
                   onClick={() => {
-                    handleCloseChild();
-                    setAction("");
+                    handleCloseChild()
+                    setAction('')
                   }}
                   className="me-3 py-1 bg-[#512da8] text-[#ffffff] font-semibold uppercase px-5 text-xs border rounded-lg"
                 >
@@ -491,7 +486,7 @@ export default function EditUser({ userInfo, onClose }) {
             </div>
           </div>
         )}
-        {modalFor == "crop" && (
+        {modalFor == 'crop' && (
           <div className="p-10">
             <div className=" gap-12 flex justify-between  edit-profile-container">
               <div className=" border edit-profile-image-container">
@@ -517,8 +512,8 @@ export default function EditUser({ userInfo, onClose }) {
             <div className="text-center">
               <button
                 onClick={() => {
-                  setUserData({ ...userData, profileUrl: croppedProfile.url });
-                  setChildOpen(false);
+                  setUserData({ ...userData, profileUrl: croppedProfile.url })
+                  setChildOpen(false)
                 }}
                 className="mt-5 border py-2 px-10 rounded-lg bg-[#512da8] text-[#ffffff] font-semibold uppercase text-xs "
               >
@@ -546,23 +541,23 @@ export default function EditUser({ userInfo, onClose }) {
           <input
             type="file"
             onChange={(e) => {
-              console.log("file input");
-              handleProfileImageInput(e);
+              console.log('file input')
+              handleProfileImageInput(e)
             }}
             className="hidden"
             ref={profileInput}
           />
           <div className="text-center mt-3">
             {userData.profileUrl !==
-              "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" && (
+              'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png' && (
               <FontAwesomeIcon
                 className="border bg-red-400 text-[#ffffff]  me-2 rounded-lg py-2 px-3"
                 icon={faXmark}
                 onClick={() => {
-                  setModalFor("confirm");
-                  setAction("removeprofile");
-                  setProfile({});
-                  setChildOpen(true);
+                  setModalFor('confirm')
+                  setAction('removeprofile')
+                  setProfile({})
+                  setChildOpen(true)
                 }}
               />
             )}
@@ -570,9 +565,9 @@ export default function EditUser({ userInfo, onClose }) {
             <FontAwesomeIcon
               className="border bg-[#512da8] text-[#ffffff] rounded-lg py-2 px-2"
               onClick={() => {
-                setModalFor("confirm");
-                setAction("updateprofile");
-                setChildOpen(true);
+                setModalFor('confirm')
+                setAction('updateprofile')
+                setChildOpen(true)
               }}
               icon={faPen}
             />
@@ -601,7 +596,7 @@ export default function EditUser({ userInfo, onClose }) {
                 />
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
-                    error.includes(1) ? " " : "opacity-0"
+                    error.includes(1) ? ' ' : 'opacity-0'
                   }`}
                 >
                   field is required
@@ -620,8 +615,8 @@ export default function EditUser({ userInfo, onClose }) {
                   type="text"
                   value={userData.userName}
                   onChange={(e) => {
-                    isUsername(e.target.value);
-                    setUserData({ ...userData, userName: e.target.value });
+                    isUsername(e.target.value)
+                    setUserData({ ...userData, userName: e.target.value })
                   }}
                   name="user-name"
                   autoComplete="username"
@@ -629,12 +624,12 @@ export default function EditUser({ userInfo, onClose }) {
                 />
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
-                    error.includes(2) ? " " : "opacity-0"
+                    error.includes(2) ? ' ' : 'opacity-0'
                   }`}
                 >
                   {usernameError
-                    ? "User name is not available"
-                    : "field is required"}
+                    ? 'User name is not available'
+                    : 'field is required'}
                 </div>
               </div>
             </div>
@@ -661,14 +656,14 @@ export default function EditUser({ userInfo, onClose }) {
                 />
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
-                    customError ? "" : error.includes(3) ? " " : "opacity-0"
+                    customError ? '' : error.includes(3) ? ' ' : 'opacity-0'
                   }`}
                 >
                   {customError
                     ? customError
                     : errorMsg.emailError
-                    ? errorMsg.emailError
-                    : "field is required"}
+                      ? errorMsg.emailError
+                      : 'field is required'}
                 </div>
               </div>
             </div>
@@ -680,19 +675,19 @@ export default function EditUser({ userInfo, onClose }) {
                     icon={faCheck}
                   />
                 ) : (
-                  ""
+                  ''
                 )
               ) : (
                 <button
                   onClick={() => {
-                    handleVerify();
+                    handleVerify()
                   }}
                   className="border py-2 px-10 rounded-lg bg-[#512da8] text-[#ffffff] font-semibold uppercase text-xs "
                 >
                   {isLoading ? (
                     <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
                   ) : (
-                    "VERIFY"
+                    'VERIFY'
                   )}
                 </button>
               )}
@@ -719,7 +714,7 @@ export default function EditUser({ userInfo, onClose }) {
                 />
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
-                    error.includes(4) ? " " : "opacity-0"
+                    error.includes(4) ? ' ' : 'opacity-0'
                   }`}
                 >
                   field is required
@@ -736,7 +731,7 @@ export default function EditUser({ userInfo, onClose }) {
               <div>
                 <select
                   className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                  value={userData.privacy ? "public" : "private"}
+                  value={userData.privacy ? 'public' : 'private'}
                   onChange={(e) =>
                     setUserData({ ...userData, privacy: e.target.value })
                   }
@@ -747,7 +742,7 @@ export default function EditUser({ userInfo, onClose }) {
                 </select>
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
-                    error.includes(5) ? " " : "opacity-0"
+                    error.includes(5) ? ' ' : 'opacity-0'
                   }`}
                 >
                   field is required
@@ -774,12 +769,12 @@ export default function EditUser({ userInfo, onClose }) {
                 />
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
-                    error.includes(6) ? " " : "opacity-0"
+                    error.includes(6) ? ' ' : 'opacity-0'
                   }`}
                 >
                   {errorMsg.contactError
                     ? errorMsg.contactError
-                    : "field is required"}
+                    : 'field is required'}
                 </div>
               </div>
             </div>
@@ -806,7 +801,7 @@ export default function EditUser({ userInfo, onClose }) {
                 </select>
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
-                    error.includes(7) ? " " : "opacity-0"
+                    error.includes(7) ? ' ' : 'opacity-0'
                   }`}
                 >
                   field is required
@@ -822,12 +817,12 @@ export default function EditUser({ userInfo, onClose }) {
               {isLoading ? (
                 <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
               ) : (
-                "save changes"
+                'save changes'
               )}
             </button>
           </div>
         </div>
       </div>
     </>
-  );
+  )
 }

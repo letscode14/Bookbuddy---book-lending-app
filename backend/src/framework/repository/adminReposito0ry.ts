@@ -12,6 +12,8 @@ import postModel from '../databases/postModel'
 import reportModel, { IReport } from '../databases/reportsModel'
 import mongoose, { PipelineStage } from 'mongoose'
 import { ObjectId } from 'mongodb'
+import BadgeModel from '../databases/badgeModel'
+import { IBadge } from '../../entity/badgeEntity'
 
 class AdminRepository implements IAdminRepository {
   async findByEmail(email: string): Promise<Admin | null> {
@@ -423,6 +425,56 @@ class AdminRepository implements IAdminRepository {
     } catch (error) {
       console.log(error)
       return false
+    }
+  }
+
+  async findBadgeByName(badge: string): Promise<boolean> {
+    try {
+      const isAvail = await BadgeModel.findOne({ name: badge })
+      if (isAvail) return true
+      else return false
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  }
+
+  async createBadge(
+    req: Request,
+    doc: { public_id: string; secure_url: string }
+  ): Promise<boolean | IBadge> {
+    try {
+      const { badgeName, minScore, borrowLimit } = req.body
+
+      const badge = await BadgeModel.create({
+        name: badgeName,
+        minScore: Number(minScore),
+        iconUrl: {
+          publicId: doc.public_id,
+          secureUrl: doc.secure_url,
+        },
+        borrowLimit: Number(borrowLimit),
+      })
+      if (badge) {
+        return badge
+      }
+      return false
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  }
+
+  async getBadge(): Promise<null | IBadge[]> {
+    try {
+      const badges = await BadgeModel.find()
+      if (badges) {
+        return badges
+      }
+      return null
+    } catch (error) {
+      console.log(error)
+      return null
     }
   }
 }

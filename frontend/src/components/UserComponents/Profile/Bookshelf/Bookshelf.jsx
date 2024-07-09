@@ -8,9 +8,12 @@ import {
 } from '../../../../Service/Apiservice/UserApi'
 import ContentModal from '../../../Modal/ContentModal'
 import ViewBook from './ViewBookshelf/ViewBook'
+import { useSelector } from 'react-redux'
+import { selecUser } from '../../../../store/slice/userAuth'
 const ImageComponent = React.lazy(() => import('../../../ImageComponent/Image'))
 
 export default function Bookshelf({ userId }) {
+  const { user } = useSelector(selecUser)
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [isModelOpen, setModel] = useState(false)
@@ -50,7 +53,7 @@ export default function Bookshelf({ userId }) {
       >
         <ViewBook
           book={bookData}
-          isOwned={userId == shelfOwned}
+          isOwned={user == shelfOwned}
           userId={userId}
           handleContentClose={handleContentClose}
         />

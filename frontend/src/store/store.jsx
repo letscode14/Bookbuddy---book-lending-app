@@ -1,44 +1,42 @@
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
 
-import { persistReducer, persistStore } from "redux-persist";
+import { persistReducer, persistStore } from 'redux-persist'
 
-import otpAuthReducer from "./slice/authSlice";
-import loadinSlice from "./slice/loadinSlice";
-import { encryptTransform } from "redux-persist-transform-encrypt";
-import storage from "redux-persist/lib/storage";
-import pageLoadingSlice from "./slice/pageLoadingSlice";
-import errorSlice from "./slice/errorSlice";
-import userAuth from "./slice/userAuth";
-import adminAuth from "./slice/adminAuth";
-import otpLoginAuth from "./slice/otpLoginAuth";
-import VerifyEmailAuth from "./slice/VerifyEmailAuth";
+import otpAuthReducer from './slice/authSlice'
+import loadinSlice from './slice/loadinSlice'
+import { encryptTransform } from 'redux-persist-transform-encrypt'
+import storage from 'redux-persist/lib/storage'
+import errorSlice from './slice/errorSlice'
+import userAuth from './slice/userAuth'
+import adminAuth from './slice/adminAuth'
+import otpLoginAuth from './slice/otpLoginAuth'
+import VerifyEmailAuth from './slice/VerifyEmailAuth'
 
 const persistConfig = {
-  key: "root",
+  key: 'root',
   version: 1,
   storage: storage,
   transform: [
     encryptTransform({
-      secretKey: "jaskbjkbadjbvjsbdvjdbs",
+      secretKey: 'jaskbjkbadjbvjsbdvjdbs',
       onError: (error) => {
-        console.log(error);
+        console.log(error)
       },
     }),
   ],
-};
+}
 
 const rootReducer = combineReducers({
   otpAuth: otpAuthReducer,
   loading: loadinSlice,
-  pageLoading: pageLoadingSlice,
   customError: errorSlice,
   user: userAuth,
   admin: adminAuth,
   loginOtpAuth: otpLoginAuth,
   editAuth: VerifyEmailAuth,
-});
+})
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -46,6 +44,6 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: false,
     }),
-});
+})
 
-export const persistor = persistStore(store);
+export const persistor = persistStore(store)

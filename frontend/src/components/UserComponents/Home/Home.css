@@ -22,7 +22,8 @@
 .post-container {
   width: 40%;
 
-  height: 3000px;
+  height: fit-content;
+  padding-bottom: 40px;
 }
 
 .own-profile {
@@ -50,7 +51,7 @@
 
 .add-comment:focus {
   border: none;
-  outline: none; /* This removes the black border */
+  outline: none;
 }
 
 .follow-small-button {

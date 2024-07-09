@@ -1,9 +1,10 @@
-import { UploadApiResponse } from "cloudinary";
+import { UploadApiResponse } from 'cloudinary'
 
 interface iCloudinary {
   cloudinaryUpload(
     file: [] | {}
-  ): Promise<UploadApiResponse | UploadApiResponse[]>;
+  ): Promise<UploadApiResponse | UploadApiResponse[]>
+  removeImage(publicId: string): Promise<boolean>
 }
 
-export default iCloudinary;
+export default iCloudinary

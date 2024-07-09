@@ -2,8 +2,7 @@ import React from 'react'
 import './Post.css'
 
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { selecUser } from '../../../../store/slice/userAuth'
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImages } from '@fortawesome/free-solid-svg-icons'
 import { fetchPost, getPost } from '../../../../Service/Apiservice/UserApi'

@@ -1,12 +1,16 @@
-import formidable, { File } from "formidable";
-import { Express, Request, Response, NextFunction } from "express";
+import formidable, { File } from 'formidable'
+import { Express, Request, Response, NextFunction } from 'express'
 
 declare global {
   namespace Express {
     interface Request {
-      files: { [key: string]: File | File[] };
+      files: { [key: string]: File | File[] }
     }
   }
+}
+interface UploadedFile {
+  mimetype: string
+  originalFilename: string
 }
 
 export const fileParser = async (
@@ -15,29 +19,53 @@ export const fileParser = async (
   next: NextFunction
 ) => {
   try {
-    const form = formidable();
-    const [fields, files] = await form.parse(req);
+    const form = formidable()
+    const [fields, files] = await form.parse(req)
+    const validImageMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/svg+xml',
+    ]
 
-    if (!req.body) req.body = {};
+    if (!req.body) req.body = {}
     for (let key in fields) {
-      const value = fields[key];
-      if (value) req.body[key] = value[0];
+      const value = fields[key]
+      if (value) req.body[key] = value[0]
     }
-    if (!req.files) req.files = {};
+    if (!req.files) req.files = {}
 
     for (let key in files) {
-      const value = files[key];
+      const value = files[key]
       if (value) {
         if (value.length > 1) {
-          req.files[key] = value;
+          const isValid = value.every((file: formidable.File) =>
+            validImageMimeTypes.includes(file.mimetype as string)
+          )
+          if (!isValid) {
+            res.status(415).json({
+              messages: 'Only allow extensions which are .jpg,.web,.png,.svg',
+            })
+            return
+          }
+          req.files[key] = value
         } else {
-          req.files[key] = value[0];
+          const isValid = validImageMimeTypes.includes(
+            value[0].mimetype as string
+          )
+          if (!isValid) {
+            res.status(415).json({
+              messages: 'Only allow extensions which are .jpg,.web,.png,.svg',
+            })
+            return
+          }
+
+          req.files[key] = value[0]
         }
       }
     }
-
-    next();
+    next()
   } catch (error) {
-    console.log(error);
+    console.log(error)
   }
-};
+}

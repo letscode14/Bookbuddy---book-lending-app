@@ -1,58 +1,58 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from 'mongoose'
 
 interface ImageUrl {
-  publicId: string;
-  secure_url: string;
+  publicId: string
+  secure_url: string
 }
 
 export interface IReply extends Document {
-  content: string;
-  author: mongoose.Schema.Types.ObjectId;
-  likes: mongoose.Schema.Types.ObjectId[];
-  createdAt: Date;
+  content: string
+  author: mongoose.Schema.Types.ObjectId
+  likes: mongoose.Schema.Types.ObjectId[]
+  createdAt: Date
 }
 
 export interface IComment extends Document {
-  content: string;
-  author: mongoose.Schema.Types.ObjectId;
-  likes: mongoose.Schema.Types.ObjectId[];
-  replies: IReply[];
-  createdAt: Date;
+  content: string
+  author: mongoose.Schema.Types.ObjectId
+  likes: mongoose.Schema.Types.ObjectId[]
+  replies: IReply[]
+  createdAt: Date
 }
 
 export interface IPost extends Document {
-  userId: mongoose.Schema.Types.ObjectId;
-  createdAt: Date;
-  description: string;
-  imageUrls: ImageUrl[];
-  updatedAt: Date;
-  isAddedToBookShelf: null | mongoose.Schema.Types.ObjectId;
-  comments: IComment[];
-  likes: [];
-  isDeleted: boolean;
-  isRemoved: boolean;
+  userId: mongoose.Schema.Types.ObjectId
+  createdAt: Date
+  description: string
+  imageUrls: ImageUrl[]
+  updatedAt: Date
+  isAddedToBookShelf: null | mongoose.Schema.Types.ObjectId
+  comments: IComment[]
+  likes: []
+  isDeleted: boolean
+  isRemoved: boolean
 }
 
 const ReplySchema: Schema<IReply> = new mongoose.Schema({
   content: { type: String, required: true },
-  author: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  likes: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
+  author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  likes: { type: [Schema.Types.ObjectId], ref: 'User', default: [] },
   createdAt: { type: Date, default: Date.now },
-});
+})
 
 const CommentSchema: Schema<IComment> = new mongoose.Schema({
   content: { type: String, required: true },
-  author: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  likes: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
+  author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  likes: { type: [Schema.Types.ObjectId], ref: 'User', default: [] },
   replies: { type: [ReplySchema], default: [] },
   createdAt: { type: Date, default: Date.now },
-});
+})
 
 const postSchema: Schema<IPost> = new mongoose.Schema({
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: 'User',
   },
   createdAt: {
     type: Date,
@@ -61,7 +61,7 @@ const postSchema: Schema<IPost> = new mongoose.Schema({
   description: {
     type: String,
     required: true,
-    default: "Not Added",
+    default: 'Not Added',
   },
 
   imageUrls: [
@@ -83,13 +83,13 @@ const postSchema: Schema<IPost> = new mongoose.Schema({
   likes: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
   ],
   isAddedToBookShelf: {
     type: mongoose.Schema.Types.ObjectId,
     default: null,
-    ref: "BookShelf",
+    ref: 'BookShelf',
   },
 
   comments: {
@@ -104,8 +104,8 @@ const postSchema: Schema<IPost> = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-});
+})
 
-const postModel: Model<IPost> = mongoose.model("Post", postSchema);
+const postModel: Model<IPost> = mongoose.model('Post', postSchema)
 
-export default postModel;
+export default postModel

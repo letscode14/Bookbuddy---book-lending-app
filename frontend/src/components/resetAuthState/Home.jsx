@@ -24,7 +24,6 @@ import {
   faHeart as faheartSolid,
   faPlus,
   faXmark,
-  faCircleCheck,
 } from '@fortawesome/free-solid-svg-icons'
 import { faHeart, faComment } from '@fortawesome/free-regular-svg-icons'
 import useEmblaCarousel from 'embla-carousel-react'
@@ -44,15 +43,14 @@ export default function Home() {
   //for pagination
   const [hasMore, setHasMore] = useState(true)
   const [pageNo, setPageNo] = useState(1)
-
   const [postLoading, setPostLoading] = useState(true)
 
   const contentPage = useRef(null)
   const { pathname } = useLocation()
   const [userData, setUser] = useState({})
   const [suggestions, setSuggestion] = useState([])
-  const [followersId, setFollowersId] = useState({})
-  const [followingId, setFollowingId] = useState({})
+  const [followersId, setFollowersId] = useState([])
+  const [followingId, setFollowingId] = useState([])
   const [post, setPost] = useState([])
   const [comment, setComment] = useState({})
   const [showAllComments, setCommentShow] = useState({})
@@ -67,6 +65,7 @@ export default function Home() {
   const replyInput = useRef()
 
   const dispatch = useDispatch()
+  const [followingStatus, setFollowingStatus] = useState({})
 
   useEffect(() => {
     const element = contentPage.current
@@ -74,32 +73,33 @@ export default function Home() {
 
     element.style.right = '12px'
   }, [pathname])
-
   useEffect(() => {
     async function fetchUser() {
       const response = await getUser(user)
+
       if (response) {
-        setUser(response.user)
+        setUser(response)
         dispatch(
           saveUserDetails({
-            _id: response.user._id,
-            email: response.user.email,
-            isSubscribed: response.user.isSubscribed,
-            isGoogleSignUp: response.user.isGoogleSignUp,
-            privacy: response.user.privacy,
-            profileUrl: response.user.profile.profileUrl,
-            name: response.user.name,
-            userName: response.user.userName,
+            _id: response._id,
+            email: response.email,
+            isSubscribed: response.isSubscribed,
+            isGoogleSignUp: response.isGoogleSignUp,
+            privacy: response.privacy,
+            profileUrl: response.profile.profileUrl,
+            name: response.name,
+            userName: response.userName,
           })
         )
-        setFollowersId(response.followersMap)
-        setFollowingId(response.followingMap)
+        setFollowersId(response.followers.map((data) => data.userId))
+        setFollowingId(response.following.map((data) => data.userId))
       }
     }
     fetchUser()
 
     async function fetchPost() {
       const response = await getPostForHome(user, pageNo)
+      console.log(response)
       if (response) {
         setHasMore(response.hasMore)
         setPost((prev) => {
@@ -139,9 +139,23 @@ export default function Home() {
   useEffect(() => {
     async function fetchSuggestions() {
       const response = await getSuggestion(user)
+
       if (response) {
         setSuggestion(response)
+        const initialFollowStatus = {}
+
+        response.forEach((suggestion) => {
+          initialFollowStatus[suggestion._id] = false
+          if (followersId.includes(suggestion._id)) {
+            initialFollowStatus[suggestion._id] = 'follows you'
+          }
+          if (followingId.includes(suggestion._id)) {
+            initialFollowStatus[suggestion._id] = 'followed'
+          }
+        })
         setSloading(false)
+        setFollowingStatus(initialFollowStatus)
+
         setSButtonLoading(false)
       }
     }
@@ -154,10 +168,17 @@ export default function Home() {
       const response = await followUser(userId, target)
 
       if (response) {
-        setFollowingId((prev) => ({
-          ...prev,
-          [target]: true,
-        }))
+        if (followingStatus[target] == 'follows you') {
+          setFollowingStatus((prevStatus) => ({
+            ...prevStatus,
+            [target]: 'followed',
+          }))
+        } else {
+          setFollowingStatus((prevStatus) => ({
+            ...prevStatus,
+            [target]: true,
+          }))
+        }
       }
     } catch (error) {
       console.log(error)
@@ -167,10 +188,17 @@ export default function Home() {
   const handleUnFollow = async (userId, target) => {
     const response = await unfollowUser(userId, target)
     if (response) {
-      setFollowingId((prev) => ({
-        ...prev,
-        [target]: false,
-      }))
+      if (followingStatus[target] == 'followed') {
+        setFollowingStatus((prevStatus) => ({
+          ...prevStatus,
+          [target]: 'follows you',
+        }))
+      } else {
+        setFollowingStatus((prevStatus) => ({
+          ...prevStatus,
+          [target]: false,
+        }))
+      }
     }
   }
 
@@ -264,15 +292,15 @@ export default function Home() {
       console.log(error)
     }
   }
-  // const findFollowedByCurrentUser = (userData, suggestion) => {
-  //   return suggestion.followers
-  //     .filter((follower) =>
-  //       userData.following.some(
-  //         (follow) => follow.userId == follower.userId._id
-  //       )
-  //     )
-  //     .map((follower) => follower.userId.userName)
-  // }
+  const findFollowedByCurrentUser = (userData, suggestion) => {
+    return suggestion.followers
+      .filter((follower) =>
+        userData.following.some(
+          (follow) => follow.userId == follower.userId._id
+        )
+      )
+      .map((follower) => follower.userId.userName)
+  }
 
   const handleContentModalClose = () => {
     setModalOpen(false)
@@ -370,24 +398,16 @@ export default function Home() {
                   <div className="posted-user-details py-2 px-2 flex justify-between items-center">
                     <div className="flex ">
                       <div className="post-profile flex justify-center">
-                        <div className="relative">
-                          <div className="rounded-full cursor-pointer flex items-center justify-center   overflow-hidden">
-                            <React.Suspense
-                              fallback={
-                                <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
-                              }
-                            >
-                              <ImageComponent
-                                src={post.userId.profile?.profileUrl}
-                              />
-                            </React.Suspense>
-                          </div>
-                          {post.userId.isSubscribed && (
-                            <FontAwesomeIcon
-                              className="text-sm text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-0 right-0 "
-                              icon={faCircleCheck}
+                        <div className="rounded-full cursor-pointer flex items-center justify-center   overflow-hidden">
+                          <React.Suspense
+                            fallback={
+                              <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                            }
+                          >
+                            <ImageComponent
+                              src={post.userId.profile?.profileUrl}
                             />
-                          )}
+                          </React.Suspense>
                         </div>
                       </div>
                       <div className="ms-4 ">
@@ -574,26 +594,18 @@ export default function Home() {
                               <div className="text-sm  w-full">
                                 <div className="flex w-full center">
                                   <div>
-                                    <div className="relative">
-                                      <div className="me-2 rounded-full w-7 h-7 flex items-center justify-center   overflow-hidden">
-                                        <React.Suspense
-                                          fallback={
-                                            <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                    <div className="me-2 rounded-full w-6 h-6 flex items-center justify-center   overflow-hidden">
+                                      <React.Suspense
+                                        fallback={
+                                          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                        }
+                                      >
+                                        <ImageComponent
+                                          src={
+                                            comment.author.profile.profileUrl
                                           }
-                                        >
-                                          <ImageComponent
-                                            src={
-                                              comment.author.profile.profileUrl
-                                            }
-                                          />
-                                        </React.Suspense>
-                                      </div>
-                                      {comment.author.isSubscribed && (
-                                        <FontAwesomeIcon
-                                          className="text-[10px] text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-0 right-2 "
-                                          icon={faCircleCheck}
                                         />
-                                      )}
+                                      </React.Suspense>
                                     </div>
                                   </div>
                                   <div>
@@ -662,28 +674,20 @@ export default function Home() {
                                         >
                                           <div className="flex items-top">
                                             <div className="w-6 h-6 me-2">
-                                              <div className="relative">
-                                                <div className="me-2 rounded-full w-7 h-7 flex items-center justify-center   overflow-hidden">
-                                                  <React.Suspense
-                                                    fallback={
-                                                      <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                              <span className="me-2 rounded-full w-6 h-6 flex items-center justify-center   overflow-hidden">
+                                                <React.Suspense
+                                                  fallback={
+                                                    <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                                  }
+                                                >
+                                                  <ImageComponent
+                                                    src={
+                                                      rep.author.profile
+                                                        .profileUrl
                                                     }
-                                                  >
-                                                    <ImageComponent
-                                                      src={
-                                                        rep.author.profile
-                                                          .profileUrl
-                                                      }
-                                                    />
-                                                  </React.Suspense>
-                                                </div>
-                                                {rep.author.isSubscribed && (
-                                                  <FontAwesomeIcon
-                                                    className="text-[10px] text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-0 right-[-5px]"
-                                                    icon={faCircleCheck}
                                                   />
-                                                )}
-                                              </div>
+                                                </React.Suspense>
+                                              </span>
                                             </div>
                                             <div className="pe-4">
                                               <span>{rep.author.userName}</span>
@@ -714,28 +718,20 @@ export default function Home() {
                             <div className="text-sm w-full">
                               <div className="flex  items-center">
                                 <div>
-                                  <div className="relative">
-                                    <div className="me-2 rounded-full w-7 h-7 flex items-center justify-center   overflow-hidden">
-                                      <React.Suspense
-                                        fallback={
-                                          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                  <span className="me-2 mt-1 rounded-full w-6 h-6 flex items-center justify-center   overflow-hidden">
+                                    <React.Suspense
+                                      fallback={
+                                        <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                      }
+                                    >
+                                      <ImageComponent
+                                        src={
+                                          post.comments[0].author.profile
+                                            .profileUrl
                                         }
-                                      >
-                                        <ImageComponent
-                                          src={
-                                            post.comments[0].author.profile
-                                              .profileUrl
-                                          }
-                                        />
-                                      </React.Suspense>
-                                    </div>
-                                    {post.comments[0].author.isSubscribed && (
-                                      <FontAwesomeIcon
-                                        className="text-[10px] text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-0 right-2 "
-                                        icon={faCircleCheck}
                                       />
-                                    )}
-                                  </div>
+                                    </React.Suspense>
+                                  </span>
                                 </div>
                                 <div>
                                   <span>
@@ -807,27 +803,19 @@ export default function Home() {
                                         >
                                           <div className="flex items-top ">
                                             <div className="w-6 h-6 me-2 mt-1">
-                                              <div className="relative">
-                                                <div className="me-2 rounded-full w-7 h-7 flex items-center justify-center   overflow-hidden">
-                                                  <React.Suspense
-                                                    fallback={
-                                                      <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                              <div className="me-2 rounded-full  w-6 h-6 flex items-center justify-center   overflow-hidden">
+                                                <React.Suspense
+                                                  fallback={
+                                                    <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
+                                                  }
+                                                >
+                                                  <ImageComponent
+                                                    src={
+                                                      rep.author.profile
+                                                        .profileUrl
                                                     }
-                                                  >
-                                                    <ImageComponent
-                                                      src={
-                                                        rep.author.profile
-                                                          .profileUrl
-                                                      }
-                                                    />
-                                                  </React.Suspense>
-                                                </div>
-                                                {rep.author.isSubscribed && (
-                                                  <FontAwesomeIcon
-                                                    className="text-[10px] text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-0 right-[-5px]"
-                                                    icon={faCircleCheck}
                                                   />
-                                                )}
+                                                </React.Suspense>
                                               </div>
                                             </div>
 
@@ -959,27 +947,27 @@ export default function Home() {
                 className="one-suggestion mt-4 flex justify-between items-center"
               >
                 <div className="flex items-center">
-                  <div className="relative">
-                    <div className="me-2 rounded-full w-10 flex items-center justify-center   overflow-hidden">
-                      <React.Suspense
-                        fallback={
-                          <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#512da8]"></div>
-                        }
-                      >
-                        <ImageComponent src={u.profile.profileUrl} />
-                      </React.Suspense>
-                    </div>
-                    {u.isSubscribed && (
-                      <FontAwesomeIcon
-                        className="text-sm text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-0 right-1"
-                        icon={faCircleCheck}
-                      />
-                    )}
+                  <div className="rounded-full flex items-center justify-center w-10 overflow-hidden">
+                    <React.Suspense
+                      fallback={
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-[#512da8]"></div>
+                      }
+                    >
+                      <ImageComponent src={u.profile.profileUrl} />
+                    </React.Suspense>
                   </div>
                   <div className="ms-3">
                     <div className="font-semibold">{u.userName}</div>
                     <div className="text-gray-600 text-xs">
-                      <div>Suggestions for you.</div>
+                      {findFollowedByCurrentUser(userData, u).length > 0 ? (
+                        findFollowedByCurrentUser(userData, u).map(
+                          (username) => (
+                            <div key={username}>Followed by {username}</div>
+                          )
+                        )
+                      ) : (
+                        <div>Suggestions for you.</div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -987,24 +975,25 @@ export default function Home() {
                 <div>
                   {sBLoading ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500"></div>
+                  ) : (followingStatus[u._id] &&
+                      Object.keys(followingStatus).length > 0 &&
+                      followingStatus[u._id] !== 'follows you') ||
+                    followingStatus[u._id] === 'followed' ? (
+                    <button
+                      className="unfollow-small-button"
+                      onClick={() => handleUnFollow(user, u._id)}
+                    >
+                      Unfollow
+                    </button>
                   ) : (
-                    <>
-                      {followingId[u._id] ? (
-                        <button
-                          className="unfollow-small-button"
-                          onClick={() => handleUnFollow(user, u._id)}
-                        >
-                          Unfollow
-                        </button>
-                      ) : (
-                        <button
-                          className="follow-small-button"
-                          onClick={() => handleFollow(user, u._id)}
-                        >
-                          {followersId[u._id] ? 'Follow back' : 'Follow'}
-                        </button>
-                      )}
-                    </>
+                    <button
+                      className="follow-small-button"
+                      onClick={() => handleFollow(user, u._id)}
+                    >
+                      {followingStatus[u._id] === 'follows you'
+                        ? 'Follow back'
+                        : 'Follow'}
+                    </button>
                   )}
                 </div>
               </div>
