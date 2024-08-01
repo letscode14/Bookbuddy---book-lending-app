@@ -19,7 +19,7 @@ export default function PostSlide({ imageUrls }) {
   })
   return (
     <>
-      <div className="embla  h-full" ref={emblaRef}>
+      <div className="embla relative  h-full" ref={emblaRef}>
         <div className="embla__container h-full">
           {imageUrls.map((image, index) => (
             <div key={index} className="embla__slide ">
@@ -33,21 +33,21 @@ export default function PostSlide({ imageUrls }) {
             </div>
           ))}
         </div>
+        {imageUrls.length > 1 && (
+          <div className="absolute opacity-25 hover:opacity-100   top-[45%] px-1 w-full flex justify-between ">
+            <FontAwesomeIcon
+              onClick={scrollPrev}
+              className="p-2 bg-gray-200  rounded-xl"
+              icon={faChevronLeft}
+            />
+            <FontAwesomeIcon
+              onClick={scrollNext}
+              className="p-2 bg-gray-200   rounded-xl"
+              icon={faChevronRight}
+            />
+          </div>
+        )}
       </div>
-      {imageUrls.length > 1 && (
-        <div className="absolute opacity-25 hover:opacity-100   top-[34%] px-1 w-full flex justify-between ">
-          <FontAwesomeIcon
-            onClick={scrollPrev}
-            className="p-2 bg-gray-200  rounded-xl"
-            icon={faChevronLeft}
-          />
-          <FontAwesomeIcon
-            onClick={scrollNext}
-            className="p-2 bg-gray-200   rounded-xl"
-            icon={faChevronRight}
-          />
-        </div>
-      )}
     </>
   )
 }
