@@ -51,8 +51,13 @@ const ImageComponent = React.lazy(
 )
 export default function Home() {
   const [post, setPost] = useState([])
-  const { commentResonse, setCommentResponse, latestLike, setLikes } =
-    useNotificaitonContext()
+  const {
+    commentResonse,
+    setCommentResponse,
+    latestLike,
+    setLikes,
+    unReadMsgNum,
+  } = useNotificaitonContext()
 
   const socket = useContext(SocketContext)
   const { user } = useSelector(selecUser)
@@ -441,12 +446,22 @@ export default function Home() {
         >
           <div className="bg-[#ffffff] py-1 hidden xs:flex xs:justify-between xs:items-center fixed top-0 left-0 right-0 z-50">
             <img className="ms-2 w-32 h-full" src={Logo} alt="" />
-            <div className="me-3 xs:mt-2 xs:ml-2">
-              <FontAwesomeIcon
-                onClick={() => navigate('/user/notification')}
-                className="text-[#512da8] text-2xl me-5"
-                icon={faBell}
-              />
+            <div className="me-3 xs:mt-2 xs:ml-2 flex">
+              <div className="relative">
+                {unReadMsgNum ? (
+                  <div className="z-20 absolute right-3 top-[-10px]  bg-red-500 text-[#ffffff] flex items-center justify-center rounded-full w-5 h-5 text-xs">
+                    {unReadMsgNum}
+                  </div>
+                ) : (
+                  ''
+                )}
+                <FontAwesomeIcon
+                  onClick={() => navigate('/user/notification')}
+                  className="text-[#512da8] text-2xl me-5"
+                  icon={faBell}
+                />
+              </div>
+
               <FontAwesomeIcon
                 onClick={() => navigate('/user/messages')}
                 className="text-[#512da8] text-2xl"
