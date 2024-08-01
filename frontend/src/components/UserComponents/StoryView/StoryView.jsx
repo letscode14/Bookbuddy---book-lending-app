@@ -70,8 +70,10 @@ export default function StoryView() {
     const nextProfileIndex = currentIndex + 1
     if (nextProfileIndex < stories.length) {
       setCurrentView(nextProfileIndex)
-    } else {
+    } else if (stories.length > 1) {
       setCurrentView(1)
+    } else {
+      setCurrentView(0)
     }
   }
   useEffect(() => {
