@@ -3,12 +3,17 @@ import { useSelector } from 'react-redux'
 import { selectToken } from '../store/slice/userAuth'
 import { selectAdminToken } from '../store/slice/adminAuth'
 import { selectOtpLoginAuth } from '../store/slice/otpLoginAuth'
+import { selectState } from '../store/slice/authSlice'
 
 export function SubmitOtpPrivateRoute() {
-  const { isAuthForOtp } = useSelector((state) => state.otpAuth)
+  const { isAuthForOtp, isOtpForPass } = useSelector((state) => state.otpAuth)
   const { loginOtpToken } = useSelector(selectOtpLoginAuth)
 
-  return isAuthForOtp || loginOtpToken ? <Outlet /> : <Navigate to="/login" />
+  return isAuthForOtp || loginOtpToken || isOtpForPass ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/login" />
+  )
 }
 
 export function UserAccessRoutes() {
@@ -29,4 +34,9 @@ export function AdminAccessRoute() {
 export function AdminNotAccessRoute() {
   const { adminAccessToken } = useSelector(selectAdminToken)
   return adminAccessToken ? <Navigate to="/admin/dashboard" /> : <Outlet />
+}
+
+export function ChangePasswordRoute() {
+  const { isForPass } = useSelector(selectState)
+  return isForPass ? <Outlet /> : <Navigate to="/login" />
 }

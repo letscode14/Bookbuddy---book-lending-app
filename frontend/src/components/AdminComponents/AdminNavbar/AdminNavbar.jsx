@@ -40,11 +40,14 @@ export default function AdminNavbar() {
         break
 
       case '/admin/post/management':
-        menu.current.style.left = '335px'
+        menu.current.style.left = '262px'
         break
 
+      case '/admin/transactions':
+        menu.current.style.left = '192px'
+        break
       case '/admin/badge/management':
-        menu.current.style.left = '195px'
+        menu.current.style.left = '122px'
         break
     }
   }, [pathname])
@@ -88,13 +91,7 @@ export default function AdminNavbar() {
             className="navbar-icon"
             icon={faUser}
           />
-          <FontAwesomeIcon
-            onClick={() => {
-              navigate()
-            }}
-            className="navbar-icon"
-            icon={faUsers}
-          />
+
           <FontAwesomeIcon
             onClick={() => {
               navigate('/admin/badge/management')
@@ -104,7 +101,7 @@ export default function AdminNavbar() {
           />
           <FontAwesomeIcon
             onClick={() => {
-              ;(menu.current.style.left = '264px'), navigate()
+              navigate('/admin/transactions')
             }}
             className="navbar-icon"
             icon={faTentArrowLeftRight}
@@ -119,11 +116,6 @@ export default function AdminNavbar() {
         </div>
       </div>
       <div className="flex items-center">
-        <FontAwesomeIcon
-          onClick={() => (menu.current.style.left = '857px')}
-          className="navbar-icon"
-          icon={faBell}
-        />
         <button
           disabled={isLoading}
           onClick={handleLogout}

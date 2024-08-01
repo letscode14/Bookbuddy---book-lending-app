@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useConfirmationModal } from "../../../Modal/ModalContext";
-import { getPost, getReports } from "../../../../Service/Apiservice/AdminApi";
+import React, { useEffect, useState } from 'react'
+import { useConfirmationModal } from '../../../Modal/ModalContext'
+import {
+  getPost,
+  getReports,
+  removePost,
+} from '../../../../Service/Apiservice/AdminApi'
 import {
   faBan,
   faCheck,
@@ -9,55 +13,69 @@ import {
   faEye,
   faTrash,
   faXmark,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import ContentModal from "../../../Modal/ContentModal";
-import ViewReports from "./ViewReports/ViewReports";
-const ImageComponent = React.lazy(() =>
-  import("../../../ImageComponent/Image")
-);
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ContentModal from '../../../Modal/ContentModal'
+import ViewReports from './ViewReports/ViewReports'
+import ViewPost from './ViewPost/ViewPost'
+import { showAdminToast } from '../../../../utils/toast'
+const ImageComponent = React.lazy(() => import('../../../ImageComponent/Image'))
 
 export default function Post() {
-  const [data, setData] = useState([]);
-  const [filter, setFilter] = useState("all");
+  const [data, setData] = useState([])
+  const [filter, setFilter] = useState('all')
 
-  const [pageNo, setPageNo] = useState(1);
-  const [totalPage, setTotalpage] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const { showModal } = useConfirmationModal();
-  const [reports, setReports] = useState([]);
-  const [isModelOpen, setModelOpen] = useState(false);
+  const [pageNo, setPageNo] = useState(1)
+  const [totalPage, setTotalpage] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const { showModal } = useConfirmationModal()
+  const [isModelOpen, setModelOpen] = useState(false)
+  const [target, setTarget] = useState('')
+
+  const handleBanPost = async (postId) => {
+    try {
+      if (isLoading) {
+        return
+      }
+      const removed = await removePost(postId)
+
+      if (removed) {
+        showAdminToast('Post removed success fully')
+        setIsLoading(false)
+      }
+    } catch (error) {
+      console.log(error)
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    document.title = "Post management";
+    document.title = 'Post management'
     async function fetchPost() {
-      const response = await getPost({ fetch: filter, pageNo: pageNo });
+      const response = await getPost({ fetch: filter, pageNo: pageNo })
       if (response) {
         const filteredResponse = response.post.map((p) => {
-          p.updatedAt = new Date(p.updatedAt).toDateString();
-          p.createdAt = new Date(p.createdAt).toDateString();
-          return p;
-        });
+          p.updatedAt = new Date(p.updatedAt).toDateString()
+          p.createdAt = new Date(p.createdAt).toDateString()
+          return p
+        })
 
-        setData(filteredResponse);
-        setTotalpage(response.totalPage);
+        setData(filteredResponse)
+        setTotalpage(response.totalPage)
       }
-      setLoading(false);
+      setLoading(false)
     }
-    fetchPost();
-  }, [pageNo, filter, isModelOpen]);
-
-  const viewReports = async (targetId) => {
-    const response = await getReports(targetId);
-    if (response) {
-      setReports(response);
-      setModelOpen(true);
-    }
-  };
+    fetchPost()
+  }, [pageNo, filter, isModelOpen])
 
   const handleContentClose = () => {
-    setModelOpen(false);
-  };
+    setModelOpen(false)
+  }
+  const [isLoading, setIsLoading] = useState(false)
+
+  const [modalFor, setModelFor] = useState('')
 
   return (
     <div className="bg-[#ffffff] max-h-[800px] h-[800px] relative rounded-2xl mt-4">
@@ -65,14 +83,18 @@ export default function Post() {
         isContentModalOpen={isModelOpen}
         onContentClose={handleContentClose}
       >
-        <ViewReports reports={reports} />
+        {modalFor == 'view reports' && (
+          <ViewReports postId={target} type={'Post'} />
+        )}
+
+        {modalFor == 'view post' && <ViewPost postId={target} />}
       </ContentModal>
       <div className="absolute text-xl right-10 bottom-10 flex justify-center items-center gap-2">
         <FontAwesomeIcon
           icon={faChevronLeft}
           onClick={() => {
             if (pageNo > 1) {
-              setPageNo(pageNo - 1);
+              setPageNo(pageNo - 1)
             }
           }}
         />
@@ -83,7 +105,7 @@ export default function Post() {
           icon={faChevronRight}
           onClick={() => {
             if (pageNo < totalPage) {
-              setPageNo(pageNo + 1);
+              setPageNo(pageNo + 1)
             }
           }}
         />
@@ -98,8 +120,8 @@ export default function Post() {
           <div className="me-3 font-medium">Order by</div>
           <select
             onChange={(e) => {
-              setPageNo(1);
-              setFilter(e.target.value);
+              setPageNo(1)
+              setFilter(e.target.value)
             }}
             className="dropdown py-2 px-4"
           >
@@ -132,7 +154,7 @@ export default function Post() {
             data.map((p, index) => (
               <tbody key={index}>
                 <tr className="grid-cols-10 border h-12 text-center">
-                  <td className="max-w-32">{p._id}</td>
+                  <td className="max-w-32">{p.ID}</td>
                   <td className="flex justify-center items-center">
                     {p.user.userName}
                   </td>
@@ -155,7 +177,7 @@ export default function Post() {
                   <td className="max-w-44 ">
                     <div className="text-center flex justify-center w-full">
                       <div
-                        style={{ scrollbarWidth: "none" }}
+                        style={{ scrollbarWidth: 'none' }}
                         className="text-nowrap w-full overflow-x-auto "
                       >
                         {p.description}
@@ -183,7 +205,11 @@ export default function Post() {
                     {p.reports.length}
                     {p.reports.length > 0 && (
                       <button
-                        onClick={() => viewReports(p._id)}
+                        onClick={() => {
+                          setTarget(p._id)
+                          setModelOpen(true)
+                          setModelFor('view reports')
+                        }}
                         className="ms-2 text-xs bg-[#512da8] py-1 px-2 rounded-lg text-[#ffffff]"
                       >
                         View Reports
@@ -192,12 +218,36 @@ export default function Post() {
                   </td>
                   <td>
                     <div className="text-xl text-red-400 gap-4  flex justify-center items-center">
-                      <FontAwesomeIcon icon={faBan} />
+                      {p.isRemoved ? (
+                        <>
+                          <div className="text-sm font-semibold text-red-500">
+                            removed
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <FontAwesomeIcon
+                            onClick={() => {
+                              showModal(
+                                'Are you sure you need to remove this post',
+                                'admin',
+                                () => handleBanPost(p._id)
+                              )
+                              setIsLoading(true)
+                            }}
+                            icon={faBan}
+                          />
+                        </>
+                      )}
                       <FontAwesomeIcon
-                        className="text-[#000000]"
+                        onClick={() => {
+                          setTarget(p._id)
+                          setModelOpen(true)
+                          setModelFor('view post')
+                        }}
+                        className="cursor-pointer text-[#000000]"
                         icon={faEye}
                       />
-                      <FontAwesomeIcon icon={faTrash} />
                     </div>
                   </td>
                 </tr>
@@ -217,5 +267,5 @@ export default function Post() {
         </table>
       </div>
     </div>
-  );
+  )
 }

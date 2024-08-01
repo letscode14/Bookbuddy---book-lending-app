@@ -12,7 +12,6 @@ class UserController {
     try {
       const userData = req.body
       const user = await this.userCase.registrationUser(userData)
-      console.log(user)
 
       if (user.activationToken) {
         res.cookie('activationToken', user.activationToken, {
@@ -61,6 +60,7 @@ class UserController {
   async resendOtp(req: Request, res: Response, next: NextFunction) {
     try {
       const token = req.cookies.activationToken as string
+      const type = req.body.type as string
 
       const user = await this.userCase.resendOtp(token)
       if (user.activationToken) {
@@ -81,7 +81,6 @@ class UserController {
   async googleAuth(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.body
-      console.log(user)
 
       const result = await this.userCase.googleAuth(user)
       res.cookie('refreshToken', result.refreshToken, {
@@ -125,7 +124,6 @@ class UserController {
   async loginWithOtp(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.body
-      console.log(user)
 
       const result = await this.userCase.loginWithOtp(user)
       res.cookie('activationToken', result.accessToken, {
@@ -413,6 +411,322 @@ class UserController {
     try {
       const result = await this.userCase.getRequestBook(req)
 
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async addStory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.addStory(req)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async getStories(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.getStories(req)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async makeStoryViewed(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.makeStoryViewed(req)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async getLendedBooks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, pageNo } = req.query as { userId: string; pageNo: string }
+      const result = await this.userCase.getLendedBooks(userId, Number(pageNo))
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async getBorrowedBooks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, pageNo } = req.query as { userId: string; pageNo: string }
+      const result = await this.userCase.getBorrowedBooks(
+        userId,
+        Number(pageNo)
+      )
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+  async getNotifications(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, pageNo, unRead } = req.query as {
+        userId: string
+        pageNo: string
+        unRead: string
+      }
+
+      const u = Number(unRead)
+
+      const result = await this.userCase.getNotifications(
+        userId,
+        Number(pageNo),
+        Boolean(u)
+      )
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async giveBackBook(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.giveBackBook(req)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async collectBook(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.collectBook(req)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+  //change pass before login
+  async changePassEmailVerify(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body
+      const result = await this.userCase.verifyChangePassEmail(email)
+      if (result.activationToken) {
+        res.cookie('changePassOtpTokenBeforeLogin', result.activationToken, {
+          maxAge: 5 * 60 * 1000,
+          httpOnly: true,
+        })
+      }
+
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+  async resendOtpPassBeforeLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const token = req.cookies.changePassOtpTokenBeforeLogin as string
+      const result = await this.userCase.resendChangePassOtpBeforeLogin(token)
+      if (result.activationToken) {
+        res.cookie('changePassOtpTokenBeforeLogin', result.activationToken, {
+          maxAge: 5 * 60 * 1000,
+          httpOnly: true,
+        })
+      }
+
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async submitOtpChangePassBeforeLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const token = req.cookies.changePassOtpTokenBeforeLogin as string
+      const otp = req.body.otp
+      const result = await this.userCase.submitOtpBeforeLogin(token, otp)
+      if (result.activationToken) {
+        res.cookie('changePassTokenBeforeLogin', result.activationToken, {
+          maxAge: 5 * 60 * 1000,
+          httpOnly: true,
+        })
+      }
+
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async submitNewPasswordBeforeLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const token = req.cookies.changePassTokenBeforeLogin
+      const password = req.body.password
+      const result = await this.userCase.submitNewPasswordBeforeLogin(
+        password,
+        token
+      )
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  //
+  async searchUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = req.query.search as string
+
+      const pageNo = parseInt(req.query.pageNo as string)
+      const user = req.query.user as string
+      const result = await this.userCase.searchUsers(pageNo, query, user)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async exploreNearByBooks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = req.query.userId as string
+      const result = await this.userCase.exploreBooks(query)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async getOtpForChangePassAfterLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userId = req.query.userId as string
+      const email = req.query.email as string
+      const result = await this.userCase.otpChangePassAfterLogin(userId, email)
+      if (result.activationToken) {
+        res.cookie('changePassOtpTokenAfterLogin', result.activationToken, {
+          maxAge: 2 * 60 * 1000,
+          httpOnly: true,
+        })
+      }
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async resendForChangePassAfterLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    const userId = req.query.userId as string
+    const changePassOtpCookie = req.cookies.changePassOtpTokenAfterLogin
+    const result = await this.userCase.otpResendPassAfterLogin(
+      changePassOtpCookie,
+      userId
+    )
+    if (result.activationToken) {
+      res.cookie('changePassOtpTokenAfterLogin', result.activationToken, {
+        maxAge: 2 * 60 * 1000,
+        httpOnly: true,
+      })
+    }
+    res.status(result.statusCode).json({ ...result })
+
+    try {
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async submitChangePassOtpAfterLogin(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const changePassOtpCookie = req.cookies.changePassOtpTokenAfterLogin
+      const otp = req.body.otp
+      const result = await this.userCase.submitChangePassOtpAfterLogin(
+        changePassOtpCookie,
+        otp
+      )
+      if (result.activationToken) {
+        res.cookie('changePassTokenAfterLogin', result.activationToken, {
+          maxAge: 7 * 60 * 1000,
+          httpOnly: true,
+        })
+      }
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async submitOldPassWord(req: Request, res: Response, next: NextFunction) {
+    try {
+      const password = req.body.password
+      const userId = req.query.userId as string
+      const result = await this.userCase.checkOldPassword(userId, password)
+      if (result.activationToken) {
+        res.cookie('changePassTokenAfterLogin', result.activationToken, {
+          maxAge: 7 * 60 * 1000,
+          httpOnly: true,
+        })
+      }
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async submitNewPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const token = req.cookies.changePassTokenAfterLogin
+      const password = req.body.password
+      const result = await this.userCase.submitNewPassword(token, password)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async getDeposit(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await this.userCase.getDeposit(req)
       res.status(result.statusCode).json({ ...result })
     } catch (error) {
       console.log(error)

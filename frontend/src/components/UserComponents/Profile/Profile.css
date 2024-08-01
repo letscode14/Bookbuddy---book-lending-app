@@ -4,11 +4,7 @@
   border-radius: 40px;
   transition: right 1s ease;
 }
-.profile-photo {
-  width: 210px;
-  height: 210px;
-  border-radius: 200px;
-}
+
 .add-story-button {
   background-color: #512da8;
   position: absolute;
@@ -36,9 +32,7 @@
 .user-app-details {
   font-size: 28px;
 }
-.menu-profile {
-  font-size: 17px;
-}
+
 .line-menu {
   width: 88px;
   border: solid;

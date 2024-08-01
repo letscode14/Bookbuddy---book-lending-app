@@ -1,7 +1,5 @@
 .create-post-content {
   left: 280px;
-  right: 1200px;
-  border-radius: 40px;
   transition: right 1s ease;
 }
 .left-container {

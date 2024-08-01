@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   removeUser,
   saveUserDetails,
+  selectMap,
   selecUser,
 } from '../../../store/slice/userAuth'
 
@@ -20,6 +21,7 @@ import {
   faCalendar,
   faCircleCheck,
   faCircleExclamation,
+  faEllipsis,
   faHandshake,
   faImages,
 } from '@fortawesome/free-solid-svg-icons'
@@ -36,6 +38,13 @@ import FollowerList from './FollowersList/FollowerList'
 import FollowingList from './FollowingLIst/FollowingList'
 import Bookshelf from './Bookshelf/Bookshelf'
 import Subscribe from '../Subscribe/Subscribe'
+import LendedBooks from './LendedBooks/LendedBooks'
+import BorrowedBooks from './Bookshelf/BorrowedBooks/BorrowedBooks'
+import Suggestions, { ResponsiveSuggestion } from '../Suggestions/Suggestions'
+import ChangePass from './ChangePass/ChangePass'
+import { resetChangepassAfterLogin } from '../../../store/slice/authSlice'
+import ReponsiveNav from '../Navbar/ReponsiveNav'
+import ViewDeposit from './ViewDeposit/ViewDeposit'
 const ImageComponent = React.lazy(() => import('../../ImageComponent/Image'))
 export default function Search() {
   //modal state
@@ -45,6 +54,7 @@ export default function Search() {
   const lineMenu = useRef(null)
   const [menu, setMenu] = useState(0)
   const [userDetails, setUserDetails] = useState({})
+  const { postLength, followersMap, followingMap } = useSelector(selectMap)
 
   const { isLoading } = useSelector(selectLoading)
   const { user } = useSelector(selecUser)
@@ -55,12 +65,13 @@ export default function Search() {
   const { showModal } = useConfirmationModal()
   const [metaData, setMetaData] = useState({})
 
+  const [menuShow, setMenuShow] = useState(false)
+
   const [modalFor, setModaFor] = useState('')
   const [loading, setLoading] = useState(true)
   useEffect(() => {
     const element = contentPage.current
     document.title = 'Profile'
-    element.style.right = '12px'
   }, [pathname])
   const logout = async () => {
     dispatch(startLoading())
@@ -79,6 +90,8 @@ export default function Search() {
 
   const handleContentModalClose = () => {
     dispatch(setVerifyFalse())
+    dispatch(resetChangepassAfterLogin())
+
     setUserData(userDetails)
     setIsModalOpen(false)
     setModaFor('')
@@ -100,6 +113,9 @@ export default function Search() {
               profileUrl: response.user.profile.profileUrl,
               name: response.user.name,
               userName: response.user.userName,
+              followersMap: response.followersMap,
+              followingMap: response.followingMap,
+              postLength: response.postLength,
             })
           )
           setUserDetails(response.user)
@@ -119,30 +135,13 @@ export default function Search() {
   }, [isModalOpen])
 
   useEffect(() => {
-    const element = lineMenu.current
-    switch (menu) {
-      case 0:
-        element.style.left = `245px`
-        element.style.width = `88px`
-        break
-      case 1:
-        element.style.left = `354px`
-        element.style.width = `132px`
-        break
-      case 2:
-        element.style.left = `510px`
-        element.style.width = `133px`
-        break
-      case 3:
-        element.style.left = `663px`
-        element.style.width = `96px`
-        break
-    }
     dispatch(setVerifyFalse())
+    dispatch(resetChangepassAfterLogin())
   }, [menu])
 
   return (
     <>
+      <ReponsiveNav />
       <ContentModal
         isContentModalOpen={isModalOpen}
         onContentClose={handleContentModalClose}
@@ -155,44 +154,146 @@ export default function Search() {
         {modalFor == 'subscribe' && (
           <Subscribe close={handleContentModalClose} user={userDetails._id} />
         )}
+        {modalFor == 'changepass' && (
+          <ChangePass
+            onClose={handleContentModalClose}
+            user={userDetails._id}
+          />
+        )}
+        {modalFor == 'deposit' && (
+          <ViewDeposit
+            user={userDetails._id}
+            onClose={handleContentModalClose}
+          />
+        )}
       </ContentModal>
       <div
         ref={contentPage}
-        className="  ps-20  profile-content overflow-y-auto  absolute flex top-3 bottom-3 bg-[#ffffff]"
+        className="rounded-[40px] right-[12px] ps-20 pe-20  overflow-auto    home-content absolute top-3 bottom-3 flex   bg-[#ffffff] 
+      xs:left-1 xs:right-1 xs:rounded-[10px] xs:top-1 xs:bottom-1 xs:ps-1 xs:pe-1  
+       sm:left-20 sm:pe-5 sm:ps-5
+          sm:pe-10 sm:ps-10
+          md:left-[240px] 
+          lg:left-[280px] lg:pe-7 lg:ps-7
+          xl:pe-20 xl:ps-20 
+          "
       >
-        <div className={`flex w-full ${loading ? 'hidden' : ''}`}>
-          <div className={` w-[65%] pt-10  `}>
-            <div className="flex">
-              <div className="relative   flex  flex-col  ">
-                <div className="relative">
-                  <div className="rounded-full    overflow-hidden profile-photo">
-                    <React.Suspense
-                      fallback={
-                        <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
-                      }
-                    >
-                      <ImageComponent src={userData?.profile?.profileUrl} />
-                    </React.Suspense>
+        {loading && (
+          <div className="w-full h-full flex justify-center items-center">
+            <div className="pulse-container">
+              <div className="wave-loading"></div>
+              <div className="wave-loading"></div>
+              <div className="pulse-loading flex items-center justify-center"></div>
+            </div>
+          </div>
+        )}
+        <div className={`flex w-full ${loading || !userData ? 'hidden' : ''}`}>
+          <div
+            className={`w-[65%]
+               xs:w-full pt-10  
+               xs:pt-5 xs:px-1 
+               sm:w-full lg:w-[65%] `}
+          >
+            <div
+              className="relative flex  
+              xs:block   xs:w-full  
+               sm:w-full sm:pe-12"
+            >
+              <div className="absolute right-0 md:top-[-38px] sm:top-[-38px] xs:top-[-15px] lg:top-[-38px]">
+                <FontAwesomeIcon
+                  onClick={() => setMenuShow(!menuShow)}
+                  icon={faEllipsis}
+                  className="me-4 mt-4 text-2xl cursor-pointer xs:mt-2 xs:text-xl"
+                />
+                <div
+                  className={`gap-y-1 grid  text-[#ffffff] absolute
+                     ${menuShow ? 'py-2 ' : 'h-0'}  px-3 overflow-hidden 
+                       z-20 rounded-b-2xl rounded-ss-2xl bg-[#512da8] text-sm
+                       left-[-170px]
+                   w-44 uppercase transition-all duration-100 xs:text-xs xs:w-40 xs:left-[-150px]`}
+                >
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setModaFor('changepass')
+                      setIsModalOpen(true)
+                    }}
+                  >
+                    Change password
                   </div>
                   {userDetails.isSubscribed && (
-                    <FontAwesomeIcon
-                      className="text-4xl text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-2 right-5 z-30"
-                      icon={faCircleCheck}
-                    />
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setModaFor('deposit')
+                        setIsModalOpen(true)
+                      }}
+                    >
+                      View deposit
+                    </div>
                   )}
                 </div>
+              </div>
+              <div
+                className="   
+                xs:flex "
+              >
+                <div className="">
+                  <div className="fit-content relative inline-block">
+                    <div
+                      className="rounded-full relative   overflow-hidden  w-[210px]  
+                  xs:w-28 xs:h-28
+                  sm:h-32 sm:w-32 
+                  lg:w-[180px] lg:h-[180px]
+                  xl:w-[190px] xl:h-[190px]"
+                    >
+                      <React.Suspense
+                        fallback={
+                          <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
+                        }
+                      >
+                        <ImageComponent src={userData?.profile?.profileUrl} />
+                      </React.Suspense>
+                    </div>
+                    {userDetails.isSubscribed && (
+                      <FontAwesomeIcon
+                        className="text-4xl text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-2 right-5 z-30 
+                        xs:text-xl xs:bottom-0 xs:right-5
+                      sm:text-2xl sm:right-3 
+                      lg:text-4xl"
+                        icon={faCircleCheck}
+                      />
+                    )}
+                  </div>
+                </div>
 
-                <div className="mt-3 grid gap-y-2 grid-cols-2">
-                  <div className="grid gap-y-2">
-                    <div className="font-bold text-2xl">
+                <div
+                  className="mt-3 grid  grid-cols-2 
+                xs:mt-0 xs:ms-9"
+                >
+                  <div className="">
+                    <div
+                      className="font-bold text-2xl 
+                    xs:text-lg 
+                    sm:text-xl 
+                    lg:text-2xl"
+                    >
                       {userDetails.userName}
                     </div>
-                    <div className="text-xl font-medium">
+                    <div
+                      className="text-xl font-medium 
+                    xs:text-base 
+                    sm:text-xl"
+                    >
                       {userDetails.name}
                     </div>
-                    <div className="h-16">
+                    <div
+                      className="mt-3 ms-3 
+                    xs:mt-0 xs:ms-0
+                    sm:mt-0 sm:ms-0 "
+                    >
                       <div>
-                        <span className="font-bold ">Bio</span>
+                        <span className="font-bold xs:text-sm">Bio</span>
                         <span
                           onClick={() => {
                             if (bio) setBio(false)
@@ -211,12 +312,27 @@ export default function Search() {
                 </div>
               </div>
 
-              <div className="ms-16 px-20 profile-right-container  bg-[#ede9f7] shadow-lg rounded-lg">
-                <div className="grid font-bold mt-3 text-2xl grid-cols-3 gap-4">
+              <div
+                className="ms-16 grow  px-20  bg-[#ede9f7] shadow-lg rounded-lg 
+              xs:ms-0 xs:px-1 xs:ms-4 xs:me-4 xs:py-0.5
+              sm:ms-4 sm:px-3 
+              lg:px-5  lg:ms-5 
+              xl:px-16 xl:ms-16 xl:pb-3"
+              >
+                <div
+                  className="grid font-bold mt-3 text-2xl grid-cols-3 gap-4 
+                xs:text-sm xs:gap-3 
+                sm:text-xl sm:gap-2 
+                lg:text-[20px] lg:py-2 
+                xl:text-2xl"
+                >
                   <div className=" ">
-                    <div className="text-center">{metaData.followers}</div>
+                    <div className="text-center xs:text-xl">
+                      {' '}
+                      {Object.keys(followersMap).length || 0}
+                    </div>
                     <div
-                      className="cursor-pointer text-center"
+                      className="cursor-pointer text-center xs:text-sm"
                       onClick={() => {
                         setModaFor('followers')
                         setIsModalOpen(true)
@@ -226,9 +342,12 @@ export default function Search() {
                     </div>
                   </div>
                   <div className="">
-                    <div className="text-center">{metaData.following}</div>
+                    <div className="text-center xs:text-xl">
+                      {' '}
+                      {Object.keys(followingMap).length || 0}
+                    </div>
                     <div
-                      className="text-center cursor-pointer"
+                      className="text-center cursor-pointer xs:text-sm"
                       onClick={() => {
                         setModaFor('following')
                         setIsModalOpen(true)
@@ -238,16 +357,16 @@ export default function Search() {
                     </div>
                   </div>
                   <div className=" ">
-                    <div className="text-center">{'4'}</div>
-                    <div className="text-center">Posts</div>
+                    <div className="text-center xs:text-xl">{postLength}</div>
+                    <div className="text-center xs:text-sm">Posts</div>
                   </div>
                 </div>
 
-                {userDetails.lendscore ? (
+                {userDetails?.lendscore ? (
                   <>
-                    <div className=" p-2 h-48 my-3 flex  w-full">
+                    <div className=" p-2 h-48 my-3 flex  w-full xs:h-20 xs:my-3">
                       <div className=" flex items-center justify-center w-full">
-                        <div className="h-32 rotating-image">
+                        <div className="h-32 rotating-image xs:h-12">
                           <React.Suspense
                             fallback={
                               <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
@@ -262,13 +381,33 @@ export default function Search() {
                           </React.Suspense>
                         </div>
                       </div>
-                      <div className=" flex items-center justify-center w-full">
-                        <div className="text-center grid gap-y-3">
-                          <div className="text-2xl font-medium">Lendscore</div>
-                          <div className="text-5xl font-semibold">
+                      <div className=" flex items-center justify-center w-full ">
+                        <div
+                          className="text-center grid gap-y-3 xs:gap-y-1 
+                        sm:gap-y-1 lg:gap-y-3"
+                        >
+                          <div
+                            className="text-2xl font-medium 
+                          xs:text-base 
+                          sm:text-xl 
+                          lg:text-2xl"
+                          >
+                            Lendscore
+                          </div>
+                          <div
+                            className="text-5xl font-semibold 
+                          xs:text-xl 
+                          sm:text-4xl 
+                          lg:text-5xl"
+                          >
                             {userDetails.lendscore.lendScore}
                           </div>
-                          <div className="text-2xl font-medium">
+                          <div
+                            className="text-2xl font-medium 
+                          xs:text-lg
+                          sm:text-xl 
+                          lg:text-2xl"
+                          >
                             {userDetails.lendscore.badgeId.name}
                           </div>
                         </div>
@@ -287,22 +426,22 @@ export default function Search() {
                     )}
                   </>
                 ) : (
-                  <div className=" h-44   fit-content py-2 mt-3  ">
-                    <div className=" p-4 border h-full w-[460px] bg-[#ede9f7] shadow-lg rounded-lg">
+                  <div className=" h-44   fit-content py-2 mt-3   ">
+                    <div className=" p-4 border h-full w-[460px] bg-[#ede9f7] shadow-lg rounded-lg xs:w-full xs:overflow-auto">
                       <div className="">
                         <div className="flex items-start">
                           <FontAwesomeIcon
                             className="me-2 text-red-400"
                             icon={faCircleExclamation}
                           />
-                          <p className="text-sm  text-wrap">
+                          <p className="text-sm   text-wrap xs:text-xs ">
                             Welcome to your profile page! To lend and borrow
                             books, you need to subscribe. This subscription
                             ensures that every user has access to books and
                             maintains the standard of our community.
                           </p>
                         </div>
-                        <p className="text-sm ms-6 mt-2 font-semibold">
+                        <p className="text-sm ms-6 mt-2 font-semibold xs:text-xs">
                           To subscribe, please click the button below:
                         </p>
                         <div className="flex justify-end">
@@ -311,7 +450,7 @@ export default function Search() {
                               setModaFor('subscribe')
                               setIsModalOpen(true)
                             }}
-                            className="py-2 ms-6 mt-2 rounded-lg w-40 bg-[#512da8] uppercase text-xs text-[#ffffff]"
+                            className="py-2 ms-6 mt-2 rounded-lg w-40 bg-[#512da8] uppercase text-xs text-[#ffffff] xs:py-1 xs:ms-3 "
                           >
                             Subscribe
                           </button>
@@ -321,7 +460,7 @@ export default function Search() {
                   </div>
                 )}
 
-                <div className="flex gap-3  justify-center mt-4 mb-4">
+                <div className="flex gap-3 justify-center mt-4 mb-4 xs:px-3">
                   <button
                     disabled={isLoading}
                     onClick={() =>
@@ -329,7 +468,14 @@ export default function Search() {
                         logout()
                       )
                     }
-                    className="log-out-button flex justify-center"
+                    className="bg-[#512da8] text-[#ffffff] 
+                    text-[14px] text-nowrap py-3 flex justify-center
+                     items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
+                    xs:text-xs xs:w-full xs:py-2
+                    sm:w-40 sm:text-xs sm:py-2 sm:px-2
+                    lg:w-[200px] lg:text-[14px] lg:py-3
+
+                    "
                   >
                     {isLoading ? (
                       <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
@@ -344,56 +490,115 @@ export default function Search() {
                         setModaFor('edituser')
                       })
                     }
-                    className="edit-profile-button"
+                    className="border-[#512da8] border  text-[#512da8] text-[14px] text-nowrap py-3 flex justify-center items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
+                    xs:text-xs xs:w-full xs:py-1 
+                    sm:w-40 sm:text-xs sm:py-2 sm:px-2
+                    lg:w-[200px] lg:text-[14px] lg:py-3"
                   >
                     edit profile
                   </button>
                 </div>
               </div>
             </div>
-
             <div className="border-line mt-5"></div>
-            <div className="relative">
-              <div ref={lineMenu} className="absolute line-menu"></div>
-            </div>
 
-            <div className="flex  gap-7 mt-2 justify-center  menu-profile">
+            <ResponsiveSuggestion />
+            <div className="border-line hidden xs:flex  mt-5 sm:flex lg:hidden"></div>
+            <div
+              className="flex  lg:flex gap-7 mt-2 justify-center  menu-profile text-[17px] 
+            xs:text-lg xs:gap-7 
+            lg:text-[15px]"
+            >
               <div
                 onClick={() => setMenu(0)}
-                className={menu == 0 ? '' : 'text-gray-400'}
+                className={
+                  menu == 0
+                    ? `${'flex lg:px-3 xs:border xs:bg-[#512da8] xs:text-[#ffffff]  xs:p-1 xs:rounded-lg xs:ps-2 transition-all duration-200 sm:border sm:bg-[#512da8] sm:text-[#ffffff]  sm:p-1 sm:rounded-lg sm:ps-2 '}`
+                    : 'text-gray-400 flex'
+                }
               >
-                <FontAwesomeIcon icon={faImages} className="me-1" />
-                <span className="cursor-pointer font-semibold">POSTS</span>
+                <FontAwesomeIcon
+                  icon={faImages}
+                  className="me-1 sm:text-xl 
+                cursor-pointer"
+                />
+                <span className="cursor-pointer font-semibold xs:hidden sm:hidden  lg:flex">
+                  POSTS
+                </span>
               </div>
               <div
                 onClick={() => setMenu(1)}
-                className={menu == 1 ? '' : 'text-gray-400'}
+                className={
+                  menu == 1
+                    ? 'flex lg:px-3 xs:border xs:bg-[#512da8] xs:text-[#ffffff]  xs:p-1 xs:rounded-lg xs:ps-2 transition-all duration-200 sm:border sm:bg-[#512da8] sm:text-[#ffffff]  sm:p-1 sm:rounded-lg sm:ps-2'
+                    : 'flex text-gray-400'
+                }
               >
-                <FontAwesomeIcon icon={faBook} className="me-1" />
-                <span className="cursor-pointer font-semibold">BOOKSHELF</span>
+                <FontAwesomeIcon
+                  icon={faBook}
+                  className="me-1 sm:text-xl 
+                cursor-pointer"
+                />
+                <span className="cursor-pointer font-semibold xs:hidden sm:hidden lg:flex">
+                  BOOKSHELF
+                </span>
               </div>
               <div
                 onClick={() => setMenu(2)}
-                className={menu == 2 ? '' : 'text-gray-400'}
+                className={
+                  menu == 2
+                    ? 'flex lg:px-3 xs:border xs:p-1 xs:bg-[#512da8] xs:text-[#ffffff]  xs:rounded-lg xs:ps-2 transition-all duration-200 sm:border sm:bg-[#512da8] sm:text-[#ffffff]  sm:p-1 sm:rounded-lg sm:ps-2'
+                    : 'flex text-gray-400'
+                }
               >
-                <FontAwesomeIcon icon={faHandshake} className="me-1" />
-                <span className="cursor-pointer font-semibold">BORROWED</span>
+                <FontAwesomeIcon
+                  icon={faHandshake}
+                  className="me-1 sm:text-xl 
+                  cursor-pointer"
+                />
+                <span
+                  className=" cursor-pointer font-semibold 
+                xs:hidden 
+                sm:hidden
+                lg:flex"
+                >
+                  BORROWED
+                </span>
               </div>
               <div
                 onClick={() => setMenu(3)}
-                className={menu == 3 ? '' : 'text-gray-400'}
+                className={
+                  menu == 3
+                    ? 'flex lg:px-3 xs:border xs:bg-[#512da8] xs:text-[#ffffff] xs:p-1 xs:rounded-lg xs:ps-2 transition-all duration-200 sm:border sm:bg-[#512da8] sm:text-[#ffffff]  sm:p-1 sm:rounded-lg sm:ps-2'
+                    : 'flex text-gray-400'
+                }
               >
-                <FontAwesomeIcon icon={faCalendar} className="me-1" />
-                <span className="cursor-pointer font-semibold">LENDED</span>
+                <FontAwesomeIcon
+                  icon={faCalendar}
+                  className="me-1 sm:text-xl 
+                  cursor-pointer"
+                />
+                <span
+                  className="cursor-pointer font-semibold 
+                xs:hidden sm:hidden
+                lg:flex"
+                >
+                  LENDED
+                </span>
               </div>
             </div>
+            <div className="relative">
+              {menu == 0 && userData && <Post user={userData._id} />}
+              {menu == 1 && <Bookshelf userId={userData._id} />}
+              {menu == 3 && <LendedBooks userId={userData._id} />}
+              {menu == 2 && <BorrowedBooks userId={userData._id} />}
+            </div>
+          </div>
 
-            {menu == 0 && userData && <Post user={userData._id} />}
-            {menu == 1 && <Bookshelf userId={userData._id} />}
-          </div>
           <div className="">
-            <div className="fixed  ms-1 border-line-vertical"></div>
+            <div className="fixed  ms-1 border-line-vertical xs:hidden sm:hidden lg:block "></div>
           </div>
+          <Suggestions />
         </div>
       </div>
     </>

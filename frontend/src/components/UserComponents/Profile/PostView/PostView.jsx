@@ -160,9 +160,6 @@ export default function PostView({ postData, user }) {
               <span className="text-sm font-semibold">{user.userName}</span>
             </div>
           </div>
-          <div>
-            <FontAwesomeIcon className="me-6 text-md" icon={faEllipsis} />
-          </div>
         </div>
         <div className="border mt-2"></div>
         <div
@@ -317,7 +314,6 @@ export default function PostView({ postData, user }) {
               icon={faHeart}
             />
           )}
-          <span className="text-sm text-[#512da8] font-bold">Get the book</span>
         </div>
         <div className="text-xs mt-1 font-semibold">
           {post.likes.length > 0 ? (

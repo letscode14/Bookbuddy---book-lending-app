@@ -1,0 +1,40 @@
+.addstory-carousal-image-container {
+  width: 100%;
+  height: 500px;
+  border: solid 0.7px #878787;
+  border-radius: 15px;
+}
+
+.image-container {
+  height: 80%;
+  margin-top: 5px;
+}
+
+.image-container img {
+  width: 100%;
+  border-radius: 10px;
+}
+.add-story-thumb {
+  height: 80px;
+  width: 50px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.add-story-thumb img {
+  border-radius: 10px;
+}
+.crop-image {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  scrollbar-width: none;
+}
+.reactEasyCrop_Container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.reactEasyCrop_Container img {
+  object-fit: contain;
+}

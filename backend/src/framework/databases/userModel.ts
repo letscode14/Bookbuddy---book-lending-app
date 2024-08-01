@@ -6,7 +6,8 @@ export interface IFollower {
   followedOn: Date
 }
 
-interface IUser extends Document {
+export interface IUser extends Document {
+  _id: string
   userName: string
   name: string
   email: string
@@ -31,6 +32,12 @@ interface IUser extends Document {
   cautionDeposit: number
   role: string
   isGoogleSignUp: boolean
+  location: {
+    address: string
+    lat: number
+    lng: number
+  }
+  paymentId: string | null
 }
 const userSchema: Schema<IUser> = new mongoose.Schema({
   userName: {
@@ -41,6 +48,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+  },
+  paymentId: {
+    type: String || null,
+    default: null,
   },
   email: {
     type: String,
@@ -120,13 +131,14 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     default: '',
   },
   profile: {
-    type: {
-      publicId: {
-        type: String,
-        default:
-          'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
-      },
-      profileUrl: String,
+    publicId: {
+      type: String,
+      default: '',
+    },
+    profileUrl: {
+      type: String,
+      default:
+        'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
     },
   },
   privacy: {
@@ -163,6 +175,25 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  location: {
+    type: {
+      address: {
+        type: String,
+        required: true,
+        default: '',
+      },
+      lat: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+      lng: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+    },
+  },
 })
 userSchema.pre<IUser>('save', async function (next) {
   if (!this.isModified('password')) {
@@ -171,6 +202,7 @@ userSchema.pre<IUser>('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 10)
   next()
 })
+userSchema.index({ userName: 'text', name: 'text' })
 
 const userModel: Model<IUser> = mongoose.model('User', userSchema)
 

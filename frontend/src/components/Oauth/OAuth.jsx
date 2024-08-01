@@ -2,7 +2,7 @@ import googleLogo from '/images/google-logo-9808.png'
 import { GoogleAuthProvider, signInWithPopup, getAuth } from 'firebase/auth'
 import app from '../../firebase/Firebase'
 import { useDispatch } from 'react-redux'
-import { saveUser } from '../../store/slice/userAuth'
+import { saveUser, saveUserDetails } from '../../store/slice/userAuth'
 import { useNavigate } from 'react-router-dom'
 import axiosInstance, { updateAuthorizationHeader } from '../../Service/api'
 
@@ -25,14 +25,15 @@ export default function OAuth() {
       await axiosInstance
         .post('/user/google/auth', body)
         .then((response) => {
-          console.log(response)
           if (response.status == 200 || response.status == 201) {
             setTimeout(() => {
+              dispatch(saveUserDetails(response.data.result))
               const obj = {
                 accessToken: response.data.accessToken,
                 user: response.data.result._id,
               }
               dispatch(saveUser(obj))
+
               localStorage.setItem('accessToken', response.data.accessToken)
               localStorage.setItem('refreshToken', response.data.refreshToken)
               updateAuthorizationHeader()

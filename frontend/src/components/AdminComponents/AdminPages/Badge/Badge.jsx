@@ -5,12 +5,16 @@ import React from 'react'
 import ContentModal from '../../../Modal/ContentModal'
 import BadgeForm from './AddBadge/BadgeForm'
 import { getBadge } from '../../../../Service/Apiservice/AdminApi'
+import EditdBadge from './EditBadge/EditdBadge'
+import { useConfirmationModal } from '../../../Modal/ModalContext'
 
 export default function Badge() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [isModelOpen, setIsModalOpen] = useState(false)
   const [modalFor, setModalFor] = useState('')
+  const [badgeId, setBadgeId] = useState('')
+  const { showModal } = useConfirmationModal()
 
   useEffect(() => {
     document.title = 'Badge management'
@@ -20,17 +24,11 @@ export default function Badge() {
     const fetchBadge = async () => {
       const response = await getBadge()
 
-      setData(
-        response.map((b) => {
-          b.createdOn = new Date(b.createdOn).toDateString()
-          b.updatedOn = new Date(b.updatedOn).toDateString()
-          return b
-        })
-      )
+      setData(response)
       setLoading(false)
     }
     fetchBadge()
-  }, [])
+  }, [isModelOpen])
   const handleClose = (data) => {
     if (data) {
       setData((prev) => [...prev, data])
@@ -45,6 +43,9 @@ export default function Badge() {
         onContentClose={handleClose}
       >
         {modalFor == 'addbadge' && <BadgeForm handleModelClose={handleClose} />}
+        {modalFor == 'editbadge' && (
+          <EditdBadge handleModelClose={handleClose} badgeId={badgeId} />
+        )}
       </ContentModal>
       <div className="h-20 flex gap-9 items-center  justify-between">
         <div>
@@ -103,16 +104,21 @@ export default function Badge() {
                     </div>
                   </td>
                   <td className="max-w-44 ">{b.minScore}</td>
-                  <td>{b.borrowLimit}</td>
-                  <td>{b.createdOn}</td>
-                  <td>{b.updatedOn}</td>
+                  <td>{b.limit}</td>
+                  <td>{new Date(b.createdOn).toDateString()}</td>
+                  <td>{new Date(b.updatedOn).toDateString()}</td>
 
                   <td>
-                    <div className="text-xl text-red-400 gap-4  flex justify-center items-center">
-                      <FontAwesomeIcon
-                        className="cursor-pointer"
-                        icon={faXmark}
-                      />
+                    <div
+                      onClick={() => {
+                        showModal('Are you sure', 'admin', () => {
+                          setBadgeId(b._id)
+                          setModalFor('editbadge')
+                          setIsModalOpen(true)
+                        })
+                      }}
+                      className="text-xl text-red-400 gap-4  flex justify-center items-center"
+                    >
                       <FontAwesomeIcon
                         className="text-[#000000] cursor-pointer"
                         icon={faPen}

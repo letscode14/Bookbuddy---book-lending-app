@@ -1,58 +1,95 @@
-import { useState } from "react";
-import { editBookshelf } from "../../../../../Service/Apiservice/UserApi";
-import { showSuccessToast } from "../../../../../utils/toast";
+import { useState } from 'react'
+import { editBookshelf } from '../../../../../Service/Apiservice/UserApi'
+import { showSuccessToast } from '../../../../../utils/toast'
+import ContentModal from '../../../../Modal/ContentModal'
+import Maps from '../../../Maps/Maps'
 
 export default function EditShelf({ book, userId, handleClose }) {
-  const [error, setError] = useState([]);
-  const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState([])
+  const [isLoading, setLoading] = useState(false)
   const [bookData, setBookData] = useState({
     bookName: book.bookName,
     author: book.author,
     description: book.description,
-    location: book.location,
-
-    limit: book.limit,
+    location: {
+      address: book.location?.address,
+      lat: book.location?.lat,
+      lng: book.location?.lng,
+    },
+    limit: book.limit.toString(),
     ID: book.ID,
     userId: userId,
     _id: book._id,
-  });
+  })
 
   const resetError = () => {
     setTimeout(() => {
-      setError([]);
-    }, 2000);
-  };
+      setError([])
+    }, 2000)
+  }
 
   const handleSubmit = async () => {
     try {
-      setLoading(true);
-      const errorIndices = [];
-      const key = Object.keys(bookData);
+      if (isLoading) {
+        return
+      }
+      setLoading(true)
+      const errorIndices = []
+      const key = Object.keys(bookData)
       key.forEach((key, index) => {
-        if (bookData[key].trim() === "") {
-          errorIndices.push(index + 1);
+        if (key !== 'location') {
+          if (bookData[key].trim() === '') {
+            errorIndices.push(index + 1)
+          }
         }
-      });
+      })
 
       if (errorIndices.length > 0) {
-        setError(errorIndices);
-        resetError();
-        setLoading(false);
+        setError(errorIndices)
+        resetError()
+        setLoading(false)
 
-        return;
+        return
       }
-      const response = await editBookshelf(bookData);
+      const response = await editBookshelf(bookData)
       if (response) {
-        setLoading(false);
-        handleClose();
-        showSuccessToast("Bookshelf edited successfully");
+        setLoading(false)
+        handleClose()
+        showSuccessToast('Bookshelf edited successfully')
       }
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
+
+  const [isContentOpen, setContentOpen] = useState(false)
+  const handleContentClose = () => {
+    setContentOpen(false)
+  }
+
+  const getLocation = (address, lat, lng) => {
+    if (address == 'No address found') {
+      setBookData((prev) => ({
+        ...prev,
+        location: bookData.location,
+      }))
+      return
+    }
+    setBookData((prev) => ({
+      ...prev,
+      location: { address: address, lat: lat, lng: lng },
+    }))
+  }
   return (
-    <div className="w-[600px] h-[420px] pt-6 px-6">
+    <div className="w-[600px] h-[420px] pt-6 px-6 xs:w-full">
+      <ContentModal
+        isContentModalOpen={isContentOpen}
+        onContentClose={handleContentClose}
+      >
+        <div className="w-[1400px] h-[800px] xs:w-[340px]  xs:h-[550px]">
+          <Maps type={'select'} getLocation={getLocation} />
+        </div>
+      </ContentModal>
       <div className="sm:col-span-3 mb-1 w-full">
         <label
           htmlFor="first-name"
@@ -95,7 +132,7 @@ export default function EditShelf({ book, userId, handleClose }) {
           </div>
           <div
             className={`  text-xs text-red-500 transition-opacity duration-500 ${
-              error.includes(1) ? " " : "opacity-0"
+              error.includes(1) ? ' ' : 'opacity-0'
             }`}
           >
             field is required
@@ -124,7 +161,7 @@ export default function EditShelf({ book, userId, handleClose }) {
           </div>
           <div
             className={`  text-xs text-red-500 transition-opacity duration-500 ${
-              error.includes(2) ? " " : "opacity-0"
+              error.includes(2) ? ' ' : 'opacity-0'
             }`}
           >
             field is required
@@ -153,7 +190,7 @@ export default function EditShelf({ book, userId, handleClose }) {
         </div>
         <div
           className={`  text-xs text-red-500 transition-opacity duration-500 ${
-            error.includes(3) ? " " : "opacity-0"
+            error.includes(3) ? ' ' : 'opacity-0'
           }`}
         >
           field is required
@@ -169,10 +206,9 @@ export default function EditShelf({ book, userId, handleClose }) {
           </label>
           <div>
             <input
-              value={bookData.location}
-              onChange={(e) =>
-                setBookData((prev) => ({ ...prev, location: e.target.value }))
-              }
+              readOnly={true}
+              value={bookData.location?.address}
+              onClick={() => setContentOpen(true)}
               type="text"
               name="first-name"
               id="first-name"
@@ -182,7 +218,7 @@ export default function EditShelf({ book, userId, handleClose }) {
           </div>
           <div
             className={`  text-xs text-red-500 transition-opacity duration-500 ${
-              error.includes(4) ? " " : "opacity-0"
+              error.includes(4) ? ' ' : 'opacity-0'
             }`}
           >
             field is required
@@ -201,7 +237,7 @@ export default function EditShelf({ book, userId, handleClose }) {
             onChange={(e) =>
               setBookData((prev) => ({
                 ...prev,
-                limit: e.target.value,
+                limit: e.target.value.toString(),
               }))
             }
             className="block w-full rounded-md border-0 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
@@ -222,25 +258,25 @@ export default function EditShelf({ book, userId, handleClose }) {
           </select>
           <div
             className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-              error.includes(5) ? "" : "opacity-0"
+              error.includes(5) ? '' : 'opacity-0'
             }`}
           >
             field is required
           </div>
         </div>
       </div>
-      <div className="w-full mt-2  flex justify-center">
+      <div className="w-full mt-2  flex justify-center ">
         <button
           onClick={handleSubmit}
-          className="bg-[#512da8] text-[#ffffff] uppercase pty-2 font-semibold py-2 px-3 rounded-lg text-xs "
+          className="bg-[#512da8] flex justify-center min-w-40 text-[#ffffff] uppercase pty-2 font-semibold py-2 px-3 rounded-lg text-xs "
         >
           {isLoading ? (
             <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
           ) : (
-            "save changes"
+            'save changes'
           )}
         </button>
       </div>
     </div>
-  );
+  )
 }

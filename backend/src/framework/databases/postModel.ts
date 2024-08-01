@@ -1,4 +1,6 @@
 import mongoose, { Document, Model, Schema } from 'mongoose'
+import User from '../../entity/userEntity'
+import shortId from 'shortid'
 
 interface ImageUrl {
   publicId: string
@@ -21,7 +23,7 @@ export interface IComment extends Document {
 }
 
 export interface IPost extends Document {
-  userId: mongoose.Schema.Types.ObjectId
+  userId: mongoose.Schema.Types.ObjectId | User
   createdAt: Date
   description: string
   imageUrls: ImageUrl[]
@@ -31,6 +33,9 @@ export interface IPost extends Document {
   likes: []
   isDeleted: boolean
   isRemoved: boolean
+  ID: string
+
+  reportCount: number
 }
 
 const ReplySchema: Schema<IReply> = new mongoose.Schema({
@@ -62,6 +67,15 @@ const postSchema: Schema<IPost> = new mongoose.Schema({
     type: String,
     required: true,
     default: 'Not Added',
+  },
+  ID: {
+    type: String,
+    default: () => `POST${shortId.generate()}`,
+  },
+
+  reportCount: {
+    type: Number,
+    default: 0,
   },
 
   imageUrls: [

@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { ConfirmationModalProvider } from './components/Modal/ModalContext'
 import { SocketProvider } from './Socket/SocketContext'
-import { MenuProvider } from './Context/Context'
+import 'mapbox-gl/dist/mapbox-gl.css'
 
 function App() {
   return (
@@ -13,9 +13,7 @@ function App() {
         <ToastContainer />
 
         <ConfirmationModalProvider>
-          <MenuProvider>
-            <Pages />
-          </MenuProvider>
+          <Pages />
         </ConfirmationModalProvider>
       </SocketProvider>
     </div>

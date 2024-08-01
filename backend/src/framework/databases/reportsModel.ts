@@ -1,31 +1,34 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document, Model } from 'mongoose'
 
 export interface IReport extends Document {
-  reportedBy: mongoose.Types.ObjectId;
-  targetType: "Post" | "User" | "Transaction";
-  targetId: mongoose.Types.ObjectId;
-  reason: string;
-  reportedOn: Date;
-  status: "Pending" | "Reviewed" | "Resolved" | "Removed";
-  resolution?: string;
-  isRemoved: boolean;
+  reportedBy: mongoose.Types.ObjectId
+  targetType: 'Post' | 'User' | 'Borrowed' | 'Lended' | 'Book'
+  targetId: mongoose.Types.ObjectId
+  reason: string
+  reportedOn: Date
+  status: 'Pending' | 'Reviewed' | 'Resolved' | 'Removed'
+  resolution?: string
+  isRemoved: boolean
+  damageImages: string[] | []
+  bookAmount: number | null
 }
 
 const reportSchema: Schema<IReport> = new Schema({
   reportedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
   },
   targetType: {
     type: String,
-    enum: ["Post", "User", "Transaction"],
+    enum: ['Post', 'User', 'Borrowed', 'Lended', 'Book'],
     required: true,
   },
+
   targetId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    refPath: "targetType",
+    refPath: 'targetType',
   },
   isRemoved: {
     type: Boolean,
@@ -41,15 +44,34 @@ const reportSchema: Schema<IReport> = new Schema({
   },
   status: {
     type: String,
-    enum: ["Pending", "Reviewed", "Resolved", "Removed"],
-    default: "Pending",
+    enum: ['Pending', 'Reviewed', 'Resolved', 'Removed'],
+    default: 'Pending',
   },
 
   resolution: {
     type: String,
   },
-});
+  damageImages: {
+    type: [
+      {
+        publicId: {
+          type: String,
+          required: true,
+        },
+        secure_url: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    default: [],
+  },
+  bookAmount: {
+    type: Number || null,
+    default: null,
+  },
+})
 
-const reportModel: Model<IReport> = mongoose.model("Report", reportSchema);
+const reportModel: Model<IReport> = mongoose.model('Report', reportSchema)
 
-export default reportModel;
+export default reportModel

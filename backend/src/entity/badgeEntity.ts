@@ -11,13 +11,13 @@ export interface IBadge extends Document {
     publicId: string
   }
   updatedOn: Date | string
-  borrowLimit: number
+  limit: number
   isDeleted: boolean
 }
 
 export interface ILendscrore extends Document {
   _id: string
-  badgeId: Schema.Types.ObjectId
+  badgeId: IBadge | Schema.Types.ObjectId
   lendScore: number
   userId: Schema.Types.ObjectId
   totalBooksBorrowed: number

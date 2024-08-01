@@ -1,114 +1,149 @@
-import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import {
+  changePassOtpOut,
   decrementOtpCounter,
   otpAuthOut,
   resetOtpCounter,
-} from "../../../store/slice/authSlice";
-import { useNavigate } from "react-router-dom";
+  saveChangePassOtp,
+  saveChangePassToken,
+  selectState,
+} from '../../../store/slice/authSlice'
+import { useNavigate } from 'react-router-dom'
 import {
   selectLoading,
   startLoading,
   stopLoading,
-} from "../../../store/slice/loadinSlice";
+} from '../../../store/slice/loadinSlice'
 import {
   removeOtpToken,
   selectOtpLoginAuth,
   setOtpToken,
-} from "../../../store/slice/otpLoginAuth";
-import { saveUser } from "../../../store/slice/userAuth";
-import { resendOtp, submitOtp } from "../../../Service/Apiservice/UserApi";
-import { selectError } from "../../../store/slice/errorSlice";
+} from '../../../store/slice/otpLoginAuth'
+import { saveUser } from '../../../store/slice/userAuth'
+import {
+  resendOtp,
+  resendOtpForChangepassbeforeLogin,
+  submitOtp,
+  submitOtpForChangePassBeforeLogin,
+} from '../../../Service/Apiservice/UserApi'
+import { selectError } from '../../../store/slice/errorSlice'
 export default function Submitotp() {
-  const [error, setError] = useState(false);
-  const { loginOtpToken } = useSelector(selectOtpLoginAuth);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [data, setOtp] = useState({});
-  const { isLoading } = useSelector(selectLoading);
-  const { customError } = useSelector(selectError);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const otpCounter = useSelector((state) => state.otpAuth.otpCounter);
+  const [error, setError] = useState(false)
+  const { loginOtpToken } = useSelector(selectOtpLoginAuth)
+  const [errorMsg, setErrorMsg] = useState('')
+  const [data, setOtp] = useState({})
+  const { isLoading } = useSelector(selectLoading)
+  const { customError } = useSelector(selectError)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const otpCounter = useSelector((state) => state.otpAuth.otpCounter)
+  const { isOtpForPass } = useSelector(selectState)
   useEffect(() => {
     if (otpCounter === 0) {
-      setError(2);
-      setErrorMsg("Times up hit resend");
-      return;
+      setError(2)
+      setErrorMsg('Times up hit resend')
+      return
     }
 
     const interval = setInterval(() => {
-      dispatch(decrementOtpCounter());
-    }, 1000);
+      dispatch(decrementOtpCounter())
+    }, 1000)
 
-    return () => clearInterval(interval);
-  }, [dispatch, otpCounter]);
+    return () => clearInterval(interval)
+  }, [dispatch, otpCounter])
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (Object.entries(data).length != 1 || data.otp == "") {
-      setError(2);
+    if (Object.entries(data).length != 1 || data.otp == '') {
+      setError(2)
       setTimeout(() => {
-        setError(0);
-      }, 1500);
-      return;
+        setError(0)
+      }, 1500)
+      return
     }
-    dispatch(startLoading());
+    dispatch(startLoading())
     const obj = {
       token: loginOtpToken,
       otp: data.otp,
-    };
-
-    const response = await submitOtp(
-      loginOtpToken ? "/user/otp/login" : "/user/create-user",
-      loginOtpToken ? obj : data
-    );
-    if (response?.status == true) {
-      dispatch(stopLoading());
-      dispatch(otpAuthOut());
-      loginOtpToken ? dispatch(removeOtpToken()) : dispatch(otpAuthOut());
-      dispatch(
-        saveUser({
-          user: response.user,
-          accessToken: response.token,
-        })
-      );
-
-      navigate("/user/home");
     }
-  };
+    if (isOtpForPass) {
+      const respones = await submitOtpForChangePassBeforeLogin(data.otp)
+      if (respones) {
+        dispatch(saveChangePassToken(respones))
+
+        navigate('/change-password')
+        setTimeout(() => {
+          dispatch(saveChangePassOtp(null))
+        }, 1000)
+        dispatch(stopLoading())
+      }
+    } else {
+      const response = await submitOtp(
+        loginOtpToken ? '/user/otp/login' : '/user/create-user',
+        loginOtpToken ? obj : data
+      )
+      if (response?.status == true) {
+        dispatch(stopLoading())
+
+        dispatch(
+          saveUser({
+            user: response.user,
+            accessToken: response.token,
+          })
+        )
+        if (!loginOtpToken) {
+          localStorage.setItem('newUser', 'true')
+          navigate(`/user/home`)
+        } else {
+          navigate('/user/home')
+        }
+        loginOtpToken ? dispatch(removeOtpToken()) : dispatch(otpAuthOut())
+      }
+    }
+  }
 
   function setErrorMessages(message, code) {
-    setErrorMsg(message);
-    setError(code);
+    setErrorMsg(message)
+    setError(code)
     setTimeout(() => {
-      setError(0);
-    }, 1500);
+      setError(0)
+    }, 1500)
     setTimeout(() => {
-      setErrorMsg("");
-    }, 1800);
+      setErrorMsg('')
+    }, 1800)
   }
   useEffect(() => {
-    document.title = "Submit otp";
-  }, []);
+    document.title = 'Submit otp'
+  }, [])
   const handleResendOtp = async (e) => {
     try {
-      e.preventDefault();
-      dispatch(startLoading());
-      const response = await resendOtp();
-      if (response?.status == true) {
-        console.log("h");
-
-        dispatch(resetOtpCounter());
-        dispatch(stopLoading());
-        setError(2);
-        setErrorMessages(response.message, 2);
-        loginOtpToken ? dispatch(setOtpToken(response.activationToken)) : "";
+      e.preventDefault()
+      dispatch(startLoading())
+      if (isOtpForPass) {
+        const response = await resendOtpForChangepassbeforeLogin()
+        if (response?.status == true) {
+          dispatch(resetOtpCounter())
+          dispatch(stopLoading())
+          setError(2)
+          setErrorMessages(response.message, 2)
+          dispatch(saveChangePassOtp(response.token))
+        }
+      } else {
+        const response = await resendOtp()
+        if (response?.status == true) {
+          dispatch(resetOtpCounter())
+          dispatch(stopLoading())
+          setError(2)
+          setErrorMessages(response.message, 2)
+          loginOtpToken ? dispatch(setOtpToken(response.activationToken)) : ''
+        }
       }
     } catch (error) {
-      dispatch(stopLoading());
+      dispatch(stopLoading())
     }
-  };
+  }
 
   return (
     <form className="w-full">
@@ -118,14 +153,14 @@ export default function Submitotp() {
         <div className="flex justify-between">
           <div
             className={`pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-              error == 2 ? "" : "opacity-0"
+              error == 2 ? '' : 'opacity-0'
             }`}
           >
-            {errorMsg ? errorMsg : "Enter the otp"}
-          </div>{" "}
+            {errorMsg ? errorMsg : 'Enter the otp'}
+          </div>{' '}
           <div
             className={`pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-              customError ? "" : "opacity-0"
+              customError ? '' : 'opacity-0'
             }`}
           >
             {customError}
@@ -139,7 +174,7 @@ export default function Submitotp() {
 
         <div
           className={` text-xs text-red-500 transition-opacity duration-500 ${
-            error == 1 ? " " : "opacity-0"
+            error == 1 ? ' ' : 'opacity-0'
           }`}
         >
           Enter a valide
@@ -155,7 +190,7 @@ export default function Submitotp() {
           {isLoading ? (
             <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
           ) : (
-            "RESEND"
+            'RESEND'
           )}
         </button>
       ) : (
@@ -167,10 +202,10 @@ export default function Submitotp() {
           {isLoading ? (
             <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
           ) : (
-            "Submit"
+            'Submit'
           )}
         </button>
       )}
     </form>
-  );
+  )
 }

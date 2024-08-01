@@ -1,12 +1,13 @@
-import mongoose, { Document, Model, Schema, Types } from "mongoose";
-import shortId from "shortid";
+import mongoose, { Document, Model, Schema, Types } from 'mongoose'
+import shortId from 'shortid'
+import IRequest from '../../entity/requestEntity'
 
 import {
   IBookShelf,
   IBorrowed,
   ILended,
   IShelf,
-} from "../../entity/bookShelfEntity";
+} from '../../entity/bookShelfEntity'
 
 const ShelfSchema: Schema<IShelf> = new mongoose.Schema({
   addedOn: {
@@ -37,7 +38,7 @@ const ShelfSchema: Schema<IShelf> = new mongoose.Schema({
     requiured: true,
   },
   limit: {
-    type: String,
+    type: Number,
     required: true,
   },
   isDeleted: {
@@ -50,25 +51,42 @@ const ShelfSchema: Schema<IShelf> = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Available", "Lended", "Returning"],
-    default: "Available",
+    enum: ['Available', 'Lended'],
+    default: 'Available',
     required: true,
   },
   location: {
-    type: String,
+    type: {
+      address: {
+        type: String,
+        required: true,
+      },
+      lat: {
+        type: Number,
+        required: true,
+      },
+      lng: {
+        type: Number,
+        required: true,
+      },
+    },
+  },
+  price: {
+    type: Number,
     required: true,
   },
-});
+})
 
 const BorrowedSchema: Schema<IBorrowed> = new mongoose.Schema({
-  bookId: {
-    type: String,
+  requestId: {
+    type: Schema.Types.ObjectId,
     required: true,
+    ref: 'Requests',
   },
   from: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: 'User',
   },
   isReturned: {
     type: Boolean,
@@ -76,15 +94,31 @@ const BorrowedSchema: Schema<IBorrowed> = new mongoose.Schema({
     default: false,
   },
   remainingDays: {
+    type: Number,
+    required: true,
+  },
+  reportsMade: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: 'Report',
+      default: [],
+    },
+  ],
+  keepingTime: {
     type: Date,
     required: true,
   },
-});
+  borrowedOn: {
+    type: Date,
+    default: new Date().getTime(),
+  },
+})
 
 const LendedSchema: Schema<ILended> = new mongoose.Schema({
-  bookId: {
-    type: String,
+  requestId: {
+    type: Schema.Types.ObjectId,
     required: true,
+    ref: 'Requests',
   },
   earnedScore: {
     type: String,
@@ -98,19 +132,38 @@ const LendedSchema: Schema<ILended> = new mongoose.Schema({
   lendedTo: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: 'User',
   },
   remainingDays: {
+    type: Number,
+    required: true,
+  },
+  reportsMade: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: 'Report',
+      default: [],
+    },
+  ],
+  keepingTime: {
     type: Date,
     required: true,
   },
-});
+  lendedOn: {
+    type: Date,
+    default: () => new Date().getTime(),
+  },
+  hasMadeRefund: {
+    type: Boolean,
+    default: false,
+  },
+})
 
 const BookShelfSchema: Schema<IBookShelf> = new mongoose.Schema({
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: 'User',
   },
   shelf: {
     type: [ShelfSchema],
@@ -129,11 +182,11 @@ const BookShelfSchema: Schema<IBookShelf> = new mongoose.Schema({
     required: true,
     default: false,
   },
-});
+})
 
 const BookshelfModel: Model<IBookShelf> = mongoose.model<IBookShelf>(
-  "BookShelf",
+  'BookShelf',
   BookShelfSchema
-);
+)
 
-export default BookshelfModel;
+export default BookshelfModel

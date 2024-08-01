@@ -44,6 +44,53 @@ class PaymentService {
     const generatedSignature = hmac.digest('hex')
     return generatedSignature === signature
   }
+
+  async createRefund(
+    payment_id: string,
+    amount: number,
+    notes: string,
+    userId: string
+  ): Promise<{} | null> {
+    try {
+      const response = await razorpayInstance.payments.refund(payment_id, {
+        amount: amount * 100,
+        speed: 'optimum',
+        notes: {
+          note_key_1: notes,
+        },
+        receipt: shortid.generate(),
+      })
+
+      if (response) {
+        return response
+      }
+
+      return null
+    } catch (error) {
+      console.log(error)
+
+      return null
+    }
+  }
+  //create add funds order
+  async createAddFundsOrder(amount: number, user: User): Promise<any> {
+    try {
+      const options = {
+        amount: amount * 100,
+        currency: 'INR',
+        receipt: `PY${shortid.generate()}`,
+        notes: {
+          email: user.email,
+          contact: user.contact,
+          name: user.name,
+        },
+      }
+      const order = await this.razorpayInstance.orders.create(options)
+      return order
+    } catch (error) {
+      console.log(error)
+    }
+  }
 }
 
 export default PaymentService

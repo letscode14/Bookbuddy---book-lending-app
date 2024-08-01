@@ -3,10 +3,21 @@ import {
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import ChildModal from '../../../../Modal/ChildModal'
 import EditShelf from '../EditShelf/EditShelf'
 import RemoveBook from '../RemoveBook/RemoveBook'
+import {
+  giveBookRequest,
+  sendMessage,
+} from '../../../../../Service/Apiservice/UserApi'
+import { showErrorToast, showSuccessToast } from '../../../../../utils/toast'
+import { useConfirmationModal } from '../../../../Modal/ModalContext'
+import { SocketContext } from '../../../../../Socket/SocketContext'
+import { selecUser } from '../../../../../store/slice/userAuth'
+import { useSelector } from 'react-redux'
+import ContentModal from '../../../../Modal/ContentModal'
+import Subscribe from '../../../Subscribe/Subscribe'
 const ImageComponent = React.lazy(
   () => import('../../../../ImageComponent/Image')
 )
@@ -17,10 +28,13 @@ export default function ViewBook({
   userId,
   handleContentClose,
 }) {
+  const { showModal } = useConfirmationModal()
+  const socket = useContext(SocketContext)
   const [isChildOpen, setChildOpen] = useState(false)
   const [modalFor, setModalFor] = useState('')
   const [action, setAction] = useState('')
   const [loading, setLoading] = useState(false)
+  const { user } = useSelector(selecUser)
 
   book.addedOn = new Date(book.addedOn).toDateString()
 
@@ -48,17 +62,57 @@ export default function ViewBook({
   }
 
   const handleClose = () => {
-    handleContentClose()
     setModalFor('')
     setAction('')
+  }
+
+  const handleGetTheBook = async (userId, bookId, ownerId) => {
+    try {
+      setLoading(true)
+      const response = await giveBookRequest(userId, bookId, ownerId)
+      if (response?.status !== true) {
+        setLoading(false)
+        console.log(response)
+        if (response.status == 403) {
+          setChildOpen(true)
+          setModalFor('subscribe')
+        } else {
+          showErrorToast(response.data.result.message)
+        }
+      } else {
+        showSuccessToast('Request has send success fully')
+        handleContentClose()
+        setLoading(false)
+        const obj = {
+          senderId: user,
+          chatId: response.response.data.result?.requestedUser.chatId,
+          content: response.response.data.result?.requestedUser.requestId,
+          isRequestForBook: true,
+        }
+        const messageResponse = await sendMessage(obj)
+
+        if (messageResponse) {
+          if (!messageResponse.isNewChat)
+            socket.emit('new message', messageResponse.message)
+          else {
+            const newreciever =
+              messageResponse.message.chatId.participants.find((p) => p != user)
+            socket.emit('newchatwithuser', newreciever)
+          }
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
     <>
       <ChildModal isOpen={isChildOpen} onClose={handleChildClose}>
+        {modalFor == 'subscribe' && <Subscribe user={user} />}
         {modalFor == 'Confirm' && (
-          <div className="w-[500px] py-6 px-10">
-            <div>
+          <div className="w-[500px] py-6 px-10 xs:w-full :px-2">
+            <div className="xs:text-center">
               <span>
                 <FontAwesomeIcon
                   className="text-2xl text-red-400 me-5"
@@ -100,7 +154,7 @@ export default function ViewBook({
           />
         )}
       </ChildModal>
-      <div className="w-[400px] p-4 h-[380px]">
+      <div className="w-[400px] p-4 fit-content">
         <div className=" h-[37%]">
           <div className="flex h-full">
             <div className="h-full p-1 w-[40%]">
@@ -123,7 +177,7 @@ export default function ViewBook({
             </div>
           </div>
         </div>
-        <div className="h-[23%] text-gray-400 text-sm font-semibold mt-3">
+        <div className="h-[23%] mb-2 text-gray-400 text-sm font-semibold mt-3">
           <div className="flex">
             <div className=" flex justify-between w-[85px]">
               <span>Status</span>
@@ -134,16 +188,18 @@ export default function ViewBook({
             </span>
           </div>
           <div className="flex">
-            <div className=" flex justify-between w-[85px]">
+            <div className="flex justify-between w-[85px]">
               <span>Location</span>
               <span>:</span>
             </div>
-            <span className=" ms-2 font-semibold">
+            <span className="ms-2 flex items-top font-semibold">
               <FontAwesomeIcon
                 className="text-red-500 mx-1 "
                 icon={faLocationDot}
               />
-              {book.location}
+              <div className="text-wrap w-[250px]">
+                {book.location?.address}
+              </div>
             </span>
           </div>
           <div className="flex">
@@ -182,7 +238,7 @@ export default function ViewBook({
           ) : (
             <button
               onClick={() => {
-                alert('request book')
+                handleGetTheBook(user, book._id, userId)
               }}
               className="border  bg-[#512da8] w-40 flex justify-center items-center font-semibold text-[#ffffff] w-28 text-xs py-2 rounded-lg uppercase"
             >

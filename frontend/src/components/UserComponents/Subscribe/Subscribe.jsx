@@ -26,11 +26,11 @@ export default function Subscribe({ close, user }) {
     script.async = true
     document.body.appendChild(script)
   }
-  const handlePayment = async () => {
+  const handlePayment = async (amount, user) => {
     loadRazorpayScript()
     try {
       setLoading(true)
-      const response = await createOrder(1000, user)
+      const response = await createOrder(amount, user)
       if (response) {
         setLoading(false)
       }
@@ -99,7 +99,10 @@ export default function Subscribe({ close, user }) {
     close()
   }
   return (
-    <div className="p-4 flex  subscribe-container">
+    <div
+      style={{ scrollbarWidth: 'thin' }}
+      className="p-4 flex  w-full xs:block sm:block md:flex  max-h-[500px] max-w-[800px] overflow-auto"
+    >
       <ChildModal onClose={handleChildClose} isOpen={isChildModel}>
         {modalFor == 'success' && (
           <div className="w-[500px] flex flex-col justify-center items-center h-[350px] p-3">
@@ -141,7 +144,7 @@ export default function Subscribe({ close, user }) {
           </div>
         )}
       </ChildModal>
-      <div className=" p-6 w-full">
+      <div className=" p-6 w-full ">
         <div className="flex items-center justify-center">
           <div className="w-full text-lg">Book damages</div>
           <div className="w-full shadow-lg   rounded-lg overflow-hidden">
@@ -239,7 +242,7 @@ export default function Subscribe({ close, user }) {
 
           <div className="flex justify-center mt-3">
             <button
-              onClick={handlePayment}
+              onClick={() => handlePayment(1000, user)}
               className="uppercase py-2 flex justify-center items-center rounded-lg w-40 bg-[#512da8] text-xs font-semibold text-[#ffffff]"
             >
               {loading ? (

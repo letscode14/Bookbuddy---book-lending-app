@@ -8,6 +8,7 @@ import {
 import { removeUser } from '../store/slice/userAuth'
 import { stopLoading } from '../store/slice/loadinSlice'
 import { showErrorToast } from '../utils/toast'
+import { removeAdmin } from '../store/slice/adminAuth'
 
 let store
 
@@ -55,12 +56,12 @@ axiosInstance.interceptors.response.use(
     const { response, config } = error
 
     if (response) {
+      console.log(response)
       if (
         response.status === 401 &&
         response.data.message == 'AccessToken Expired'
       ) {
         if (response.data?.token === 'admin') {
-          console.log('admin hear')
           localStorage.setItem('adminAccessToken', response.data.accessToken)
         } else {
           console.log('userhaer')
@@ -79,6 +80,31 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error)
       } else if (response.status == 415) {
         showErrorToast(response.data.message)
+      } else if (
+        response.data.message == 'Token missing' ||
+        response.data.message == 'Refresh Token not Available'
+      ) {
+        showErrorToast('Token missing please login again')
+        if (response.data?.token === 'admin') {
+          store.dispatch(removeAdmin())
+          localStorage.removeItem('adminAccessToken')
+          localStorage.removeItem('adminRefreshToken')
+        } else {
+          store.dispatch(removeUser())
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+        }
+      } else if (response.data.message == 'RefreshToken Expired') {
+        showErrorToast('Session expired login again')
+        if (response.data?.token === 'admin') {
+          store.dispatch(removeAdmin())
+          localStorage.removeItem('adminAccessToken')
+          localStorage.removeItem('adminRefreshToken')
+        } else {
+          store.dispatch(removeUser())
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('refreshToken')
+        }
       } else if (response.status == 401) {
         setResponseError(response.data.message)
       } else if (response.status == 409) {

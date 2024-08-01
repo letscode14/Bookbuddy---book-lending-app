@@ -5,6 +5,8 @@ import Page404 from '../../errorPages/Page404'
 import Dashboard from './Dashboard/Dashboard'
 import Post from './Post/Post'
 import Badge from './Badge/Badge'
+import Trasactions from './Transactions/Trasactions'
+import { useEffect } from 'react'
 export default function AdminPages() {
   return (
     <div className=" p-4 h-screen bg-[#51557e] ">
@@ -14,6 +16,7 @@ export default function AdminPages() {
         <Route path="/dashboard" element={<Dashboard />}></Route>
         <Route path="/post/management" element={<Post />}></Route>
         <Route path="/badge/management" element={<Badge />} />
+        <Route path="/transactions" element={<Trasactions />} />
 
         <Route path="*" element={<Page404 />}></Route>
       </Routes>

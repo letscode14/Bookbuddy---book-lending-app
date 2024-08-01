@@ -4,16 +4,16 @@ import {
   DialogTitle,
   Transition,
   TransitionChild,
-} from "@headlessui/react";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { Fragment } from "react";
+} from '@headlessui/react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { Fragment } from 'react'
 export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
   return (
     <Transition show={isOpen} as={Fragment}>
       <Dialog
         className="relative z-50 fixed inset-0"
         onClose={() => {
-          onClose();
+          onClose()
         }}
       >
         <TransitionChild
@@ -25,13 +25,13 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
           leaveTo="opacity-0"
         >
           <div
-            style={{ pointerEvents: "none" }}
+            style={{ pointerEvents: 'none' }}
             className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           />
         </TransitionChild>
 
         <div className="fixed  inset-0 z-50 w-screen overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <TransitionChild
               enter="ease-out  duration-300"
               enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
@@ -42,8 +42,8 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
             >
               <DialogPanel
                 className={`relative    z-50 transform overflow-hidden rounded-lg ${
-                  type == "admin" ? " bg-[#51557E]" : " bg-[#ffffff]"
-                } text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg`}
+                  type == 'admin' ? ' bg-[#51557E]' : ' bg-[#ffffff]'
+                } text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg xs:w-full`}
               >
                 <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
@@ -55,13 +55,13 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
                     </div>
                     <div
                       className={`${
-                        type == "admin" ? " bg-[#51557E]" : " bg-[#ffffff]"
+                        type == 'admin' ? ' bg-[#51557E]' : ' bg-[#ffffff]'
                       } mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left`}
                     >
                       <DialogTitle
                         as="h3"
                         className={`text-base font-semibold leading-6 ${
-                          type == "admin" ? "text-[#ffffff]" : "text-gray-900"
+                          type == 'admin' ? 'text-[#ffffff]' : 'text-gray-900'
                         } `}
                       >
                         Alert !
@@ -69,7 +69,7 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
                       <div className="mt-2">
                         <p
                           className={`text-sm ${
-                            type == "admin" ? "text-[#ffffff]" : "text-gray-500"
+                            type == 'admin' ? 'text-[#ffffff]' : 'text-gray-500'
                           } `}
                         >
                           {title}
@@ -79,14 +79,14 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
                   </div>
                 </div>
                 <div className=" px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                  {type == "admin" ? (
+                  {type == 'admin' ? (
                     <>
                       <button
                         type="button"
                         className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-slate-100  shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
                         onClick={() => {
-                          onConfirm();
-                          onClose();
+                          onConfirm()
+                          onClose()
                         }}
                       >
                         Confirm
@@ -95,7 +95,7 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
                         type="button"
                         className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-100 shadow-sm ring-1 ring-inset ring-gray-300 hover:text-[#000000] hover:bg-gray-50 sm:mt-0 sm:w-auto"
                         onClick={() => {
-                          onClose();
+                          onClose()
                         }}
                       >
                         Cancel
@@ -107,9 +107,9 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
                         type="button"
                         className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
                         onClick={(e) => {
-                          e.stopPropagation();
-                          onConfirm();
-                          onClose();
+                          e.stopPropagation()
+                          onConfirm()
+                          onClose()
                         }}
                       >
                         Confirm
@@ -118,8 +118,8 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
                         type="button"
                         className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                         onClick={(e) => {
-                          e.stopPropagation();
-                          onClose();
+                          e.stopPropagation()
+                          onClose()
                         }}
                       >
                         Cancel
@@ -133,5 +133,5 @@ export default function Modal({ isOpen, onClose, title, onConfirm, type }) {
         </div>
       </Dialog>
     </Transition>
-  );
+  )
 }

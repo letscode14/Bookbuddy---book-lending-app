@@ -23,6 +23,26 @@
   letter-spacing: 2px;
 }
 
+.notification-toast {
+  width: fit-content;
+  height: '90px';
+  background: #512da8;
+  border-radius: '12px';
+  color: #ffffff;
+  color: '#000000';
+  padding: '10px';
+}
+.request-toast {
+  width: fit-content;
+  height: fit-content;
+  background: #512da8;
+  color: #ffffff;
+
+  border-radius: '12px';
+  color: '#000000';
+  padding: '10px';
+}
+
 .admin-toast {
   background: rgb(81 85 126);
   color: #fff;

@@ -1,0 +1,10 @@
+.admin-view-user {
+  width: 600px;
+  height: 360px;
+}
+
+.admin-view-reports {
+  width: 600px;
+  height: 100%;
+  max-height: 700px;
+}

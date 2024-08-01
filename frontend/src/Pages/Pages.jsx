@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import {
+  ChangePasswordRoute,
   UserAccessRoutes,
   UserNotAccessRoutes,
 } from '../PrivateRoute/PrivateRoute'
@@ -17,6 +18,7 @@ import {
 } from '../PrivateRoute/PrivateRoute'
 import AdminLogin from '../components/AdminComponents/AdminLogin/AdminLogin'
 import AdminPages from '../components/AdminComponents/AdminPages/AdminPages'
+
 export default function Pages() {
   return (
     <>
@@ -33,7 +35,10 @@ export default function Pages() {
             <Route path="/verify-email" element={<ResetAuthState />} />
             <Route path="/register-email" element={<ResetAuthState />} />
           </Route>
-          <Route path="/change-password/:id" element={<Login />} />
+          <Route element={<ChangePasswordRoute />}>
+            <Route path="/change-password" element={<Login />} />
+          </Route>
+
           <Route element={<SubmitOtpPrivateRoute />}>
             <Route path="/submit-otp" element={<Login />} />
           </Route>

@@ -4,7 +4,7 @@ import './Post.css'
 import { useEffect, useState } from 'react'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faImages } from '@fortawesome/free-solid-svg-icons'
+import { faImages, faSadTear } from '@fortawesome/free-solid-svg-icons'
 import { fetchPost, getPost } from '../../../../Service/Apiservice/UserApi'
 import ContentModal from '../../../Modal/ContentModal'
 import PostView from '../PostView/PostView'
@@ -59,13 +59,18 @@ export default function Post({ user }) {
           >
             <PostView postData={postDetails} user={postDetails.userId} />
           </ContentModal>
-          <div className="post-list mt-4 pb-10 grid grid-cols-4 gap-4  mx-20">
+          <div
+            className="relative mt-4 pb-10 grid grid-cols-4 gap-4  
+           mx-20 xs:mx-2 xs:grid-cols-3  xs:gap-1 
+           sm:mx-3
+            lg:mx-20"
+          >
             {post.length > 0 ? (
               post.map((posts, index) => (
                 <div
                   onClick={() => getSinglePost(posts._id)}
                   key={index}
-                  className="post shadow border flex rounded-xl overflow-hidden justify-center items-center relative"
+                  className="aspect-square shadow border flex rounded-xl overflow-hidden justify-center items-center relative  "
                 >
                   {posts.imageUrls?.length > 1 && (
                     <FontAwesomeIcon
@@ -83,8 +88,11 @@ export default function Post({ user }) {
                 </div>
               ))
             ) : (
-              <div className="text-gray-400 absolute mt-36 top-[50%] left-[30%] text-2xl flex justify-center">
-                No posts yet!
+              <div
+                className="w-full absolute text-center 
+               text-lg text-gray-400"
+              >
+                No posts yet <FontAwesomeIcon icon={faSadTear} />
               </div>
             )}
           </div>

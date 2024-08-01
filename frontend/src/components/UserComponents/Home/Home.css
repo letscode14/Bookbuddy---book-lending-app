@@ -1,27 +1,19 @@
 .home-content {
   right: 1200px;
   left: 280px;
-  border-radius: 40px;
+
   scrollbar-width: none;
   transition: right 1s ease;
 }
-.left-container-home {
-  width: 75%;
-  height: fit-content;
-}
+
 .right-container-home {
-  width: 25%;
+  width: 30%;
 }
 .story-segment {
-  height: fit-content;
-
   overflow-x: auto;
-  scrollbar-width: 0px;
+  scrollbar-width: none;
 }
-
 .post-container {
-  width: 40%;
-
   height: fit-content;
   padding-bottom: 40px;
 }
@@ -86,5 +78,4 @@
   border-bottom-left-radius: 9px;
 
   height: 30px;
-  transition: all 0.2s ease-in-out;
 }

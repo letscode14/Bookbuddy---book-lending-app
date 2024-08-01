@@ -3,7 +3,11 @@ import JwtTokenService from '../framework/services/JwtToken'
 import IAdminRepository from './interface/IAdminRepository'
 import Admin from '../entity/adminEntity'
 import Cloudinary from '../framework/services/Cloudinary'
-import { Request } from 'express'
+import { Request, response } from 'express'
+import SendEmail from '../framework/services/SendEmail'
+import { IPost } from '../framework/databases/postModel'
+import IRequest from '../entity/requestEntity'
+import PaymentService from '../framework/services/PaymentService'
 interface ResponseType {
   _id?: string
   result?: Admin | {}
@@ -18,15 +22,22 @@ class AdminUseCase {
   private iAdminRepository: IAdminRepository
   private JwtToken: JwtTokenService
   private Cloudinary: Cloudinary
+  private sendEmail: SendEmail
+  private paymentService: PaymentService
 
   constructor(
     iAdminRepository: IAdminRepository,
     JwtToken: JwtTokenService,
-    cloudinary: Cloudinary
+
+    cloudinary: Cloudinary,
+    sendEmail: SendEmail,
+    paymentService: PaymentService
   ) {
     this.JwtToken = JwtToken
     this.iAdminRepository = iAdminRepository
     this.Cloudinary = cloudinary
+    this.sendEmail = sendEmail
+    this.paymentService = paymentService
   }
 
   async loginAdmin(email: string, password: string): Promise<ResponseType> {
@@ -245,6 +256,61 @@ class AdminUseCase {
       }
     }
   }
+
+  async getSingleBadge(badgeId: string): Promise<ResponseType> {
+    const result = await this.iAdminRepository.getSingleBadge(badgeId)
+    if (result) {
+      return {
+        statusCode: 200,
+        result: result,
+      }
+    }
+    try {
+      return {
+        statusCode: 400,
+        message: 'unexpected error occured',
+      }
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async editBadge(req: Request): Promise<ResponseType> {
+    try {
+      const { badgeName } = req.body
+      const { isChanged } = req.query
+
+      const isAvail = await this.iAdminRepository.findBadgeByName(badgeName)
+
+      if (isAvail == true && isChanged == 'true') {
+        return {
+          statusCode: 400,
+          message: 'Badge name already exists',
+        }
+      }
+
+      const result = await this.iAdminRepository.editBadge(req)
+
+      if (result) {
+        return {
+          statusCode: 200,
+          message: 'Badge edited successfully',
+        }
+      }
+      return {
+        statusCode: 400,
+        message: 'unexpected error occured',
+      }
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
   async getBadge(): Promise<ResponseType> {
     try {
       const badges = await this.iAdminRepository.getBadge()
@@ -262,6 +328,424 @@ class AdminUseCase {
       }
     } catch (error) {
       console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async getLendedTransactions(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getLendedTransactions(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          message: 'fetched',
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'not badges',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async getBorrowedTransactions(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getBorrowedTransactions(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          message: 'fetched',
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'not badges',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getSingleUser(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getSingleUser(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          message: 'fetched',
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getReportedPost(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getReportedPost(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          message: 'fetched',
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async getUserStatistics(): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getUserStatistics()
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getPeriodUserStatistics(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getPeriodUserStatistics(req)
+
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getHighLendscoreUsers(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getHighLendscoreUser(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async getPostStatistics(): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getPostStatistics()
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getPeriodPostStatistics(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getPeriodPostStatistics(req)
+
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getHighBoostedPost(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getHighBoostedPost(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getPost(postId: string): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getPost(postId)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async banPost(postId: string): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.banPost(postId)
+      if (result) {
+        const { email } = result.userId as { email: string }
+        const code = result.ID
+        const subject = `One of your post has deleted for violation of terms and conditions  click this link to know about the post ${result.imageUrls[0].secure_url} `
+        this.sendEmail.sendEmail({ email, subject, code })
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      }
+      return {
+        statusCode: 409,
+        message: 'un expected error occured',
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  //transactions statistics
+  async getTransactionStatistics(): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getTransactionStatistics()
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getPeriodTransactionStatistics(req: Request): Promise<ResponseType> {
+    try {
+      const result =
+        await this.iAdminRepository.getPeriodTransactionStatistics(req)
+
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async getPeriodRequestStatistics(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iAdminRepository.getPeriodRequestStatistics(req)
+
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+          message: 'no content',
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async makeRefund(req: Request): Promise<ResponseType> {
+    try {
+      const { culpritId, beneficiaryId, lendId } = req.body
+      let bookId
+
+      const lendedTransaction =
+        await this.iAdminRepository.getLendedSingleTransaction(lendId)
+      const request = lendedTransaction?.requestId as IRequest
+      bookId = request.book._id
+
+      if (lendedTransaction?.hasMadeRefund) {
+        return {
+          statusCode: 400,
+          message: 'This transaction has already made a refund',
+        }
+      }
+
+      const user = await this.iAdminRepository.getPaymentId(beneficiaryId)
+      const book = await this.iAdminRepository.getBook(bookId)
+
+      if (book && user) {
+        const price = book.price
+        console.log(price, user?.paymentId)
+
+        const response = await this.paymentService.createRefund(
+          user?.paymentId,
+          price,
+          `Refund for the book ${book.ID}`,
+          user?._id
+        )
+        if (response) {
+          const email = user.email
+          const subject = `Refund of rs${price} for book ${book.bookName} is initiated`
+          await this.sendEmail.sendEmail({
+            email,
+            subject,
+            code: `BookID: ${book.ID}`,
+          })
+          const reduce = await this.iAdminRepository.reduceCautionDeposit(
+            culpritId,
+            Number(price),
+            `Deducted for dispute for book ${book.bookName}`,
+            lendId
+          )
+
+          if (reduce) {
+            return {
+              statusCode: 200,
+              message: 'Refund has initiated success fully',
+            }
+          }
+        }
+      }
+
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
       return {
         statusCode: 500,
         message: 'Internal server error',

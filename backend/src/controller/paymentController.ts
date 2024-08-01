@@ -34,6 +34,35 @@ class PaymentContoller {
       console.log(error)
     }
   }
+
+  async addFundsOrder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, email } = req.body
+      const result = await this.userCase.addOrderFunds(userId, email)
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
+
+  async verifyAddFundsPayment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { orderId, paymentId, signature, userId, amount } = req.body
+
+      const result = await this.userCase.verifyaddFundsPayment(
+        orderId,
+        paymentId,
+        signature,
+        userId,
+        Number(amount)
+      )
+      res.status(result.statusCode).json({ ...result })
+    } catch (error) {
+      console.log(error)
+      next(error)
+    }
+  }
 }
 
 export default PaymentContoller

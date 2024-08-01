@@ -358,7 +358,7 @@ export default function EditUser({ userInfo, onClose }) {
       formData.append('gender', userData.gender)
       formData.append('name', userData.name)
       formData.append('privacy', userData.privacy)
-      formData.append('profileUrl', userData.profile.profileUrl)
+      formData.append('profileUrl', userData.profileUrl)
       formData.append('publicId', userInfo.profile.publicId)
       formData.append('userName', userData.userName)
       formData.append('userId', user)
@@ -454,8 +454,8 @@ export default function EditUser({ userInfo, onClose }) {
           </div>
         )}
         {modalFor == 'confirm' && (
-          <div className="w-[500px] py-6 px-10">
-            <div>
+          <div className="w-[500px] py-6 px-10 xs:w-full  xs:px-0">
+            <div className="">
               <span>
                 <FontAwesomeIcon
                   className="text-2xl text-red-400 me-5"
@@ -487,9 +487,9 @@ export default function EditUser({ userInfo, onClose }) {
           </div>
         )}
         {modalFor == 'crop' && (
-          <div className="p-10">
-            <div className=" gap-12 flex justify-between  edit-profile-container">
-              <div className=" border edit-profile-image-container">
+          <div className="p-10 ">
+            <div className=" gap-12 flex justify-between  xs:gap-5  xs:block">
+              <div className=" border w-[200px]  relative h-[200px] xs:mb-2">
                 <Cropper
                   image={newProfile}
                   crop={crop}
@@ -501,7 +501,7 @@ export default function EditUser({ userInfo, onClose }) {
                 />
               </div>
 
-              <div className="new-profile-outcome">
+              <div className="w-[200px] h-[200px]">
                 <img
                   className="w-full h-full rounded-full border"
                   src={croppedProfile.url}
@@ -523,9 +523,24 @@ export default function EditUser({ userInfo, onClose }) {
           </div>
         )}
       </ChildModal>
-      <div className=" py-7 px-3 flex w-[700px]">
-        <div className="w-[20%]   h-28 mx-6">
-          <div className="flex justify-center h-28">
+      <div
+        className=" py-7 px-3 flex w-[700px] 
+        xs:block  
+        xs:py-2 
+        xs:w-full 
+        sm:block 
+      sm:py-2 
+      sm:w-full 
+      md:flex  md:w-[700px]  md:px-3 md:py-7
+      "
+      >
+        <div
+          className="w-[20%]  
+         h-28 mx-6 xs:mx-1 xs:flex xs:flex-col xs:items-center xs:w-full
+         sm:mx-1 sm:flex sm:flex-col sm:items-center sm:w-full 
+         md:w-[20%] md:mx-6 md:h-28"
+        >
+          <div className="flex justify-center w-28 xs:w-28 sm:w-28">
             <React.Suspense
               fallback={
                 <div className="animate-spin rounded-full h-7 w-7  border-t-2 border-b-2 border-[#512da8]"></div>
@@ -574,8 +589,18 @@ export default function EditUser({ userInfo, onClose }) {
           </div>
         </div>
 
-        <div className="ms-4 w-[80%] ">
-          <div className="flex  gap-5 justify-between">
+        <div
+          className="ms-4 w-[80%] xs:mt-16 xs:w-full 
+        xs:mx-0 
+        sm:mt-16 sm:w-full sm:mx-0 
+        md:w-[80%] md:mt-0 md:me-6"
+        >
+          <div
+            className="flex  gap-5 justify-between 
+          xs:gap-2 
+          sm:gap-3 
+          md:gap-5"
+          >
             <div className="sm:col-span-3 fit-content w-full">
               <label
                 htmlFor="first-name"
@@ -635,7 +660,7 @@ export default function EditUser({ userInfo, onClose }) {
             </div>
           </div>
           <div className="flex items-center ">
-            <div className="sm:col-span-3 w-[60%]">
+            <div className="sm:col-span-3 w-[60%] xs:w-full sm:w-full">
               <label
                 htmlFor="user-name"
                 className="block text-sm font-medium leading-6 text-gray-900"
@@ -652,7 +677,8 @@ export default function EditUser({ userInfo, onClose }) {
                   }
                   name="user-name"
                   autoComplete="username"
-                  className="block w-full ps-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="block w-full ps-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6
+                  "
                 />
                 <div
                   className={`  text-xs text-red-500 transition-opacity duration-500 ${
@@ -667,11 +693,11 @@ export default function EditUser({ userInfo, onClose }) {
                 </div>
               </div>
             </div>
-            <div className="w-[20%] mt-2 ms-2">
+            <div className=" mt-2 ms-2 xs:ms-0 sm:ms-0">
               {emailValid ? (
                 isVerified ? (
                   <FontAwesomeIcon
-                    className="p-2 border rounded-full bg-green-400 text-[#ffffff]"
+                    className="p-2 border rounded-full bg-green-400 text-[#ffffff] xs:ms-2"
                     icon={faCheck}
                   />
                 ) : (
@@ -682,7 +708,9 @@ export default function EditUser({ userInfo, onClose }) {
                   onClick={() => {
                     handleVerify()
                   }}
-                  className="border py-2 px-10 rounded-lg bg-[#512da8] text-[#ffffff] font-semibold uppercase text-xs "
+                  className=" border ms-1 py-2 px-10 rounded-lg bg-[#512da8] text-[#ffffff] font-semibold uppercase text-xs 
+                  xs:px-5
+                  "
                 >
                   {isLoading ? (
                     <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
@@ -693,7 +721,10 @@ export default function EditUser({ userInfo, onClose }) {
               )}
             </div>
           </div>
-          <div className="flex gap-5 items-center w-[70%] ">
+          <div
+            className="flex gap-5 items-center w-[70%] xs:w-full xs:gap-2 
+          sm:w-full"
+          >
             <div className="sm:col-span-3 w-full">
               <label
                 htmlFor="user-name"
@@ -750,7 +781,7 @@ export default function EditUser({ userInfo, onClose }) {
               </div>
             </div>
           </div>
-          <div className="flex gap-5 items-center w-[70%] ">
+          <div className="flex gap-5 items-center w-[70%] xs:w-full xs:gap-2  sm:w-full">
             <div className="sm:col-span-3  w-[48%]">
               <label
                 htmlFor="user-name"
@@ -809,7 +840,8 @@ export default function EditUser({ userInfo, onClose }) {
               </div>
             </div>
           </div>
-          <div className="mt-5 text-center w-[60%]">
+
+          <div className="mt-5 text-center w-[60%] xs:w-full sm:w-full">
             <button
               onClick={handleSubmit}
               className="bg-[#512da8] text-[#ffffff] uppercase pty-2 font-semibold py-2 px-3 rounded-lg text-xs "

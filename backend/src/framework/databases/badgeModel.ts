@@ -34,7 +34,7 @@ const BadgeSchema: Schema<IBadge> = new mongoose.Schema({
     required: true,
     default: Date.now(),
   },
-  borrowLimit: {
+  limit: {
     type: Number,
     required: true,
   },

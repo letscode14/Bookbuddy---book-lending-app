@@ -115,10 +115,10 @@ export default function BadgeForm({ handleModelClose }) {
     }))
     setLoading(true)
     const response = await addBadge(data)
-    if (response == true) {
+    if (response.status == true) {
       setLoading(false)
       showAdminToast('Badge created')
-      handleModelClose(response)
+      handleModelClose(response.badge)
     } else if (response.status == 400) {
       setCustom((prev) => ({
         ...prev,

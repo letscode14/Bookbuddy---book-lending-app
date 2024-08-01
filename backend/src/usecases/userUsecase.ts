@@ -1,5 +1,5 @@
 import User from '../entity/userEntity'
-import { Response, Request } from 'express'
+import { Response, Request, response } from 'express'
 import IUserRepository from './interface/IUserRepository'
 import SendEmail from '../framework/services/SendEmail'
 import JwtTokenService from '../framework/services/JwtToken'
@@ -193,7 +193,13 @@ class UserUseCase {
       }
     }
   }
-  async googleAuth(user: User): Promise<ResponseType> {
+
+  async googleAuth(user: {
+    email: string
+    userName: string
+    name: string
+    profileUrl: string
+  }): Promise<ResponseType> {
     try {
       const email = user.email
 
@@ -218,15 +224,28 @@ class UserUseCase {
           role: emailExists.role as string,
         })
 
-        const { _id, name, userName, email } = emailExists as User
+        const {
+          _id,
+          email,
+          userName,
+          isSubscribed,
+          privacy,
+          name,
+          isGoogleSignUp,
+          profile,
+        } = emailExists as User
         return {
           statusCode: 200,
           message: 'User logged In',
           result: {
             _id,
-            name,
-            userName,
             email,
+            userName,
+            isSubscribed,
+            privacy,
+            name,
+            isGoogleSignUp,
+            profile,
           },
           accessToken,
           refreshToken,
@@ -244,7 +263,15 @@ class UserUseCase {
             message: 'Error in creating user',
           }
         }
-        const { _id, email } = savedUser
+        const {
+          _id,
+          email,
+          userName,
+          isSubscribed,
+          privacy,
+          name,
+          isGoogleSignUp,
+        } = savedUser
         const token = await this.JwtToken.SignInAccessToken({
           id: savedUser._id as string,
           role: savedUser.role as string,
@@ -262,6 +289,11 @@ class UserUseCase {
           result: {
             _id,
             email,
+            userName,
+            isSubscribed,
+            privacy,
+            name,
+            isGoogleSignUp,
           },
         }
       }
@@ -603,11 +635,10 @@ class UserUseCase {
           message: 'post fetched sucessfully',
           result: response,
         }
-      }
-
-      return {
-        statusCode: 409,
-        message: 'unexpected error occured',
+      } else {
+        return {
+          statusCode: 204,
+        }
       }
     } catch (error) {
       console.log(error)
@@ -622,7 +653,7 @@ class UserUseCase {
     try {
       const result = await this.iUserRepository.likePost(req)
       if (result) {
-        return { statusCode: 200, message: 'Liked the post' }
+        return { statusCode: 200, message: 'Liked the post', result: result }
       }
 
       return {
@@ -859,18 +890,68 @@ class UserUseCase {
 
   async postReport(req: Request): Promise<ResponseType> {
     try {
-      const response = await this.iUserRepository.postReport(req)
-      if (response) {
-        return {
-          statusCode: 200,
-          message: 'Reported successfully',
+      const file = req.files['images[]']
+
+      if (file !== undefined) {
+        const cloudRes = await this.Cloudinary.cloudinaryUpload(file)
+        if (Array.isArray(cloudRes)) {
+          const imageUrlArray = cloudRes.map((document) => ({
+            publicId: document.public_id,
+            secure_url: document.secure_url,
+          }))
+          const response = await this.iUserRepository.postReport(
+            req,
+            imageUrlArray as [{ secure_url: string; publicId: string }]
+          )
+          if (response) {
+            return {
+              statusCode: 200,
+              message: 'Reported successfully',
+            }
+          } else {
+            return {
+              statusCode: 409,
+              message:
+                'You have already reported on this wait until it get resolved',
+            }
+          }
+        } else {
+          const imageUrlArray = [
+            {
+              publicId: cloudRes.public_id,
+              secure_url: cloudRes.secure_url,
+            },
+          ]
+          const response = await this.iUserRepository.postReport(
+            req,
+            imageUrlArray as [{ secure_url: string; publicId: string }]
+          )
+          if (response) {
+            return {
+              statusCode: 200,
+              message: 'Reported successfully',
+            }
+          } else {
+            return {
+              statusCode: 409,
+              message:
+                'You have already reported on this wait until it get resolved',
+            }
+          }
         }
-      }
-      if (response == null) {
-        return {
-          statusCode: 409,
-          message:
-            'You have already reported on this wait until it get resolved',
+      } else {
+        const response = await this.iUserRepository.postReport(req, [])
+        if (response) {
+          return {
+            statusCode: 200,
+            message: 'Reported successfully',
+          }
+        } else {
+          return {
+            statusCode: 409,
+            message:
+              'You have already reported on this wait until it get resolved',
+          }
         }
       }
 
@@ -993,9 +1074,17 @@ class UserUseCase {
         }
       }
 
-      return {
-        statusCode: 409,
-        message: 'unexpected error occured',
+      const result = await this.iUserRepository.makeRequest(req)
+      if (!result.status) {
+        return {
+          statusCode: 400,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 200,
+          result: result,
+        }
       }
     } catch (error) {
       console.log(error)
@@ -1050,8 +1139,12 @@ class UserUseCase {
         paymentId,
         signature
       )
-      const result = await this.iUserRepository.makeUserSubscribed(userId)
-      if (isSuccess && result) {
+
+      if (isSuccess) {
+        const result = (await this.iUserRepository.makeUserSubscribed(
+          userId,
+          paymentId
+        )) as {}
         return {
           statusCode: 200,
           message: 'payment sucess',
@@ -1060,11 +1153,950 @@ class UserUseCase {
       } else {
         return {
           statusCode: 400,
-          message: 'paymenr failer',
+          message: 'paymenr failed',
         }
       }
     } catch (error) {
       console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async getChat(req: Request): Promise<ResponseType> {
+    try {
+      const { senderId, userId } = req.params
+      if (senderId && userId) {
+        const result = await this.iUserRepository.getChat(senderId, userId)
+        if (result) {
+          return {
+            statusCode: 200,
+            result: result,
+          }
+        }
+      }
+      return {
+        statusCode: 409,
+        message: 'unexpected error occured',
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getAllChat(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.getAllChat(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async sendMessage(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.createMessage(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getAllMessages(chatId: string, pageNo: string): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.getAllMessages(chatId, pageNo)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async makeMsgRead(messageId: string): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.makeMsgRead(messageId)
+      if (result) {
+        return {
+          statusCode: 200,
+        }
+      }
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async declineRequest(req: Request): Promise<ResponseType> {
+    try {
+      const response = await this.iUserRepository.declineRequest(req)
+      if (response) {
+        return {
+          statusCode: 200,
+          result: response,
+        }
+      } else {
+        return {
+          statusCode: 204,
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async addStory(req: Request): Promise<ResponseType> {
+    try {
+      const { files } = req
+      const file = files.images
+      const { userId } = req.params
+      const cloudRes = (await this.Cloudinary.cloudinaryUpload(file)) as {
+        public_id: string
+        secure_url: string
+      }
+      if (cloudRes) {
+        const imageUrl = {
+          public_id: cloudRes?.public_id,
+          secure_url: cloudRes?.secure_url,
+        }
+        const response = await this.iUserRepository.addStory(userId, imageUrl)
+        if (response) {
+          return {
+            statusCode: 201,
+            result: response,
+          }
+        } else {
+        }
+      }
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getStories(req: Request): Promise<ResponseType> {
+    try {
+      const response = await this.iUserRepository.getStories(req)
+      if (response) {
+        return {
+          statusCode: 200,
+          result: response,
+        }
+      }
+
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async makeStoryViewed(req: Request): Promise<ResponseType> {
+    try {
+      const storyId = req.body.storyId as string
+      const userId = req.body.userId as string
+
+      const result = await this.iUserRepository.makeStoryViewed(storyId, userId)
+      if (result) {
+        return { statusCode: 200 }
+      }
+
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async acceptRequest(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.acceptRequest(req)
+      if (result.status == true) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          message: result.message.toString(),
+          statusCode: 404,
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getLendedBooks(userId: string, pageNo: number): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.getLendedBooks(userId, pageNo)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      }
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async getBorrowedBooks(
+    userId: string,
+    pageNo: number
+  ): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.getBorrowedBooks(userId, pageNo)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      }
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async getNotifications(
+    userId: string,
+    pageNo: number,
+    unRead: boolean
+  ): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.getNotifications(
+        userId,
+        pageNo,
+        unRead
+      )
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      }
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async giveBackBook(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.giveBookBack(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      }
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async collectBook(req: Request): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.collectBook(req)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      } else {
+        return {
+          statusCode: 204,
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  //change password before login
+
+  async verifyChangePassEmail(email: string): Promise<ResponseType> {
+    try {
+      const emailExists = await this.iUserRepository.findByEmail(email)
+
+      if (!emailExists) {
+        return {
+          statusCode: 401,
+          message: 'Email does not exist',
+        }
+      }
+      if (emailExists?.isGoogleSignUp) {
+        return {
+          statusCode: 401,
+          message: "Google signup user, you cant't do this action",
+        }
+      }
+      const subject = 'Please provide this code for your verification'
+      const code = Math.floor(100000 + Math.random() * 9000).toString()
+      const sendEmail = await this.sendEmail.sendEmail({
+        email,
+        subject,
+        code,
+      })
+      const user = emailExists._id ? emailExists._id : ''
+      const token = await this.JwtToken.signChangePassTokenOtp(
+        user,
+        code,
+        email
+      )
+
+      if (sendEmail && token) {
+        return {
+          status: true,
+          statusCode: 200,
+          message: 'Otp has send to your email ',
+          activationToken: token,
+        }
+      }
+
+      return {
+        statusCode: 409,
+        message: 'Un expected error occured',
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async resendChangePassOtpBeforeLogin(token: string): Promise<ResponseType> {
+    try {
+      if (token == 'undefined') {
+        return {
+          statusCode: 401,
+          message: 'Token is expired',
+        }
+      }
+
+      const otp = 'resend'
+      const result = await this.JwtToken.verifyOtpToken(token, otp)
+
+      if ('user' in result) {
+        const code = Math.floor(100000 + Math.random() * 9000).toString()
+        console.log(result)
+
+        const email = result.email
+
+        const subject = 'Please provide the new code for the registration'
+
+        const sendEmail = await this.sendEmail.sendEmail({
+          email,
+          subject,
+          code,
+        })
+
+        const token = await this.JwtToken.signChangePassTokenOtp(
+          '',
+          code,
+          email
+        )
+        if (sendEmail && token) {
+          return {
+            statusCode: 200,
+            message: 'Otp has resend to the email',
+            activationToken: token,
+          }
+        }
+      }
+      return {
+        statusCode: 401,
+        ...result,
+      }
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        message: 'Internal server Error',
+      }
+    }
+  }
+  async submitOtpBeforeLogin(
+    token: string,
+    code: string
+  ): Promise<ResponseType> {
+    try {
+      const data = await this.JwtToken.verifyOtpToken(token, code)
+
+      if ('user' in data) {
+        const email = data.email
+
+        const token = await this.JwtToken.signChangePassToken(email)
+        if (token) {
+          return { statusCode: 200, result: token, activationToken: token }
+        }
+      }
+      return {
+        statusCode: 401,
+        ...data,
+      }
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async submitNewPasswordBeforeLogin(
+    password: string,
+    token: string
+  ): Promise<ResponseType> {
+    try {
+      const isValid = await this.validatePassword(password)
+
+      if (isValid !== true) {
+        return {
+          statusCode: 401,
+          message: isValid as string,
+        }
+      }
+      if (!token) {
+        return {
+          statusCode: 401,
+          message: 'Token is missing',
+        }
+      }
+      const user = await this.JwtToken.verifyChangePassToken(token)
+
+      if ('user' in user) {
+        const result = await this.iUserRepository.changePassWord(
+          password,
+          user.user
+        )
+        if (result) {
+          return {
+            statusCode: 200,
+            message: 'password changed successfully',
+          }
+        }
+      } else {
+        return {
+          statusCode: 401,
+          message: user.message,
+        }
+      }
+
+      return {
+        statusCode: 409,
+        message: 'unexpected error occured',
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  //
+
+  async searchUsers(
+    pageNo: number,
+    query: string,
+    user: string
+  ): Promise<ResponseType> {
+    try {
+      const response = await this.iUserRepository.searchUsers(
+        query,
+        pageNo,
+        user
+      )
+      if (response) {
+        return {
+          statusCode: 200,
+          result: response,
+        }
+      } else {
+        return {
+          statusCode: 204,
+        }
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async exploreBooks(userId: string): Promise<ResponseType> {
+    try {
+      const result = await this.iUserRepository.exploreBooks(userId)
+      if (result) {
+        return {
+          statusCode: 200,
+          result: result,
+        }
+      }
+      return {
+        statusCode: 204,
+      }
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async otpChangePassAfterLogin(
+    userId: string,
+    email: string
+  ): Promise<ResponseType> {
+    try {
+      const user = await this.iUserRepository.findByEmailAndUserId(
+        userId,
+        email
+      )
+
+      if (user?.isGoogleSignUp) {
+        return {
+          statusCode: 400,
+          message: 'this is a google signuped account',
+        }
+      }
+      if (user) {
+        const subject = 'Please provide this code for your change password'
+        const code = Math.floor(100000 + Math.random() * 9000).toString()
+        const sendEmail = await this.sendEmail.sendEmail({
+          email,
+          subject,
+          code,
+        })
+
+        const token = await this.JwtToken.signChangePassTokenOtp(
+          userId,
+          code,
+          user.email
+        )
+
+        if (token && sendEmail) {
+          return {
+            statusCode: 200,
+            result: token,
+            activationToken: token,
+          }
+        }
+      }
+
+      return {
+        statusCode: 400,
+        message: 'Cant generate otp',
+      }
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async otpResendPassAfterLogin(
+    token: string,
+    userId: string
+  ): Promise<ResponseType> {
+    try {
+      const otp = 'resend'
+      const result = await this.JwtToken.verifyOtpToken(token, otp)
+
+      if ('user' in result) {
+        const code = Math.floor(100000 + Math.random() * 9000).toString()
+
+        const email = result.email
+
+        const subject = 'Please provide the new code for the registration'
+
+        const sendEmail = await this.sendEmail.sendEmail({
+          email,
+          subject,
+          code,
+        })
+
+        const token = await this.JwtToken.signChangePassTokenOtp(
+          userId,
+          code,
+          email
+        )
+
+        if (sendEmail && token) {
+          return {
+            statusCode: 200,
+            message: 'Otp has resend to the email',
+            activationToken: token,
+          }
+        }
+      }
+      return {
+        statusCode: 401,
+        ...result,
+      }
+    } catch (error) {
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async submitChangePassOtpAfterLogin(
+    otpToken: string,
+    otp: string
+  ): Promise<ResponseType> {
+    try {
+      const result = await this.JwtToken.verifyOtpToken(otpToken, otp)
+      if ('user' in result) {
+        const email = result.email
+        const user = result.user
+
+        const token = await this.JwtToken.signChangePassToken(email)
+        if (token) {
+          return { statusCode: 200, result: token, activationToken: token }
+        }
+      } else {
+        return {
+          statusCode: 400,
+          result: result,
+        }
+      }
+      return {
+        statusCode: 409,
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async validatePassword(password: string): Promise<string | boolean> {
+    const hasCapitalLetter = /[A-Z]/.test(password)
+    const hasSpecialCharacter = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    const hasNumber = /[0-9]/.test(password)
+    const hasAlphabet = /[a-zA-Z]/.test(password)
+
+    if (!hasCapitalLetter) {
+      return 'Uppercase is missing'
+    }
+    if (!hasSpecialCharacter) {
+      return 'Special charecter is missing [$%^&]'
+    }
+    if (!hasNumber) {
+      return 'Number is missing'
+    }
+
+    if (!hasAlphabet) {
+      return 'Alphabets is missing'
+    }
+
+    if (password.length < 8) {
+      return 'Password must hav 8 character'
+    }
+    return true
+  }
+
+  async checkOldPassword(
+    userId: string,
+    password: string
+  ): Promise<ResponseType> {
+    console.log(password)
+
+    try {
+      const isValid = await this.validatePassword(password)
+      if (isValid !== true) {
+        return {
+          statusCode: 400,
+          message: isValid as string,
+        }
+      }
+      const result = await this.iUserRepository.checkOldPassword(
+        password,
+        userId
+      )
+
+      if (result) {
+        const email = result.email
+        if (result.isGoogleSignUp) {
+          return {
+            statusCode: 400,
+            message: 'You can do this action',
+          }
+        }
+
+        const token = await this.JwtToken.signChangePassToken(email)
+        if (token) {
+          return { statusCode: 200, result: token, activationToken: token }
+        }
+      } else {
+        return {
+          statusCode: 400,
+          message: 'Password does not match',
+        }
+      }
+      return {
+        statusCode: 409,
+        message: 'unexpected error occured',
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async submitNewPassword(
+    token: string,
+    password: string
+  ): Promise<ResponseType> {
+    try {
+      if (!token) {
+        return {
+          statusCode: 400,
+          message: 'Token is missing',
+        }
+      }
+      const user = await this.JwtToken.verifyChangePassToken(token)
+
+      if ('user' in user) {
+        const result = await this.iUserRepository.changePassWord(
+          password,
+          user.user
+        )
+        if (result) {
+          return {
+            statusCode: 200,
+            message: 'password changed successfully',
+          }
+        }
+      } else {
+        return {
+          statusCode: 400,
+          message: user.message,
+        }
+      }
+
+      return {
+        statusCode: 409,
+        message: 'unexpected error occured',
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async getDeposit(req: Request): Promise<ResponseType> {
+    try {
+      const user = await this.iUserRepository.getDeposit(req)
+      if (user) {
+        return {
+          statusCode: 200,
+          result: user,
+        }
+      }
+      return {
+        statusCode: 409,
+        message: 'unexpected error occured',
+      }
+    } catch (error) {
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+
+  async addOrderFunds(userId: string, email: string): Promise<ResponseType> {
+    try {
+      const user = await this.iUserRepository.findByEmailAndUserId(
+        userId,
+        email
+      )
+      if (!user?.isSubscribed) {
+        return {
+          statusCode: 400,
+          message: 'user is not subscribed',
+        }
+      }
+      const amount = 1000 - Number(user.cautionDeposit)
+
+      if (user) {
+        const result = await this.Payments.createAddFundsOrder(amount, user)
+        if (result) {
+          return {
+            statusCode: 200,
+            result: { ...result, amount },
+          }
+        }
+      } else {
+        return {
+          statusCode: 400,
+          message: 'User credentials not found',
+        }
+      }
+      return {
+        statusCode: 409,
+        message: 'usnexpected error occured',
+      }
+    } catch (error) {
+      console.log(error)
+      console.log(error)
+      return {
+        statusCode: 500,
+        message: 'Internal server error',
+      }
+    }
+  }
+  async verifyaddFundsPayment(
+    orderId: string,
+    paymentId: string,
+    signature: string,
+    userId: string,
+    amount: number
+  ): Promise<ResponseType> {
+    try {
+      const isSuccess = await this.Payments.verifyPaymentSignature(
+        orderId,
+        paymentId,
+        signature
+      )
+      if (isSuccess) {
+        const user = await this.iUserRepository.updateCautionDeposit(
+          userId,
+          amount
+        )
+        if (user) {
+          return {
+            statusCode: 200,
+            message: 'user caution deposit updated',
+          }
+        } else {
+          return {
+            statusCode: 400,
+          }
+        }
+      } else {
+        return {
+          statusCode: 400,
+          message: 'Payment is unsuccess',
+        }
+      }
+    } catch (error) {
       return {
         statusCode: 500,
         message: 'Internal server error',
