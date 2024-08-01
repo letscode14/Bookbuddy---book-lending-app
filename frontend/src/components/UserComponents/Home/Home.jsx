@@ -535,7 +535,8 @@ export default function Home() {
             {stories.length > 1 &&
               stories.map(
                 (s, i) =>
-                  s?.userId?._id !== user && (
+                  s?.userId?._id !== user &&
+                  s !== null && (
                     <div
                       className=" 
                        
