@@ -136,7 +136,7 @@ export default function Maps({ type, getLocation }) {
           className="map-container relative"
         >
           {books.length === 0 && !type && (
-            <div className="absolute top-0 left-0 z-50 w-full h-full flex flex-col justify-center items-center bg-gray-800 bg-opacity-50">
+            <div className="absolute top-0 left-0 z-20 w-full h-full flex flex-col justify-center items-center bg-gray-800 bg-opacity-50">
               <div>
                 <p className="text-white text-2xl">
                   You {"don't"} have any books to explore

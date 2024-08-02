@@ -40,7 +40,7 @@ export default function ReponsiveNav() {
   }, [])
   return (
     <div
-      className={`cursor-pointer transition-all duration-500  rounded-e-[30px] text-xl bg-[#512da8] absolute xs:block hidden  overflow-hidden hover:opacity-100  drop-shadow-2xl  z-50    ${activeRmenu ? ' p-2  w-16 top-[20%] grid h-[400px]' : 'top-[45%] h-28 w-3 hover:w-5 h-30  opacity-50 '} `}
+      className={`cursor-pointer  transition-all duration-500  rounded-e-[30px] text-xl bg-[#512da8] absolute xs:block hidden  overflow-hidden hover:opacity-100  drop-shadow-2xl  z-50    ${activeRmenu ? ' p-2  w-16 top-[20%] grid h-[400px]' : 'top-[45%] h-28 w-3 hover:w-5 h-30  opacity-50 '} `}
     >
       <div
         ref={menuContainer}
