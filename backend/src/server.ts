@@ -17,12 +17,15 @@ const startWorker = () => {
       execArgv: ['-r', 'ts-node/register'],
     }
   )
-
   worker.on('message', (message) => {
     if (message.status === 'complete') {
       console.log('User loading complete')
     } else if (message.status === 'error') {
       console.error('Error loading users:', message.error)
+    } else if (message.status === 'updatebadgecomplete') {
+      console.log('Update badge success fully')
+    } else if (message.status == 'bagdeerror') {
+      console.log('error  in updating the badge')
     }
   })
 
@@ -44,7 +47,7 @@ const startServer = async () => {
     initSocketsever(server)
 
     await agenda.start()
-    await agenda.every('5 seconds', 'updateBadge')
+    await agenda.every('5 hours', 'updateBadge')
 
     server?.listen(port, () => {
       console.log('server is running at port ', port)

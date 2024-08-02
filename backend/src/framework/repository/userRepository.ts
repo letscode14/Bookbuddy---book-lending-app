@@ -2985,4 +2985,50 @@ export default class UserRepository implements IUserRepository {
       return false
     }
   }
+  async updateBadge() {
+    try {
+      const badges = await BadgeModel.find({}).sort({ minScore: -1 })
+
+      if (badges.length === 0) {
+        console.log('No badges found.')
+        return
+      }
+
+      const bulkOps = []
+
+      const cursor = LendScoreModel.find({}).cursor()
+
+      for (
+        let lendScore = await cursor.next();
+        lendScore != null;
+        lendScore = await cursor.next()
+      ) {
+        let qualifiedBadge = null
+        for (const badge of badges) {
+          if (lendScore.lendScore >= badge.minScore) {
+            qualifiedBadge = badge
+            break
+          }
+        }
+
+        if (qualifiedBadge) {
+          bulkOps.push({
+            updateOne: {
+              filter: { _id: lendScore._id },
+              update: { $set: { badgeId: new ObjectId(qualifiedBadge._id) } },
+            },
+          })
+        }
+      }
+
+      if (bulkOps.length > 0) {
+        await LendScoreModel.bulkWrite(bulkOps)
+        console.log('LendScore documents updated successfully.')
+      } else {
+        console.log('No LendScore documents need updating.')
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 }

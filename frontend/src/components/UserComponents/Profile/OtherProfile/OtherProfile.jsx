@@ -83,7 +83,6 @@ export default function OtherProfile() {
     async function fetchUser() {
       try {
         const response = await getUser(id, user)
-
         if (response) {
           setLoading(false)
           setUserDetails(response.user)
@@ -93,6 +92,7 @@ export default function OtherProfile() {
           setMetaData({
             followers: Number(response.followersLength),
             following: Number(response.followingLength),
+            postLength: response.postLength,
           })
         }
       } catch (error) {
@@ -348,7 +348,9 @@ export default function OtherProfile() {
                         </div>
                       </div>
                       <div className=" ">
-                        <div className="text-center xs:text-xl">{0 | 0}</div>
+                        <div className="text-center xs:text-xl">
+                          {metaData?.postLength | 0}
+                        </div>
                         <div className="text-center xs:text-sm">Posts</div>
                       </div>
                     </div>

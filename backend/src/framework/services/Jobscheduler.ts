@@ -1,6 +1,10 @@
 import Agenda, { Job } from 'agenda'
 import IUserRepository from '../../usecases/interface/IUserRepository'
-
+import path from 'path'
+import { Worker } from 'worker_threads'
+const worker = new Worker(path.resolve(__dirname, 'Worker.ts'), {
+  execArgv: ['-r', 'ts-node/register'],
+})
 class JobScheduler {
   private agenda: Agenda
   private userRepository: IUserRepository
@@ -47,9 +51,9 @@ class JobScheduler {
         lendedId
       )
     })
-    // this.agenda.define('updateBadge', async () => {
-    //   console.log('Running updateBadge job...')
-    // })
+    this.agenda.define('updateBadge', async () => {
+      worker.postMessage({ action: 'updateBadge' })
+    })
   }
 }
 export default JobScheduler

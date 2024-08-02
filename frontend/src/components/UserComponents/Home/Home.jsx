@@ -656,7 +656,7 @@ export default function Home() {
                               icon={faEllipsis}
                             />
                             <div
-                              className={`rounded-tl-lg rounded-b-lg h-8 transition-all duration-200 ${
+                              className={`rounded-tl-lg rounded-b-lg h-8 z-30 transition-all duration-200 ${
                                 reportBox[post._id] &&
                                 post.userId._id !== userData._id
                                   ? 'w-20'

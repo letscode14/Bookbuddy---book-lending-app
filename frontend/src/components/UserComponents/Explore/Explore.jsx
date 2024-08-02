@@ -7,6 +7,9 @@ const ImageComponent = React.lazy(() => import('../../ImageComponent/Image'))
 
 export default function Explore() {
   const exploreContainer = useRef()
+  useEffect(() => {
+    document.title = 'Explore'
+  }, [])
 
   return (
     <>

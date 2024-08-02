@@ -6,11 +6,8 @@ import { UserTrie } from '../repository/userTrie'
 import UserRepository from '../repository/userRepository'
 import { redis } from '../config/redis'
 
-export const userTrie = new UserTrie()
+const userRepository = new UserRepository()
 
-export function search() {
-  console.log(userTrie.search('_kadu'))
-}
 async function loadAllUsers() {
   try {
     await connecDB()
@@ -34,8 +31,27 @@ async function loadAllUsers() {
   }
 }
 
+async function updateBadge() {
+  try {
+    await connecDB()
+    await userRepository.updateBadge()
+
+    parentPort?.postMessage({ status: 'updatebadgecomplete' })
+  } catch (error) {
+    console.error('Error updating the badge:', error)
+    if (parentPort) {
+      parentPort.postMessage({ status: 'bagdeerror', error })
+    }
+  }
+}
+
 parentPort?.on('message', async (message) => {
   if (message.action === 'loadUsers') {
     await loadAllUsers()
+  }
+})
+parentPort?.on('message', async (message) => {
+  if (message.action == 'updateBadge') {
+    await updateBadge()
   }
 })
