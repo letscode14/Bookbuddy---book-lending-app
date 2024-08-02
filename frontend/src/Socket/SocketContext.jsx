@@ -7,7 +7,7 @@ const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null)
 
   useEffect(() => {
-    const socket = io('http://localhost:3000')
+    const socket = io('https://www.api.bookbuddy.lol')
     setSocket(socket)
   }, [Socket])
 
