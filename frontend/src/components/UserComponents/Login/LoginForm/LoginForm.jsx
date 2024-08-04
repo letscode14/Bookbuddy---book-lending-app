@@ -1,113 +1,117 @@
-import otpLogo from "/images/email.png";
-import "./LoginForm.css";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import otpLogo from '/images/email.png'
+import './LoginForm.css'
+import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 //font awesome
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+  faChevronCircleRight,
+  faEye,
+  faEyeSlash,
+} from '@fortawesome/free-solid-svg-icons'
 
 //validation functions
 import {
   validateEmail,
   validatePassword,
-} from "../../../../../helpers/ValidationHelpers/ValidationHelper";
-import OAuth from "../../../Oauth/OAuth";
+} from '../../../../../helpers/ValidationHelpers/ValidationHelper'
+import OAuth from '../../../Oauth/OAuth'
 //
 
 //store
-import { useSelector, useDispatch } from "react-redux";
-import { selectError } from "../../../../store/slice/errorSlice";
+import { useSelector, useDispatch } from 'react-redux'
+import { selectError } from '../../../../store/slice/errorSlice'
 import {
   selectLoading,
   startLoading,
   stopLoading,
-} from "../../../../store/slice/loadinSlice";
-import { login } from "../../../../Service/Apiservice/UserApi";
-import { saveUser } from "../../../../store/slice/userAuth";
-import { showSuccessToast } from "../../../../utils/toast";
+} from '../../../../store/slice/loadinSlice'
+import { login } from '../../../../Service/Apiservice/UserApi'
+import { saveUser } from '../../../../store/slice/userAuth'
+import { showSuccessToast } from '../../../../utils/toast'
 
 export default function LoginForm() {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [fieldError, setFieldError] = useState({ email: "", password: "" });
-  const [userDetails, setUserDetails] = useState({ email: "", password: "" });
-  const [error, setError] = useState([]);
-  const [passwordError, setPassError] = useState("");
-  const [passView, setPassView] = useState(false);
-  const { customError } = useSelector(selectError);
-  const { isLoading } = useSelector(selectLoading);
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const [fieldError, setFieldError] = useState({ email: '', password: '' })
+  const [userDetails, setUserDetails] = useState({ email: '', password: '' })
+  const [error, setError] = useState([])
+  const [passwordError, setPassError] = useState('')
+  const [passView, setPassView] = useState(false)
+  const { customError } = useSelector(selectError)
+  const { isLoading } = useSelector(selectLoading)
   useEffect(() => {
-    document.title = "Login";
-  }, []);
+    document.title = 'Login'
+  }, [])
 
   const handleSubmit = async (e) => {
     function resetError() {
       setTimeout(() => {
-        setError([]);
+        setError([])
 
         setTimeout(() => {
-          setFieldError({ email: "", password: "" });
-          setPassError("");
-        }, 300);
-      }, 1700);
+          setFieldError({ email: '', password: '' })
+          setPassError('')
+        }, 300)
+      }, 1700)
     }
-    e.preventDefault();
+    e.preventDefault()
     if (!userDetails.email && !userDetails.password) {
       setFieldError({
         ...fieldError,
-        password: "password is required ",
-        email: "email is required",
-      });
-      setError([1, 2]);
-      resetError();
-      return;
+        password: 'password is required ',
+        email: 'email is required',
+      })
+      setError([1, 2])
+      resetError()
+      return
     }
 
     if (!userDetails.email) {
-      setFieldError({ ...fieldError, email: "Email is required" });
-      setError([1]);
-      resetError();
-      return;
+      setFieldError({ ...fieldError, email: 'Email is required' })
+      setError([1])
+      resetError()
+      return
     }
 
     if (!userDetails.password) {
-      setFieldError({ ...fieldError, password: "Password is required" });
-      setError([2]);
-      resetError();
-      return;
+      setFieldError({ ...fieldError, password: 'Password is required' })
+      setError([2])
+      resetError()
+      return
     }
 
     if (!validateEmail(userDetails.email)) {
-      setError([1]);
-      resetError();
-      return;
+      setError([1])
+      resetError()
+      return
     }
-    const pass = validatePassword(userDetails.password);
+    const pass = validatePassword(userDetails.password)
 
     if (pass !== true) {
-      setPassError(pass);
-      setError([2]);
-      resetError();
-      return;
+      setPassError(pass)
+      setError([2])
+      resetError()
+      return
     }
 
-    dispatch(startLoading());
-    const response = await login(userDetails);
+    dispatch(startLoading())
+    const response = await login(userDetails)
     if (response.status) {
-      dispatch(stopLoading());
+      dispatch(stopLoading())
       dispatch(
         saveUser({ user: response.user, accessToken: response.accessToken })
-      );
+      )
 
-      navigate("/user/home");
-      showSuccessToast("Logged in");
+      navigate('/user/home')
+      showSuccessToast('Logged in')
     }
-  };
+  }
 
   return (
-    <form className="w-full ">
-      <h1 className="text-3xl font-bold mb-2">Sign In</h1>
+    <form className="w-full  px-[40px] xs:px-7">
+      <h1 className="text-3xl font-bold mb-2 xs:text-xl">Sign In</h1>
 
       <div className="w-full ">
         <div className="flex justify-between">
@@ -128,15 +132,15 @@ export default function LoginForm() {
 
         <div
           className={`pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error.includes(1) ? "" : "opacity-0"
+            error.includes(1) ? '' : 'opacity-0'
           }`}
         >
-          {fieldError.email ? fieldError.email : "Enter a valid email"}
+          {fieldError.email ? fieldError.email : 'Enter a valid email'}
         </div>
       </div>
       <div className="w-full relative">
         <input
-          type={passView ? "text" : "password"}
+          type={passView ? 'text' : 'password'}
           onChange={(e) =>
             setUserDetails({ ...userDetails, password: e.target.value.trim() })
           }
@@ -160,20 +164,20 @@ export default function LoginForm() {
       <div className=" text-sm flex w-full justify-between ">
         <div
           className={` py-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error.includes(2) ? "" : "opacity-0"
+            error.includes(2) ? '' : 'opacity-0'
           }`}
         >
           {fieldError.password
             ? fieldError.password
             : passwordError
-            ? passwordError
-            : ""}
+              ? passwordError
+              : ''}
         </div>
         <div
           onClick={() => {
-            navigate("/verify-email");
+            navigate('/verify-email')
           }}
-          className={`cursor-pointer ${error == 2 ? "hidden" : ""}`}
+          className={`cursor-pointer ${error == 2 ? 'hidden' : ''}`}
         >
           Forget your password?
         </div>
@@ -187,7 +191,7 @@ export default function LoginForm() {
         {isLoading ? (
           <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-[#]"></div>
         ) : (
-          "SIGN in"
+          'SIGN in'
         )}
       </button>
       <div className="w-full text-center py-1">
@@ -196,12 +200,19 @@ export default function LoginForm() {
       <div className="flex">
         <OAuth />
         <div
-          onClick={() => navigate("/register-email")}
+          onClick={() => navigate('/register-email')}
           className="cursor-pointer hover:scale-110 google-auth-button  flex items-center justify-center duration-300"
         >
           <img className="google-auth-icon " src={otpLogo} alt="" />
         </div>
       </div>
+      <div className="mt-3">
+        <FontAwesomeIcon
+          onClick={() => navigate('/signup')}
+          className="sm:hidden xs:text-xl xs:text-[#512da8]"
+          icon={faChevronCircleRight}
+        />
+      </div>
     </form>
-  );
+  )
 }

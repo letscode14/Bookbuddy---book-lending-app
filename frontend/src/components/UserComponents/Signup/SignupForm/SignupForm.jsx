@@ -1,154 +1,154 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 //reduc state management
-import { otpAuthIn } from "../../../../store/slice/authSlice";
+import { otpAuthIn } from '../../../../store/slice/authSlice'
 //font awesome
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 
 //validations helpers
 import {
   validateEmail,
   validatePassword,
-} from "../../../../../helpers/ValidationHelpers/ValidationHelper";
-import { useDispatch, useSelector } from "react-redux";
+} from '../../../../../helpers/ValidationHelpers/ValidationHelper'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   selectLoading,
   startLoading,
   stopLoading,
-} from "../../../../store/slice/loadinSlice";
-import OAuth from "../../../Oauth/OAuth";
-import { selectError } from "../../../../store/slice/errorSlice";
+} from '../../../../store/slice/loadinSlice'
+import OAuth from '../../../Oauth/OAuth'
+import { selectError } from '../../../../store/slice/errorSlice'
 import {
   checkUserName,
   registerUser,
-} from "../../../../Service/Apiservice/UserApi";
+} from '../../../../Service/Apiservice/UserApi'
 export default function SignupForm() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
-  const { isLoading } = useSelector(selectLoading);
-  const { customError } = useSelector(selectError);
+  const { isLoading } = useSelector(selectLoading)
+  const { customError } = useSelector(selectError)
 
-  const navigate = useNavigate();
-  const [error, setError] = useState([]);
-  const [usernameError, setUserNameError] = useState(false);
+  const navigate = useNavigate()
+  const [error, setError] = useState([])
+  const [usernameError, setUserNameError] = useState(false)
   const [userDetails, setUserDetails] = useState({
-    name: "",
-    userName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [passView, setPassView] = useState(false);
+    name: '',
+    userName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  })
+  const [passView, setPassView] = useState(false)
   const [errorMsg, setErrorMsg] = useState({
-    emailError: "",
-    passwordError: "",
-    usernameMsg: "",
-    confirmPassError: "",
-  });
+    emailError: '',
+    passwordError: '',
+    usernameMsg: '',
+    confirmPassError: '',
+  })
   useEffect(() => {
-    document.title = "Signup";
-  }, []);
+    document.title = 'Signup'
+  }, [])
   const resetError = () => {
     setTimeout(() => {
-      setError([]);
+      setError([])
       setTimeout(() => {
         setErrorMsg({
-          emailError: "",
-          passwordError: "",
-          confirmPassError: "",
-        });
-      }, 300);
-    }, 1500);
-  };
+          emailError: '',
+          passwordError: '',
+          confirmPassError: '',
+        })
+      }, 300)
+    }, 1500)
+  }
 
   const isUsername = async (username) => {
-    if (!username) return;
-    const isValid = await checkUserName(username);
+    if (!username) return
+    const isValid = await checkUserName(username)
     if (!isValid) {
-      setError([2]);
-      setUserNameError(true);
+      setError([2])
+      setUserNameError(true)
 
-      resetError();
-      return;
+      resetError()
+      return
     }
-    setUserNameError(false);
-  };
+    setUserNameError(false)
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const errorIndices = [];
-    const keys = Object.keys(userDetails);
+    const errorIndices = []
+    const keys = Object.keys(userDetails)
 
     keys.forEach((key, index) => {
-      if (userDetails[key].trim() === "") {
-        errorIndices.push(index + 1);
+      if (userDetails[key].trim() === '') {
+        errorIndices.push(index + 1)
       }
-    });
+    })
 
     if (errorIndices.length > 0) {
-      setError(errorIndices);
-      resetError();
-      return;
+      setError(errorIndices)
+      resetError()
+      return
     }
 
     if (usernameError) {
-      setError([2]);
-      resetError();
-      return;
+      setError([2])
+      resetError()
+      return
     }
 
-    const email = validateEmail(userDetails.email);
+    const email = validateEmail(userDetails.email)
     if (!email) {
-      setError([3]);
-      setErrorMsg({ ...errorMsg, emailError: "Enter a valid email" });
-      resetError();
-      return;
+      setError([3])
+      setErrorMsg({ ...errorMsg, emailError: 'Enter a valid email' })
+      resetError()
+      return
     }
-    const pass = validatePassword(userDetails.password);
+    const pass = validatePassword(userDetails.password)
     if (pass !== true) {
-      setError([4]);
-      setErrorMsg({ ...errorMsg, passwordError: pass });
-      resetError();
-      return;
+      setError([4])
+      setErrorMsg({ ...errorMsg, passwordError: pass })
+      resetError()
+      return
     }
 
     if (userDetails.password != userDetails.confirmPassword) {
-      setErrorMsg({ ...errorMsg, confirmPassError: "Password does not match" });
-      setError([5]);
-      resetError();
-      return;
+      setErrorMsg({ ...errorMsg, confirmPassError: 'Password does not match' })
+      setError([5])
+      resetError()
+      return
     }
 
-    dispatch(startLoading());
-    const response = await registerUser(userDetails);
+    dispatch(startLoading())
+    const response = await registerUser(userDetails)
 
     if (response.status) {
-      const { token } = response;
-      dispatch(otpAuthIn(token));
-      dispatch(stopLoading());
-      navigate("/submit-otp");
+      const { token } = response
+      dispatch(otpAuthIn(token))
+      dispatch(stopLoading())
+      navigate('/submit-otp')
     }
     if (usernameError) {
-      setUserNameError(true);
-      setError([2]);
+      setUserNameError(true)
+      setError([2])
 
-      resetError();
+      resetError()
 
-      return;
+      return
     }
-  };
+  }
 
   return (
-    <form className="w-full">
-      <h1 className="text-3xl font-bold mb-1">Create Account</h1>
+    <form className="w-full  px-[40px] xs:px-7 xs:py-3 ">
+      <h1 className="text-2xl font-bold mb-1 xs:text-xl">Create Account</h1>
       <div className="w-full">
         <div className="flex justify-between">
           <div
             className={`  text-xs text-red-500 transition-opacity duration-500 ${
-              customError ? " " : "opacity-0"
+              customError ? ' ' : 'opacity-0'
             }`}
           >
             {customError}
@@ -165,7 +165,7 @@ export default function SignupForm() {
         />
         <div
           className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-            error.includes(1) ? " " : "opacity-0"
+            error.includes(1) ? ' ' : 'opacity-0'
           }`}
         >
           Name is required
@@ -174,8 +174,8 @@ export default function SignupForm() {
       <div className="w-full ">
         <input
           onChange={(e) => {
-            isUsername(e.target.value);
-            setUserDetails({ ...userDetails, userName: e.target.value.trim() });
+            isUsername(e.target.value)
+            setUserDetails({ ...userDetails, userName: e.target.value.trim() })
           }}
           type="text"
           placeholder="Username"
@@ -183,12 +183,12 @@ export default function SignupForm() {
 
         <div
           className={`pb-1  text-xs text-red-500 transition-opacity duration-500 ${
-            error.includes(2) ? "" : "opacity-0"
+            error.includes(2) ? '' : 'opacity-0'
           }`}
         >
           {usernameError
-            ? "User name is not valid try another one"
-            : "Username is required"}
+            ? 'User name is not valid try another one'
+            : 'Username is required'}
         </div>
       </div>
       <div className="w-full">
@@ -201,10 +201,10 @@ export default function SignupForm() {
         />
         <div
           className={` pb-1 text-xs text-red-500 transition-opacity duration-500 ${
-            error.includes(3) ? "" : "opacity-0"
+            error.includes(3) ? '' : 'opacity-0'
           }`}
         >
-          {errorMsg.emailError ? errorMsg.emailError : "Email is required"}
+          {errorMsg.emailError ? errorMsg.emailError : 'Email is required'}
         </div>
       </div>
 
@@ -213,7 +213,7 @@ export default function SignupForm() {
           onChange={(e) =>
             setUserDetails({ ...userDetails, password: e.target.value.trim() })
           }
-          type={passView ? "text" : "password"}
+          type={passView ? 'text' : 'password'}
           placeholder="Password"
         />
         {passView ? (
@@ -232,12 +232,12 @@ export default function SignupForm() {
         <div className=" text-sm flex w-full justify-between ">
           <div
             className={` py-1 text-xs text-red-500 transition-opacity duration-500 ${
-              error.includes(4) ? "" : "opacity-0"
+              error.includes(4) ? '' : 'opacity-0'
             }`}
           >
             {errorMsg.passwordError
               ? errorMsg.passwordError
-              : "Password is required"}
+              : 'Password is required'}
           </div>
         </div>
       </div>
@@ -250,17 +250,17 @@ export default function SignupForm() {
               confirmPassword: e.target.value.trim(),
             })
           }
-          type={passView ? "text" : "password"}
+          type={passView ? 'text' : 'password'}
           placeholder="Confirm password "
         />
         <div
           className={`  text-xs text-red-500 transition-opacity duration-500 ${
-            error.includes(5) ? "" : "opacity-0"
+            error.includes(5) ? '' : 'opacity-0'
           }`}
         >
           {errorMsg.confirmPassError
             ? errorMsg.confirmPassError
-            : "Confirm password required"}
+            : 'Confirm password required'}
         </div>
       </div>
       <div className="flex justify-center items-center"></div>
@@ -273,7 +273,7 @@ export default function SignupForm() {
         {isLoading ? (
           <div className="animate-spin rounded-full h-4 w-4  border-t-2 border-b-2 border-white-900"></div>
         ) : (
-          "SIGN UP"
+          'SIGN UP'
         )}
       </button>
       <div className="w-full text-center py-1">
@@ -281,5 +281,5 @@ export default function SignupForm() {
       </div>
       <OAuth />
     </form>
-  );
+  )
 }

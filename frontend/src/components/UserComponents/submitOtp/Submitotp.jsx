@@ -146,7 +146,7 @@ export default function Submitotp() {
   }
 
   return (
-    <form className="w-full">
+    <form className="w-full px-[40px] xs:px-7">
       <h1 className="text-3xl font-bold mb-2">Submit OTP</h1>
 
       <div className="w-full">

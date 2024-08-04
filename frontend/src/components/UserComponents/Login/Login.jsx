@@ -55,29 +55,31 @@ export default function Login() {
   const navigate = useNavigate()
 
   return (
-    <div className="login-signup-container">
-      <img src={Logo} alt="" className="absolute top-0 left-0 h-16 ms-4 mt-4" />
+    <div className="login-signup-container  xs:px-3">
+      <img
+        src={Logo}
+        alt=""
+        className="absolute top-0 left-0 h-16 ms-4 mt-4 
+        xs:h-12 xs:ms-1 "
+      />
       <div
-        className={`container-full ${isActive ? 'active' : ''}`}
-        id="container"
+        className={`    sm:h-[500px] container-full ${isActive ? 'active ' : ''}`}
+        id="container "
       >
-        <div className="form-container   flex items-center sign-up">
+        <div
+          className={`form-container xs:overflow-auto  xs:w-full  ${
+            isActive ? ' translate-x-full xs:translate-x-0' : ''
+          }  flex items-center sign-in `}
+        >
           {form == 'signup' ? <SignupForm /> : ''}
+          {form == 'login' ? <LoginForm /> : ''}
+          {form == 'changepass' ? <ChangePassword /> : ''}
+          {form == 'submit-otp' ? <Submitotp /> : ''}
           {form === 'verifyemail' ? <ForgotPassform /> : ''}
           {form == 'loginotp' ? <LoginOtpForm /> : ''}
         </div>
 
-        <div
-          className={`form-container ${
-            isActive ? 'hidden' : ''
-          }  flex items-center sign-in`}
-        >
-          {form == 'login' ? <LoginForm /> : ''}
-          {form == 'changepass' ? <ChangePassword /> : ''}
-          {form == 'submit-otp' ? <Submitotp /> : ''}
-        </div>
-
-        <div className="toggle-container">
+        <div className="toggle-container xs:hidden ">
           <div className="toggle">
             <div className="toggle-panel toggle-right">
               <h1 className="font-medium  text-2xl">Welcome Back!</h1>

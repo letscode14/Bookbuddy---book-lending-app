@@ -197,7 +197,6 @@ export default class UserRepository implements IUserRepository {
           lat,
           price,
         } = req.body
-        console.log(location)
 
         bookshelf = await BookshelfModel.findOneAndUpdate(
           { userId: new ObjectId(id) },
@@ -1312,7 +1311,6 @@ export default class UserRepository implements IUserRepository {
   ): Promise<{ message: IMessage; isNewChat: boolean } | null> {
     try {
       const { senderId, chatId, content, isRequestForBook } = req.body
-      console.log('body', req.body)
 
       let newChatfromUser = false
       const chat = await ChatModel.findById(chatId)
@@ -1543,8 +1541,6 @@ export default class UserRepository implements IUserRepository {
   }
   async makeMsgRead(messageId: string): Promise<boolean> {
     try {
-      console.log(messageId)
-
       const updatedMsg = await MessageModel.findByIdAndUpdate(
         messageId,
         {
@@ -1647,7 +1643,6 @@ export default class UserRepository implements IUserRepository {
         book: book,
         expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
       })
-      console.log('new request', newRequest)
 
       const runAt = new Date(Date.now() + 30 * 1000)
 
@@ -1819,8 +1814,6 @@ export default class UserRepository implements IUserRepository {
 
   async removeStory(userId: string, id: string): Promise<boolean> {
     try {
-      console.log('remove story called')
-
       const stories = await storyModel.findOneAndUpdate(
         {
           userId: new ObjectId(userId),
@@ -1998,7 +1991,6 @@ export default class UserRepository implements IUserRepository {
       }
 
       const { limit, _id } = request.book as IShelf
-      console.log(limit)
 
       const bookshelf = await BookshelfModel.findOne({
         userId: new ObjectId(userId),
@@ -2664,8 +2656,6 @@ export default class UserRepository implements IUserRepository {
   async collectBook(req: Request): Promise<IMessage | null> {
     try {
       const { requestId, userId, requestedUser, messageId, chatId } = req.body
-      console.log(req.body)
-      console.log(requestId)
 
       const request = (await RequestModel.findByIdAndUpdate(requestId, {
         stage: 'transaction complete',
