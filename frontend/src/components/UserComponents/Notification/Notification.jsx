@@ -158,7 +158,7 @@ export default function Notification() {
                           <div
                             className="flex cursor-pointer"
                             onClick={() =>
-                              navigate(`/user/other/${n.actionBy._id}`)
+                              navigate(`/user/other/${n?.actionBy?._id}`)
                             }
                           >
                             <div className="">
@@ -170,7 +170,7 @@ export default function Notification() {
                                     }
                                   >
                                     <ImageComponent
-                                      src={n.actionBy?.profile?.profileUrl}
+                                      src={n?.actionBy?.profile?.profileUrl}
                                     />
                                   </React.Suspense>
                                 </div>
