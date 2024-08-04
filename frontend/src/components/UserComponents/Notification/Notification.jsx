@@ -117,11 +117,11 @@ export default function Notification() {
       <div
         ref={notification}
         className="rounded-[40px]  right-[12px] ps-20 pe-20   overflow-auto    home-content absolute top-3 bottom-3 flex   bg-[#ffffff] 
-         xs:left-0 xs:right-0 xs:rounded-[0px] xs:top-0 xs:bottom-0 xs:ps-1 xs:pe-1 
+         xs:left-0 xs:right-0 xs:rounded-[0px] xs:top-0 xs:bottom-0 xs:ps-0.5 xs:pe-0.5 
          sm:left-20
          sm:ps-7 sm:pe-7
          md:left-[240px]
-          lg:ps-20 lg:pe-20  lg:left-[280px]"
+          lg:ps-20 lg:pe-20  lg:left-[280px] "
       >
         <div className=" w-[70%] sm:w-full  lg:w-[70%] xs:w-full">
           <div className="w-full p-5">
@@ -153,26 +153,28 @@ export default function Notification() {
                         {i1 && i1 == index && <ResponsiveSuggestion />}
                         {i2 && i2 == index && <ResponsiveSuggestion />}
                         <div className="flex justify-between items-center  py-1 px-2">
-                          <div className="flex">
-                            <div className="rounded-full overflow-hidden w-12">
-                              <div className="w-full rounded-full overflow-hidden ">
-                                <React.Suspense
-                                  fallback={
-                                    <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
-                                  }
-                                >
-                                  <ImageComponent
-                                    src={n.actionBy?.profile?.profileUrl}
-                                  />
-                                </React.Suspense>
+                          <div className="flex ">
+                            <div className="">
+                              <div className="rounded-full overflow-hidden xs:w-9 w-12">
+                                <div className="w-full rounded-full overflow-hidden ">
+                                  <React.Suspense
+                                    fallback={
+                                      <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
+                                    }
+                                  >
+                                    <ImageComponent
+                                      src={n.actionBy?.profile?.profileUrl}
+                                    />
+                                  </React.Suspense>
+                                </div>
                               </div>
                             </div>
 
                             <div className="pt-1 ms-3">
-                              <div className="font-semibold text-sm">
+                              <div className="font-semibold text-sm xs:text-xs">
                                 {n.actionBy.userName}
                               </div>
-                              <div className="text-sm text-gray-500 font-medium">
+                              <div className="text-sm xs:text-xs text-gray-500 font-medium">
                                 {n.content}
                                 <span>
                                   .{new Date(n.createdAt).toDateString()}
@@ -199,25 +201,27 @@ export default function Notification() {
                       <div key={index} className="mt-2">
                         <div className="flex justify-between items-center  py-1 px-2">
                           <div className="flex">
-                            <div className="rounded-full overflow-hidden w-12">
-                              <div className="w-full rounded-full overflow-hidden ">
-                                <React.Suspense
-                                  fallback={
-                                    <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
-                                  }
-                                >
-                                  <ImageComponent
-                                    src={n.actionBy?.profile?.profileUrl}
-                                  />
-                                </React.Suspense>
+                            <div className="">
+                              <div className="rounded-full overflow-hidden xs:w-9 w-12">
+                                <div className="w-full rounded-full overflow-hidden ">
+                                  <React.Suspense
+                                    fallback={
+                                      <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
+                                    }
+                                  >
+                                    <ImageComponent
+                                      src={n.actionBy?.profile?.profileUrl}
+                                    />
+                                  </React.Suspense>
+                                </div>
                               </div>
                             </div>
 
                             <div className="pt-1 ms-3">
-                              <div className="font-semibold text-sm">
-                                {n.actionBy?.userName}
+                              <div className="font-semibold text-sm xs:text-xs">
+                                {n.actionBy.userName}
                               </div>
-                              <div className="text-sm text-gray-500 font-medium">
+                              <div className="text-sm xs:text-xs text-gray-500 font-medium">
                                 {n.content}
                                 <span>
                                   .{new Date(n.createdAt).toDateString()}
@@ -259,25 +263,27 @@ export default function Notification() {
                         {i2 && i2 == index && <ResponsiveSuggestion />}
                         <div className="flex justify-between items-center  py-1 px-2">
                           <div className="flex">
-                            <div className="rounded-full overflow-hidden w-12">
-                              <div className="w-full rounded-full overflow-hidden ">
-                                <React.Suspense
-                                  fallback={
-                                    <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
-                                  }
-                                >
-                                  <ImageComponent
-                                    src={n.actionBy?.profile?.profileUrl}
-                                  />
-                                </React.Suspense>
+                            <div className="">
+                              <div className="rounded-full overflow-hidden xs:w-9 w-12">
+                                <div className="w-full rounded-full overflow-hidden ">
+                                  <React.Suspense
+                                    fallback={
+                                      <div className="animate-spin rounded-full h-7 w-7 border-t-2 border-b-2 border-[#512da8]"></div>
+                                    }
+                                  >
+                                    <ImageComponent
+                                      src={n.actionBy?.profile?.profileUrl}
+                                    />
+                                  </React.Suspense>
+                                </div>
                               </div>
                             </div>
 
-                            <div className="pt-1 ms-3">
-                              <div className="font-semibold text-sm">
+                            <div className="pt-1 ms-3 xs:text-xs text-sm">
+                              <div className="font-semibold ">
                                 {n.actionBy.userName}
                               </div>
-                              <div className="text-sm text-gray-500 font-medium">
+                              <div className=" text-gray-500 font-medium">
                                 {n.content}.{' '}
                                 <span className="font-semibold text-black">
                                   ID:{n.contentId.book.ID}
