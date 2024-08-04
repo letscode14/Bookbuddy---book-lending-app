@@ -217,7 +217,6 @@ class UserRepository {
             lat,
             price,
           } = req.body
-          console.log(location)
           bookshelf = yield bookShelfModel_1.default.findOneAndUpdate(
             { userId: new mongodb_1.ObjectId(id) },
             {
@@ -1316,7 +1315,6 @@ class UserRepository {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { senderId, chatId, content, isRequestForBook } = req.body
-        console.log('body', req.body)
         let newChatfromUser = false
         const chat = yield chatModel_1.default.findById(chatId)
         if (chat) {
@@ -1528,7 +1526,6 @@ class UserRepository {
   makeMsgRead(messageId) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        console.log(messageId)
         const updatedMsg = yield messageModel_1.default.findByIdAndUpdate(
           messageId,
           {
@@ -1622,7 +1619,6 @@ class UserRepository {
           book: book,
           expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
         })
-        console.log('new request', newRequest)
         const runAt = new Date(Date.now() + 30 * 1000)
         yield agenda_1.default.schedule(runAt, 'requestExpiry', {
           requestId: newRequest._id.toString(),
@@ -1801,7 +1797,6 @@ class UserRepository {
   removeStory(userId, id) {
     return __awaiter(this, void 0, void 0, function* () {
       try {
-        console.log('remove story called')
         const stories = yield storyModel_1.default.findOneAndUpdate(
           {
             userId: new mongodb_1.ObjectId(userId),
@@ -1980,7 +1975,6 @@ class UserRepository {
           }
         }
         const { limit, _id } = request.book
-        console.log(limit)
         const bookshelf = yield bookShelfModel_1.default.findOne({
           userId: new mongodb_1.ObjectId(userId),
           'shelf._id': new mongodb_1.ObjectId(_id),
@@ -2663,8 +2657,6 @@ class UserRepository {
     return __awaiter(this, void 0, void 0, function* () {
       try {
         const { requestId, userId, requestedUser, messageId, chatId } = req.body
-        console.log(req.body)
-        console.log(requestId)
         const request = yield requestModel_1.default.findByIdAndUpdate(
           requestId,
           {

@@ -74,7 +74,7 @@ export default function FollowingList({ user }) {
   }
 
   return (
-    <div className="min-w-[500px] min-h-[650px] max-h-[650px] p-4 overflow-y-auto">
+    <div className="min-w-[500px] xs:min-w-[200px] min-h-[600px] max-h-[650px] p-4 xs:min-h-[500px] overflow-y-auto">
       <div className="text-xl font-semibold">Following</div>
       <div className="border mt-2"></div>
 

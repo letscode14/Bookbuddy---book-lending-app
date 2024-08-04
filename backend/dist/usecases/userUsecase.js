@@ -1578,7 +1578,6 @@ class UserUseCase {
         const result = yield this.JwtToken.verifyOtpToken(token, otp)
         if ('user' in result) {
           const code = Math.floor(100000 + Math.random() * 9000).toString()
-          console.log(result)
           const email = result.email
           const subject = 'Please provide the new code for the registration'
           const sendEmail = yield this.sendEmail.sendEmail({
@@ -1862,7 +1861,6 @@ class UserUseCase {
   }
   checkOldPassword(userId, password) {
     return __awaiter(this, void 0, void 0, function* () {
-      console.log(password)
       try {
         const isValid = yield this.validatePassword(password)
         if (isValid !== true) {

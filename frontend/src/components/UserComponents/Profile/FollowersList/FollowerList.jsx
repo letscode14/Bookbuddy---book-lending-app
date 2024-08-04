@@ -76,7 +76,7 @@ export default function FollowerList({ user }) {
   )
 
   return (
-    <div className="min-w-[500px] min-h-[650px] max-h-[650px] p-4 overflow-y-auto">
+    <div className="min-w-[500px] xs:min-w-full min-h-[650px] xs:min-h-[500px] max-h-[650px] p-4 overflow-y-auto">
       <div className="text-xl font-semibold">Followers</div>
       <div className="border mt-2"></div>
       {loading ? (

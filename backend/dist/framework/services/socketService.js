@@ -2,13 +2,14 @@
 Object.defineProperty(exports, '__esModule', { value: true })
 exports.getIO = exports.initSocketsever = void 0
 const socket_io_1 = require('socket.io')
+const dotenv_1 = require('dotenv')
+;(0, dotenv_1.config)()
 let io
 const initSocketsever = (server) => {
   io = new socket_io_1.Server(server, {
     cors: {
       origin: process.env.ORIGIN,
       methods: ['GET', 'POST'],
-      credentials: true,
     },
   })
   io.on('connection', (socket) => {

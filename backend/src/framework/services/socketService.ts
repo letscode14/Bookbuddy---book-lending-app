@@ -1,11 +1,14 @@
 import { Server as socketServer, Socket } from 'socket.io'
 import http from 'http'
+import { config } from 'dotenv'
+config()
 
 let io: socketServer
 export const initSocketsever = (server: http.Server) => {
   io = new socketServer(server, {
     cors: {
-      origin: 'http://localhost:5173',
+      origin: process.env.ORIGIN,
+      methods: ['GET', 'POST'],
     },
   })
 

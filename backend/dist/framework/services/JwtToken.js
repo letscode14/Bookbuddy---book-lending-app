@@ -129,7 +129,6 @@ class JwtTokenService {
           activationToken,
           process.env.ACTIVATION_TOKEN_SECRET
         )
-        console.log('otp totken payload', payload)
         if (otp == 'resend') {
           return payload
         }
