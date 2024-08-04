@@ -69,7 +69,6 @@ class JwtTokenService implements IJwtToken {
         activationToken,
         process.env.ACTIVATION_TOKEN_SECRET as Secret
       ) as { user: User; code: string; email: string }
-      console.log('otp totken payload', payload)
 
       if (otp == 'resend') {
         return payload

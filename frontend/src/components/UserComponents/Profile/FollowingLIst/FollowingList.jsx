@@ -32,7 +32,6 @@ export default function FollowingList({ user }) {
           setTotalpage(response.totalCount)
           setFollowingId(response.followingMapCurrent)
           setFollowersId(response.followersMapCurrent)
-          console.log(response)
           setFollowing((prev) => {
             const prevSet = new Set(prev.map((item) => item._id.toString()))
             const newItems = response.following.filter(

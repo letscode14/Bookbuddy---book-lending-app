@@ -97,7 +97,6 @@ export default function CreatePost() {
   }
   const handleImageInput = (e) => {
     const files = Array.from(e.target.files)
-    console.log(imageUrl.length)
     if (files.length > 5 || imageUrl.length + files.length > 5) {
       return showErrorToast('Only 5 images allowed')
     }
@@ -238,7 +237,6 @@ export default function CreatePost() {
 
     if (isMoved) {
       const keys = Object.keys(booshelfAdds)
-      console.log(keys)
       const errorIndices = []
       keys.forEach((key, index) => {
         if (key != 'location') {
@@ -287,7 +285,6 @@ export default function CreatePost() {
         formData.append('lng', booshelfAdds.location?.lng)
       }
     }
-    console.log(booshelfAdds)
     files.forEach((file) => {
       formData.append('images', file)
     })

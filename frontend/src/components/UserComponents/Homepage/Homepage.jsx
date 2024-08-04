@@ -30,6 +30,9 @@ export default function Homepage() {
         console.log('coonected')
       })
     }
+    return () => {
+      socket.off('connected')
+    }
   }, [socket])
   return (
     <div className="h-screen w-screen bg-[#512da8] relative ">

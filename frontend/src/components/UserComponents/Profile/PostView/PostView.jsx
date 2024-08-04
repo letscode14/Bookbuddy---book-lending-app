@@ -52,7 +52,6 @@ export default function PostView({ postData, user }) {
   const handleSendComment = async (postId, userId, content) => {
     try {
       const response = await addComment(postId, userId, content)
-      console.log(response)
       if (response) {
         setComment((prev) => ({ ...prev, [postId]: '' }))
 

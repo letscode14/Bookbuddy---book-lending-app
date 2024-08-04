@@ -57,7 +57,6 @@ export default function EditdBadge({ badgeId, handleModelClose }) {
 
     keys.forEach((key, index) => {
       if (key !== 'icon') {
-        console.log(data[key])
         if (data[key].trim() == '') {
           errorIndices.push(index + 1)
         }
@@ -84,7 +83,6 @@ export default function EditdBadge({ badgeId, handleModelClose }) {
       badgeError: '',
     }))
     if (!/^\d*$/.test(data.minScore) || Number(data.minScore) < 1) {
-      console.log('not valid')
       setCustom((prev) => ({
         ...prev,
         minError: 'Only accepts positive numbers',

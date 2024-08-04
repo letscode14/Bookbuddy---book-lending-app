@@ -145,7 +145,6 @@ export default function AddStory({ user, close }) {
       setLoading(true)
       const response = await addStory(formData, user)
       if (response) {
-        console.log(response)
         close()
         showSuccessToast('story uploaded')
       }

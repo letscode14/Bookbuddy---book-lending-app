@@ -300,8 +300,6 @@ export default function EditUser({ userInfo, onClose }) {
       const errorIndices = []
       const key = Object.keys(userData)
       key.forEach((key, index) => {
-        console.log(userData)
-        console.log(key)
         if (key !== 'newProfile' && key !== 'profileUrl') {
           if (userData[key] === '') {
             errorIndices.push(index + 1)
@@ -333,7 +331,6 @@ export default function EditUser({ userInfo, onClose }) {
         resetError()
         return
       }
-      console.log('a')
 
       if (usernameError) {
         setError([3])
@@ -556,7 +553,6 @@ export default function EditUser({ userInfo, onClose }) {
           <input
             type="file"
             onChange={(e) => {
-              console.log('file input')
               handleProfileImageInput(e)
             }}
             className="hidden"

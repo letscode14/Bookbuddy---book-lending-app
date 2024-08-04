@@ -38,7 +38,6 @@ export default function Bookshelf({ userId }) {
 
   const viewBookshelf = async (bookId, userId) => {
     const response = await viewOneBook(bookId, userId)
-    console.log(response)
     if (response) {
       setBookData(response)
       setModel(true)

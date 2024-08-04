@@ -1581,7 +1581,6 @@ class UserUseCase {
 
       if ('user' in result) {
         const code = Math.floor(100000 + Math.random() * 9000).toString()
-        console.log(result)
 
         const email = result.email
 
@@ -1908,8 +1907,6 @@ class UserUseCase {
     userId: string,
     password: string
   ): Promise<ResponseType> {
-    console.log(password)
-
     try {
       const isValid = await this.validatePassword(password)
       if (isValid !== true) {

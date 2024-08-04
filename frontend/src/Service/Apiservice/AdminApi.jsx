@@ -7,7 +7,6 @@ export const adminLogin = async (adminDetails) => {
     const response = await axiosInstance.post('/admin/login', {
       adminDetails,
     })
-    console.log(response)
     if (response.status == 200) {
       localStorage.setItem('adminAccessToken', response.data.accessToken)
       localStorage.setItem('adminRefreshToken', response.data.refreshToken)

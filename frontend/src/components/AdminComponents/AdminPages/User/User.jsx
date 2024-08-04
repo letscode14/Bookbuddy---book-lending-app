@@ -49,11 +49,9 @@ export default function User() {
   }, [pageNo, filterState])
 
   const proceedBlockUser = async (id, action) => {
-    console.log('called')
     try {
       const response = await blockUser({ userId: id, action: action })
       if (response) {
-        console.log(response)
         showAdminToast(response)
         const updatedData = data.map((user) => {
           if (user._id === id) {

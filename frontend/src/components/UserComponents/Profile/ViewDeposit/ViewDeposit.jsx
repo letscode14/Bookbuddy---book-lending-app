@@ -63,7 +63,6 @@ export default function ViewDeposit({ user }) {
           'https://asset.cloudinary.com/dcoy7olo9/256c070690b6fa46830b48cacfebaf0c',
         order_id: response.id,
         handler: async (response) => {
-          console.log(response)
           verify(response, amount)
         },
         prefill: {

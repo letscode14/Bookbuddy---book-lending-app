@@ -44,8 +44,6 @@ export default function Report({ reportData, onClose }) {
 
   const handleReport = async () => {
     try {
-      console.log(report)
-
       if (loading) {
         return
       }
@@ -175,7 +173,6 @@ export default function Report({ reportData, onClose }) {
                   if (e.target.value == 'other') return { ...prev, reason: '' }
                   else return { ...prev, reason: e.target.value }
                 })
-                console.log(report)
               }}
             >
               <>

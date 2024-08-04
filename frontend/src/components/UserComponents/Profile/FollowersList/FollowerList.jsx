@@ -26,7 +26,6 @@ export default function FollowerList({ user }) {
           pageNo,
           currentUser: u.user,
         })
-        console.log(response)
         if (response) {
           setTotalpage(response.totalCount)
           setFollowingId(response.followingMapCurrent)

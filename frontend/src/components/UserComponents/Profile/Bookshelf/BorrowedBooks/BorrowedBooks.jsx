@@ -27,7 +27,6 @@ export default function BorrowedBooks({ userId }) {
     const fetchBorrowed = async (userId, pageNo) => {
       try {
         const response = await getBorrowedBooks(userId, pageNo)
-        console.log(response)
         if (response) {
           setData((prev) => [...prev, ...response.borrowed])
           setHasMore(response.hasMore)

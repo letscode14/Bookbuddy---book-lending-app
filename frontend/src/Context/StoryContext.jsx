@@ -19,7 +19,6 @@ export const StoryProvider = ({ children }) => {
   const fetchStory = async () => {
     try {
       const response = await getStories(user, storyPageNo)
-      console.log(response)
       if (response) {
         setStories((prev) => {
           const newStory = response.stories

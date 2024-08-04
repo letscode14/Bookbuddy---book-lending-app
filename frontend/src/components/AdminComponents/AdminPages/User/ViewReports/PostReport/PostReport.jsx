@@ -20,7 +20,6 @@ export default function PostReport({ userId }) {
         const response = await getReportedPost(userId, pageNo)
 
         if (response) {
-          console.log(response)
           setData((prev) => {
             const prevSet = new Set(prev.map((item) => item._id.toString()))
             const newItems = response.post.filter(

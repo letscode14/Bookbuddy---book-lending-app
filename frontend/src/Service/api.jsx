@@ -56,7 +56,6 @@ axiosInstance.interceptors.response.use(
     const { response, config } = error
 
     if (response) {
-      console.log(response)
       if (
         response.status === 401 &&
         response.data.message == 'AccessToken Expired'

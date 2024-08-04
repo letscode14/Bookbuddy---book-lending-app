@@ -60,7 +60,6 @@ export default function PostStatistics() {
       const response = await getPostStatisticsPeriod(filter)
 
       if (response) {
-        console.log(response)
         setFilterData(response)
         setFLaoding(false)
       }
@@ -98,7 +97,6 @@ export default function PostStatistics() {
     const fetchUserWithHighLendscore = async () => {
       setHloading(true)
       const response = await getHighBoostedPosts()
-      console.log(response)
       if (response) {
         setPost(response.post)
         setHloading(false)
@@ -109,7 +107,6 @@ export default function PostStatistics() {
 
     fetchUserWithHighLendscore()
   }, [])
-  console.log(filterData)
   return (
     <>
       <div

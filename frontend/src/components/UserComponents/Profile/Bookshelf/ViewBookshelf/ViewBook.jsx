@@ -72,7 +72,6 @@ export default function ViewBook({
       const response = await giveBookRequest(userId, bookId, ownerId)
       if (response?.status !== true) {
         setLoading(false)
-        console.log(response)
         if (response.status == 403) {
           setChildOpen(true)
           setModalFor('subscribe')

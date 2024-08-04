@@ -39,7 +39,6 @@ export default function LoginOtpForm() {
     dispatch(startLoading())
     const response = await loginWithOtp(user)
     if (response) {
-      console.log('Login otp token response', response)
       dispatch(setOtpToken(response))
       dispatch(stopLoading())
       navigate('/submit-otp')

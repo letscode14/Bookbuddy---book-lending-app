@@ -96,11 +96,9 @@ export default function Notification() {
   }
   const [i1, setI1] = useState()
   const [i2, setI2] = useState()
-  console.log(notificaitons)
   useEffect(() => {
     if (notificaitons.length > 0) {
       const [index2, index3] = getShuffledIndexes(notificaitons?.length)
-      console.log(index2, index3)
       setI1(index2)
       setI2(index3)
     }

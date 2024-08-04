@@ -130,7 +130,6 @@ export const NotificationProvider = ({ children }) => {
       })
 
       socket.on('newnotification', ({ notification }) => {
-        console.log(window.location.pathname)
         if (window.location.pathname !== '/user/notification')
           requestToast(
             notification?.contentId?.book?.ID,

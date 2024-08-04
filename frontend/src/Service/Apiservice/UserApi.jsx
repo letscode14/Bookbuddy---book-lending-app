@@ -277,7 +277,6 @@ export const editUserDetails = async (formData) => {
       return response.data.message
     }
   } catch (error) {
-    console.log('axios', error)
     return false
   }
 }
@@ -684,7 +683,6 @@ export const acceptCollect = async (
       messageId,
       chatId,
     })
-    console.log(response)
     if (response.status == 200) {
       return { status: true, message: response.data.result }
     }
@@ -795,7 +793,6 @@ export const resendOtpForChangepassbeforeLogin = async () => {
     const response = await axiosInstance.get(
       '/user/resend/otp/change/pass/before/login'
     )
-    console.log('resend respones', response)
     if (response.status == 200) {
       return {
         status: true,

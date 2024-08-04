@@ -33,7 +33,6 @@ export default function ViewBorrow({ borrow }) {
   }
 
   const handleGiveBack = async (userId, requestId, sendTo, borrowId) => {
-    console.log(userId, requestId, sendTo, borrowId)
     try {
       setLoading(true)
       const response = await giveBookBack(userId, requestId, sendTo, borrowId)
@@ -42,13 +41,11 @@ export default function ViewBorrow({ borrow }) {
           ...data,
           requestDetails: response.content,
         }
-        console.log(response)
-        console.log('request details', data.requestDetails)
+
         setData(newData)
         socket.emit('new message', response)
       }
     } catch (error) {
-      console.log(error)
       setLoading(false)
     }
   }

@@ -35,7 +35,6 @@ export default function Post({ user }) {
     try {
       const response = await fetchPost({ postId })
       if (response) {
-        console.log(response)
         setPostDetails(response)
         setIsModalOpen(true)
       }

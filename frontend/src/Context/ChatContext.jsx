@@ -24,7 +24,6 @@ export const ChatProvider = ({ children }) => {
       const response = await getSingleChat(senderId, userId)
 
       if (response) {
-        console.log(response)
         setSingleChat(response)
         const chatId = response._id
         dispatch(updateMessageRead({ content: '', id: chatId, newCount: 0 }))

@@ -31,7 +31,6 @@ export default function ViewLendedReports({ lendId }) {
     const fetchReports = async (lendId) => {
       setLoading(true)
       const response = await getReports(lendId, pageNo)
-      console.log(response)
       if (response) {
         setReports((prev) => [...prev, ...response.reports])
         setHasMore(response.hasMore)

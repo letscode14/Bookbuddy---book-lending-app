@@ -33,7 +33,6 @@ export default function Suggestions() {
   const navigate = useNavigate()
   useEffect(() => {
     async function fetchSuggestions() {
-      console.log('not res')
       const response = await getSuggestion(user)
       if (response) {
         setSuggestion(response)

@@ -109,7 +109,6 @@ export default function TransactionStatistics() {
 
     fetchUserWithHighLendscore()
   }, [filter])
-  console.log(request)
   return (
     <>
       <div
