@@ -206,7 +206,8 @@ export default function LoginForm() {
           <img className="google-auth-icon " src={otpLogo} alt="" />
         </div>
       </div>
-      <div className="mt-3">
+      <div className="mt-3 sm:hidden flex items-center">
+        <span className="me-2">Dont have a account?</span>
         <FontAwesomeIcon
           onClick={() => navigate('/signup')}
           className="sm:hidden xs:text-xl xs:text-[#512da8]"
