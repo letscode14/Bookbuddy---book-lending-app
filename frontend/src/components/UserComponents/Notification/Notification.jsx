@@ -17,6 +17,7 @@ import { useNotificaitonContext } from '../../../Context/NotificationContext'
 import Suggestions, { ResponsiveSuggestion } from '../Suggestions/Suggestions'
 import ReponsiveNav from '../Navbar/ReponsiveNav'
 import { getShuffledIndexes } from '../../../../helpers/ValidationHelpers/helper'
+import { useNavigate } from 'react-router-dom'
 
 const ImageComponent = React.lazy(() => import('../../ImageComponent/Image'))
 
@@ -34,6 +35,7 @@ export default function Notification() {
   const [loading, setLoading] = useState(true)
   const [notiLaoding, setNotiLoading] = useState(false)
   const { doFetch } = useNotificaitonContext()
+  const navigate = useNavigate()
 
   useEffect(() => {
     notification.current.style.right = '12px'
@@ -153,7 +155,12 @@ export default function Notification() {
                         {i1 && i1 == index && <ResponsiveSuggestion />}
                         {i2 && i2 == index && <ResponsiveSuggestion />}
                         <div className="flex justify-between items-center  py-1 px-2">
-                          <div className="flex ">
+                          <div
+                            className="flex cursor-pointer"
+                            onClick={() =>
+                              navigate(`/user/other/${n.actionBy._id}`)
+                            }
+                          >
                             <div className="">
                               <div className="rounded-full overflow-hidden xs:w-9 w-12">
                                 <div className="w-full rounded-full overflow-hidden ">
@@ -200,7 +207,12 @@ export default function Notification() {
                     ) : n.type == 'User' ? (
                       <div key={index} className="mt-2">
                         <div className="flex justify-between items-center  py-1 px-2">
-                          <div className="flex">
+                          <div
+                            className="flex cursor-pointer"
+                            onClick={() =>
+                              navigate(`/user/other/${n.actionBy._id}`)
+                            }
+                          >
                             <div className="">
                               <div className="rounded-full overflow-hidden xs:w-9 w-12">
                                 <div className="w-full rounded-full overflow-hidden ">
@@ -262,7 +274,12 @@ export default function Notification() {
                         {i1 && i1 == index && <ResponsiveSuggestion />}
                         {i2 && i2 == index && <ResponsiveSuggestion />}
                         <div className="flex justify-between items-center  py-1 px-2">
-                          <div className="flex">
+                          <div
+                            className="flex cursor-pointer"
+                            onClick={() =>
+                              navigate(`/user/other/${n.actionBy._id}`)
+                            }
+                          >
                             <div className="">
                               <div className="rounded-full overflow-hidden xs:w-9 w-12">
                                 <div className="w-full rounded-full overflow-hidden ">

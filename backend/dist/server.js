@@ -49,7 +49,10 @@ const dotenv_1 = require('dotenv')
 ;(0, dotenv_1.config)()
 const startWorker = () => {
   const worker = new worker_threads_1.Worker(
-    path_1.default.resolve(__dirname, 'framework/services/Worker.js')
+    path_1.default.resolve(__dirname, 'framework/services/Worker.ts'),
+    {
+      execArgv: ['-r', 'ts-node/register'],
+    }
   )
   worker.on('message', (message) => {
     if (message.status === 'complete') {

@@ -779,7 +779,7 @@ export default class UserRepository implements IUserRepository {
   async getF(req: Request): Promise<User | null> {
     try {
       const { userId, query, pageNo, currentUser } = req.query
-      const limit = 1
+      const limit = 10
       const skip = (Number(pageNo) - 1) * limit
 
       const data = await userModel.findById(currentUser, {
@@ -2761,7 +2761,7 @@ export default class UserRepository implements IUserRepository {
     }
 
     try {
-      const limit = 1
+      const limit = 10
       const skip = (pageNo - 1) * limit
 
       const pipeline = [
