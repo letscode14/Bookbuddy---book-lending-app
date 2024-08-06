@@ -112,7 +112,7 @@ export default function Navbar() {
           onClick={() => {
             setMenu(0), navigate('/user/home')
           }}
-          className={`flex items-center  ${
+          className={`flex  items-center  ${
             menu == 0 ? 'text-[#000000]' : 'text-[#ffffff]'
           }  font-bold h-8 mb-[18px] lg:mb-[14px] lg:mb-[18px]`}
         >
@@ -120,7 +120,7 @@ export default function Navbar() {
             className="cursor-pointer me-4 z-20  "
             icon={faHome}
           />
-          <label className=" z-20 sm:hidden md:block">Home</label>
+          <label className="cursor-pointer z-20 sm:hidden md:block">Home</label>
         </div>
         <div
           onClick={() => {
@@ -134,7 +134,9 @@ export default function Navbar() {
             className="cursor-pointer me-4 z-20"
             icon={faSearch}
           />
-          <label className="z-20 sm:hidden md:block">Search</label>
+          <label className="cursor-pointer z-20 sm:hidden md:block">
+            Search
+          </label>
         </div>
         <div
           onClick={() => {
@@ -148,7 +150,9 @@ export default function Navbar() {
             className="cursor-pointer me-4 z-20"
             icon={faMessage}
           />
-          <label className=" z-20 sm:hidden md:block">Messages</label>
+          <label className="cursor-pointer z-20 sm:hidden md:block">
+            Messages
+          </label>
         </div>
         <div
           onClick={() => {
@@ -162,7 +166,9 @@ export default function Navbar() {
             className="cursor-pointer me-4 z-20"
             icon={faCompass}
           />
-          <label className=" z-20 sm:hidden md:block ">Explore</label>
+          <label className="cursor-pointer z-20 sm:hidden md:block ">
+            Explore
+          </label>
         </div>
         <div
           onClick={() => {
@@ -186,7 +192,9 @@ export default function Navbar() {
             />
           </div>
 
-          <label className=" z-20 sm:hidden md:block">Notification</label>
+          <label className="cursor-pointer z-20 sm:hidden md:block">
+            Notification
+          </label>
         </div>
         <div
           onClick={() => {
@@ -197,7 +205,9 @@ export default function Navbar() {
           }  font-bold h-8 mb-[18px]  lg:mb-[18px]`}
         >
           <FontAwesomeIcon className="cursor-pointer me-4 z-20" icon={faPlus} />
-          <label className=" z-20 sm:hidden md:block">Create</label>
+          <label className="cursor-pointer z-20 sm:hidden md:block">
+            Create
+          </label>
         </div>
 
         <div
@@ -212,7 +222,7 @@ export default function Navbar() {
             <img src={userDetails?.profileUrl} alt="" />
           </div>
           <div className="z-20 ">
-            <label className=" sm:hidden md:block">Profile</label>
+            <label className="cursor-pointer sm:hidden md:block">Profile</label>
           </div>
         </div>
       </div>

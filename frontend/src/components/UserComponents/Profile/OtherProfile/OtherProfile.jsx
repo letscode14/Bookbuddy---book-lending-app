@@ -149,7 +149,7 @@ export default function OtherProfile() {
           sm:pe-10 sm:ps-10
           md:left-[240px] 
           lg:left-[280px] lg:pe-7 lg:ps-7
-          xl:pe-20 xl:ps-20 
+           xl:ps-20 
           "
       >
         {loading ? (
@@ -175,7 +175,9 @@ export default function OtherProfile() {
                 className={`w-[65%]
                xs:w-full pt-10  
                xs:pt-5 xs:px-1 
-               sm:w-full lg:w-[65%] `}
+               xl:w-[66%]
+
+               sm:w-full lg:w-[65%]`}
               >
                 <div
                   className="relative flex  
@@ -225,7 +227,7 @@ export default function OtherProfile() {
                   </div>
                   <div
                     className="   
-                xs:flex "
+                 xs:flex w-40 xs:w-full"
                   >
                     <div className="">
                       <div className="fit-content relative inline-block">
@@ -233,8 +235,10 @@ export default function OtherProfile() {
                           className="rounded-full relative   overflow-hidden  w-[210px]  
                   xs:w-28 xs:h-28
                   sm:h-32 sm:w-32 
-                  lg:w-[180px] lg:h-[180px]
-                  xl:w-[190px] xl:h-[190px]"
+                  md:w-[150px] md:h-[150px]
+                  lg:w-[160px] lg:h-[160px]
+                  xl:w-[150px] xl:h-[150px] 
+                  2xl:w-[180px] 2xl:h-[180px] "
                         >
                           <React.Suspense
                             fallback={
@@ -267,7 +271,8 @@ export default function OtherProfile() {
                           className="font-bold text-2xl 
                     xs:text-lg 
                     sm:text-xl 
-                    lg:text-2xl"
+                    lg:text-2xl 
+                  max-w-60 w-40  truncate xs:max-w-full"
                         >
                           {userDetails.userName}
                         </div>
@@ -445,13 +450,14 @@ export default function OtherProfile() {
                         <button
                           disabled={isLoading}
                           className="bg-[#512da8] text-[#ffffff] 
-                    text-[14px] text-nowrap py-3 flex justify-center
-                     items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
-                    xs:text-xs xs:w-full xs:py-2
-                    sm:w-40 sm:text-xs sm:py-2 sm:px-2
-                    lg:w-[200px] lg:text-[14px] lg:py-3
-
-                    "
+                          text-[14px] text-nowrap py-3 flex justify-center
+                           items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
+                          xs:text-xs xs:w-full xs:py-2
+                          sm:w-40 sm:text-xs sm:py-2 sm:px-2
+                          lg:w-[150px] lg:text-[12px] lg:py-3
+                          xl:w-[165px] xl:text-[14px]
+      
+                          "
                           onClick={() => handleUnFollow(user, userDetails._id)}
                         >
                           unfollow
@@ -460,13 +466,14 @@ export default function OtherProfile() {
                         <button
                           disabled={isLoading}
                           className="bg-[#512da8] text-[#ffffff] 
-                    text-[14px] text-nowrap py-3 flex justify-center
-                     items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
-                    xs:text-xs xs:w-full xs:py-2
-                    sm:w-40 sm:text-xs sm:py-2 sm:px-2
-                    lg:w-[200px] lg:text-[14px] lg:py-3
-
-                    "
+                          text-[14px] text-nowrap py-3 flex justify-center
+                           items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
+                          xs:text-xs xs:w-full xs:py-2
+                          sm:w-40 sm:text-xs sm:py-2 sm:px-2
+                          lg:w-[150px] lg:text-[12px] lg:py-3
+                          xl:w-[165px] xl:text-[14px]
+      
+                          "
                           onClick={() => handleFollow(user, userDetails._id)}
                         >
                           follow back
@@ -475,13 +482,14 @@ export default function OtherProfile() {
                         <button
                           disabled={isLoading}
                           className="bg-[#512da8] text-[#ffffff] 
-                          text-[14px] text-nowrap py-3 flex justify-center
-                           items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
-                          xs:text-xs xs:w-full xs:py-2
-                          sm:w-40 sm:text-xs sm:py-2 sm:px-2
-                          lg:w-[200px] lg:text-[14px] lg:py-3
-      
-                          "
+                    text-[14px] text-nowrap py-3 flex justify-center
+                     items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
+                    xs:text-xs xs:w-full xs:py-2
+                    sm:w-40 sm:text-xs sm:py-2 sm:px-2
+                    lg:w-[150px] lg:text-[12px] lg:py-3
+                    xl:w-[165px] xl:text-[14px]
+
+                    "
                           onClick={() => handleFollow(user, userDetails._id)}
                         >
                           follow
@@ -494,9 +502,10 @@ export default function OtherProfile() {
                           navigate('/user/messages')
                         }}
                         className="border-[#512da8] border  text-[#512da8] text-[14px] text-nowrap py-3 flex justify-center items-center rounded-lg font-semibold uppercase w-[200px] cursor-pointer flex justify-center
-                    xs:text-xs xs:w-full xs:py-1 
-                    sm:w-40 sm:text-xs sm:py-2 sm:px-2
-                    lg:w-[200px] lg:text-[14px] lg:py-3"
+                        xs:text-xs xs:w-full xs:py-1 
+                        sm:w-40 sm:text-xs sm:py-2 sm:px-2
+                        lg:w-[150px] lg:text-[12px] lg:py-3 
+                        xl:w-[165px] xl:text-[14px]"
                       >
                         Message
                       </button>

@@ -3,7 +3,7 @@ export const showSuccessToast = (message) => {
   toast.success(message, {
     className: 'toast-message',
     position: 'top-center',
-    autoClose: 1500,
+    autoClose: 44500,
   })
 }
 
@@ -99,19 +99,6 @@ export const commentToast = (imageUrl, content, userName, message) => {
 export const messageToast = (content, userName, message, profile) => {
   const CustomToast = ({ message }) => (
     <div>
-      <div className="flex">
-        <img
-          src={profile}
-          alt="Notification"
-          className="w-9 h-9 rounded-full"
-        />
-        <div className="text-start ms-3">
-          <span className="text-md ms-1 font-semibold ">{userName}</span>
-
-          <div className="text-xs ">{content}</div>
-        </div>
-      </div>
-
       <div className="text-sm text-wrap mt-2">{message}</div>
     </div>
   )

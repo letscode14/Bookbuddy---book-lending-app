@@ -2,7 +2,6 @@ import {
   faCheck,
   faCircleExclamation,
   faLocation,
-  faMedal,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useContext, useEffect, useState } from 'react'
@@ -90,12 +89,6 @@ export default function ViewBorrow({ borrow }) {
                   ID :
                   <span className="font-semibold text-[#000000]">
                     {data.requestDetails?.book.ID}
-                  </span>
-                </div>
-                <div className="text-md my-2  text-[#512da8] font-medium semibold">
-                  <FontAwesomeIcon icon={faMedal} />
-                  <span className="font-semibold ">
-                    {data.earnedScore} Scores earned
                   </span>
                 </div>
               </div>

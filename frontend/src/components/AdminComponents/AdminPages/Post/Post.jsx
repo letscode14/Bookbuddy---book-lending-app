@@ -78,7 +78,7 @@ export default function Post() {
   const [modalFor, setModelFor] = useState('')
 
   return (
-    <div className="bg-[#ffffff] max-h-[800px] h-[800px] relative rounded-2xl mt-4">
+    <div className="bg-[#ffffff] grow  relative rounded-2xl mt-4">
       <ContentModal
         isContentModalOpen={isModelOpen}
         onContentClose={handleContentClose}

@@ -9,8 +9,9 @@ import Trasactions from './Transactions/Trasactions'
 import { useEffect } from 'react'
 export default function AdminPages() {
   return (
-    <div className=" p-4 h-screen bg-[#51557e] ">
+    <div className=" flex flex-col p-4 h-full bg-[#51557e]  ">
       <AdminNavbar />
+
       <Routes>
         <Route path="/user/management" element={<User />}></Route>
         <Route path="/dashboard" element={<Dashboard />}></Route>

@@ -9,7 +9,7 @@ import {
 } from '../utils/toast'
 import { useChatContext } from './ChatContext'
 import { useDispatch, useSelector } from 'react-redux'
-import { updateMessageRead } from '../store/slice/messageQue'
+import { selectMsgMap, updateMessageRead } from '../store/slice/messageQue'
 import { getNotification } from '../Service/Apiservice/UserApi'
 import { addFollower, removeFollower, selecUser } from '../store/slice/userAuth'
 
@@ -22,9 +22,12 @@ export const NotificationProvider = ({ children }) => {
   const { user } = useSelector(selecUser)
   //getting notification
 
+  const { messageQue } = useSelector(selectMsgMap)
+
   const [pageNo, setPageNo] = useState(1)
   const [doFetch, setFetch] = useState()
   const [unReadMsgNum, setUnreadNum] = useState(0)
+
   useEffect(() => {
     const fetchNoti = async (userId, pageNo, unRead) => {
       const response = await getNotification(userId, pageNo, unRead)
@@ -51,7 +54,8 @@ export const NotificationProvider = ({ children }) => {
         setLikes({ ...notification })
         const message = `${notification.actionBy.userName} liked your post`
         likeToast(notification, message)
-        setUnreadNum((prev) => prev + 1)
+
+        setUnreadNum((prev) => Number(prev) + 1)
       })
 
       //new follower
@@ -122,7 +126,7 @@ export const NotificationProvider = ({ children }) => {
             messageToast(
               newMessage.content,
               newMessage.senderId.userName,
-              'Recieved a message',
+              `You have new  messages `,
               newMessage.senderId.profile.profileUrl
             )
           }

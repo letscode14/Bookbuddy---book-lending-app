@@ -8,7 +8,7 @@ export default function Trasactions() {
     document.title = 'Transactions'
   }, [])
   return (
-    <div className="bg-[#ffffff] max-h-[800px] h-[800px] relative rounded-2xl mt-4">
+    <div className="bg-[#ffffff] grow  relative rounded-2xl mt-4">
       <div className="h-20 flex gap-9 items-center  justify-between">
         <div className="flex items-center ">
           <span className="font-semibold text-2xl ms-4 uppercase">

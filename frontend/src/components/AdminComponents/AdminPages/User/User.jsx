@@ -91,7 +91,8 @@ export default function User() {
       >
         <ViewUser userId={userId} blockAction={blockAction} />
       </ContentModal>
-      <div className="bg-[#ffffff] max-h-[800px] h-[800px] relative   rounded-2xl mt-4 m">
+
+      <div className="bg-[#ffffff] grow  relative   rounded-2xl mt-4 m">
         <div className="absolute text-xl right-10 bottom-10 flex justify-center items-center gap-2">
           <FontAwesomeIcon
             icon={faChevronLeft}

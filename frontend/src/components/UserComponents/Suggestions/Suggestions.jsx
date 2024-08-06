@@ -89,9 +89,11 @@ export default function Suggestions() {
   }
 
   return (
-    <div className="pt-12  sticky top-0 right-container-home xs:hidden  sm:hidden md:hidden lg:block ">
+    <div className="pt-12  sticky top-0 w-[30%]  xs:hidden  sm:hidden md:hidden  lg:block ">
       <div className="ms-6">
-        <div className="text-xl font-[600] mb-6">Suggestions for you</div>
+        <div className="text-xl font-[600] mb-6 w-full ">
+          Suggestions for you
+        </div>
         {sLoading ? (
           <div className=" flex ">
             <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500"></div>
@@ -101,7 +103,7 @@ export default function Suggestions() {
           suggestions.map((u, index) => (
             <div
               key={index}
-              className="one-suggestion mt-4 flex justify-between items-center"
+              className=" mt-4 flex  justify-between items-center"
             >
               <div className="flex items-center">
                 <div
@@ -126,7 +128,7 @@ export default function Suggestions() {
                 </div>
                 <div className="ms-3">
                   <div
-                    className="font-semibold cursor-pointer"
+                    className="font-semibold cursor-pointer truncate w-60 lg:w-20 "
                     onClick={() => navigate(`/user/other/${u._id}`)}
                   >
                     {u.userName}

@@ -320,7 +320,9 @@ export default function ChatBox() {
       <div className=" flex items-center justify-between p-2 flex h-20 xs:h-16">
         <div className="flex cursor-pointer xs:items-center ">
           <div
-            onClick={() => setSingleChat(null)}
+            onClick={() => {
+              setSingleChat(null)
+            }}
             className="me-2 flex items-center lg:hidden"
           >
             <div>
@@ -328,28 +330,30 @@ export default function ChatBox() {
             </div>
           </div>
           <div
+            className="flex"
             onClick={() => navigate(`/user/other/${receiver._id}`)}
-            className="relative h-16 w-16 xs:h-12 xs:w-12"
           >
-            <div className="rounded-full h-full w-full cursor-pointer flex items-center justify-center overflow-hidden">
-              <React.Suspense
-                fallback={
-                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-[#512da8]"></div>
-                }
-              >
-                <ImageComponent src={receiver?.profile?.profileUrl} />
-              </React.Suspense>
+            <div className="relative h-16 w-16 xs:h-12 xs:w-12">
+              <div className="rounded-full h-full w-full cursor-pointer flex items-center justify-center overflow-hidden">
+                <React.Suspense
+                  fallback={
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-[#512da8]"></div>
+                  }
+                >
+                  <ImageComponent src={receiver?.profile?.profileUrl} />
+                </React.Suspense>
+              </div>
+              {receiver?.isSubscribed && (
+                <FontAwesomeIcon
+                  className="text-lg text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-0 right-0"
+                  icon={faCircleCheck}
+                />
+              )}
             </div>
-            {receiver?.isSubscribed && (
-              <FontAwesomeIcon
-                className="text-lg text-[#512da8] absolute bg-[#ffffff] rounded-full bottom-0 right-0"
-                icon={faCircleCheck}
-              />
-            )}
-          </div>
-          <div className="h-full ">
-            <div className="ms-3 font-semibold">{receiver.userName}</div>
-            <div className="ms-3 text-gray-400 text-sm">{receiver.name}</div>
+            <div className="h-full ">
+              <div className="ms-3 font-semibold">{receiver.userName}</div>
+              <div className="ms-3 text-gray-400 text-sm">{receiver.name}</div>
+            </div>
           </div>
         </div>
         <div className="relative h-full flex items-center">
@@ -362,12 +366,12 @@ export default function ChatBox() {
             <div>Delete</div>
             <div>Change wallpaper</div>
           </div>
-          <FontAwesomeIcon
+          {/* <FontAwesomeIcon
             onClick={() => setMenuShow(!menuShow)}
             onBlur={() => setMenuShow(false)}
             icon={faEllipsis}
             className="me-10 text-2xl xs:me-4"
-          />
+          /> */}
         </div>
       </div>
       <div className="relative grow">
