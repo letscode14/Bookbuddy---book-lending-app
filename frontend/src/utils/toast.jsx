@@ -3,7 +3,7 @@ export const showSuccessToast = (message) => {
   toast.success(message, {
     className: 'toast-message',
     position: 'top-center',
-    autoClose: 44500,
+    autoClose: 2500,
   })
 }
 
